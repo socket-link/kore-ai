@@ -5,134 +5,118 @@
 
 <img src="readme_images/banner.png" height="450">
 
-> **Note**
+> **Note**  
 > This library, its APIs, and the sample client applications are in Alpha.
 > It may change incompatibly and require manual migration in the future.
 > If you have any issues, please report them on [GitHub](https://github.com/socket-link/kore-ai/issues).
 
-## 📔 Project Overview
+## 📔 Overview
 
-- KoreAI provides a Kotlin Multiplatform library for creating & managing **Agent** and **Assistant** chatbot definitions
-  - **Agents** provide specialized knowledge on top of Chat Completion, allowing for specialized knowledge to be given for answering prompts with non-trivial questions
-  - **Assistants** are a Meta-Agent; they specialize in planning complex tasks, and in delegating work to any **Agents** that they can create
-- This library uses:
-  - [`openai-kotlin`](https://github.com/aallam/openai-kotlin/tree/main) to implement the Agent & Assistant LLM functionality using OpenAI
-  - [`turtle`](https://github.com/lordcodes/turtle) to add Shell script capabilities
+KoreAI provides a Kotlin Multiplatform library for creating & managing **Agent** and **Assistant** chatbot definitions.
 
-### 🥷🏻 Agents
+### Core Components
 
-- An **Agent** is a specialized AI Chatbot that has specialized knowledge toward solving a well-defined task.
-- It is initialized with a preset `System Prompt`, which explains the mindset that the Agent should have toward answering the User.
-- Initialization also includes a starting `User Prompt`, which can also utilize the `HumanAssisted` API to allow for dynamic input from the User.
+- **Agents**: Specialized AI chatbots with domain-specific knowledge for answering complex prompts
+- **Assistants**: Meta-Agents that plan complex tasks and delegate work to specialized Agents
 
-#### [Bundled Agents](https://github.com/socket-link/kore-ai/tree/main/shared/src/commonMain/kotlin/link/socket/kore/model/agent/bundled)
+### Dependencies
 
-- `Save File Agent`
-- `Modify File Agent`
-- `Generate Code Agent`
-- `Fix JSON Agent`
-- `Generate Sub-Agent Agent`
-- `Family Agent` (used as an example)
+- [`openai-kotlin`](https://github.com/aallam/openai-kotlin/tree/main) - LLM functionality using OpenAI
+- [`turtle`](https://github.com/lordcodes/turtle) - Shell script capabilities
 
-### 🧑🏻‍🏫 Assistants
+## 🥷🏻 Agents
 
-> **Note**
-> The Assistant capabilities are not yet integrated to the library. *Please stay tuned*, as this functionality
-> is essential toward the core purpose of this framework.
+An **Agent** is a specialized AI Chatbot with domain-specific knowledge for well-defined tasks.
 
-- An **Assistant** is a type of **Agent** that has a `System Prompt` to explain how to delegate tasks, including how to spawn **Sub-Agents** to seek specialized responses.
+### Configuration
+- **System Prompt**: Defines the Agent's mindset and approach
+- **User Prompt**: Initial prompt with optional `HumanAssisted` API for dynamic input
 
-## 📦 Setup
+### [Bundled Agents](https://github.com/socket-link/kore-ai/tree/main/shared/src/commonMain/kotlin/link/socket/kore/model/agent/bundled)
 
-* A Mac running a recent version of macOS
-* [Xcode](https://apps.apple.com/us/app/xcode/id497799835)
-* [Android Studio](https://developer.android.com/studio)
-* The [Kotlin Multiplatform Mobile plugin](https://plugins.jetbrains.com/plugin/14936-kotlin-multiplatform-mobile)
+- Save File Agent
+- Modify File Agent  
+- Generate Code Agent
+- Fix JSON Agent
+- Generate Sub-Agent Agent
+- Family Agent (example implementation)
 
-### Check your environment
+## 🧑🏻‍🏫 Assistants
 
-Use [KDoctor](https://github.com/Kotlin/kdoctor) to ensure your development environment is configured correctly:
+> **Note**  
+> Assistant capabilities are not yet integrated. Stay tuned for this essential framework functionality.
 
-1. Install KDoctor with [Homebrew](https://brew.sh/):
-```text
+**Assistants** are specialized **Agents** with `System Prompts` for task delegation and spawning **Sub-Agents** for specialized responses.
+
+## 📦 Prerequisites
+
+### Required Software
+- Mac running recent macOS
+- [Xcode](https://apps.apple.com/us/app/xcode/id497799835)
+- [Android Studio](https://developer.android.com/studio)
+- [Kotlin Multiplatform Mobile plugin](https://plugins.jetbrains.com/plugin/14936-kotlin-multiplatform-mobile)
+
+### Environment Verification
+
+Use [KDoctor](https://github.com/Kotlin/kdoctor) to verify your setup:
+
+```bash
+# Install KDoctor
 brew install kdoctor
-```
-2. Run KDoctor:
-```text
+
+# Verify environment
 kdoctor
 ```
 
-If everything is set up correctly, you'll see a success message. Otherwise, KDoctor will suggest fixes for any issues.
+## ⚡️ Quick Start
 
-## ⚡️ Getting Started
+1. Open the project in Android Studio
+2. Switch from **Android** to **Project** view
+3. Explore the main modules:
+   - `shared`: Common logic and Compose Multiplatform code
+   - `desktopApp`: Desktop application target
+   - `androidApp`: Android application target  
+   - `iosApp`: Xcode project for iOS
+4. Run using the appropriate platform configuration
 
-To get started with this project:
-
-1. Open the project in Android Studio.
-2. Switch the view from **Android** to **Project** to see all files and targets.
-3. Explore the four main modules:
-   - `shared`: Contains common logic and Compose Multiplatform code.
-   - `desktopApp`: Builds into a desktop application.
-   - `androidApp`: Builds into an Android application.
-   - `iosApp`: An Xcode project for iOS application.
-4. Run the application on your desired platform using the corresponding run configuration.
-
-For detailed instructions on running the app on different platforms, refer to the sections below.
-
-## ℹ️ Sample Client Applications
+## 🚀 Running Applications
 
 ### Desktop
 
-To run the desktop application:
+**IDE**: Use `desktopApp` run configuration in Android Studio
 
-* Use the `desktopApp` run configuration in Android Studio, or
-* Run `./gradlew run` in the terminal
+**Command Line**:
+```bash
+# Run application
+./gradlew run
 
-To package the desktop application:
-
-* Run `./gradlew package` to create a native distribution in `build/compose/binaries`
+# Package for distribution
+./gradlew package  # Output: build/compose/binaries
+```
 
 ### Android
 
-To run the Android application:
-
-1. Select the `androidApp` run configuration in Android Studio
-2. Choose a virtual device or connected physical device
+**IDE**: 
+1. Select `androidApp` run configuration
+2. Choose device/emulator
 3. Click **Run**
 
-Alternatively, use Gradle:
-
-* Run `./gradlew installDebug` in the terminal to install on a device or emulator
+**Command Line**:
+```bash
+./gradlew installDebug
+```
 
 ### iOS
 
-To run the iOS application:
-
-1. Modify the `iosApp` run configuration in Android Studio
-2. Select your target device (simulator or physical device)
+**IDE**:
+1. Configure `iosApp` run configuration
+2. Select target device
 3. Click **Run**
 
-For physical iOS devices:
+**Physical Device Setup**:
+1. Find your `TEAM_ID`: `kdoctor --team-ids`
+2. Set `TEAM_ID` in `iosApp/Configuration/Config.xcconfig`
+3. Register device in Xcode
+4. Run `iosApp` configuration
 
-1. Set your `TEAM_ID` in `iosApp/Configuration/Config.xcconfig`
-2. Ensure your device is registered in Xcode
-3. Run the `iosApp` configuration in Android Studio
-
-#### Physical iOS Device Setup
-
-To run your Compose Multiplatform application on a real iOS device, follow these steps:
-
-1. **Set Up Your Environment:**
-   - Ensure you have a valid Apple ID and your iOS device is registered in Xcode.
-   - Find your `TEAM_ID` using `kdoctor --team-ids` in the terminal.
-
-2. **Configure Your Project:**
-   - Open `iosApp/Configuration/Config.xcconfig` in Android Studio.
-   - Set your `TEAM_ID` in the configuration file.
-
-3. **Run the Application:**
-   - Re-open the project in Android Studio.
-   - Select your registered iOS device in the `iosApp` run configuration.
-   - Click **Run**.
-
-For more detailed setup instructions, refer to the [official documentation](https://developer.apple.com/documentation/xcode/running-your-app-on-a-device).
+For detailed device setup, see [Apple's documentation](https://developer.apple.com/documentation/xcode/running-your-app-on-a-device).
