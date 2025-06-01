@@ -15,8 +15,9 @@ fun HeaderButtonItem(
     onClick: () -> Unit,
 ) {
     TextButton(
-        modifier = modifier
-            .padding(end = 8.dp),
+        modifier =
+            modifier
+                .padding(end = 8.dp),
         onClick = onClick,
     ) {
         Text(

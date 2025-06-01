@@ -1,7 +1,13 @@
 package link.socket.kore.ui.widget.header
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -24,16 +30,18 @@ fun Header(
     actionIcon: (@Composable () -> Unit)? = null,
 ) {
     Row(
-        modifier = modifier
-            .requiredHeight(headerHeight)
-            .fillMaxWidth(),
+        modifier =
+            modifier
+                .requiredHeight(headerHeight)
+                .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (displayBackIcon) {
             IconButton(
-                modifier = Modifier
-                    .requiredSize(64.dp),
+                modifier =
+                    Modifier
+                        .requiredSize(64.dp),
                 onClick = onBackClicked,
             ) {
                 Image(
@@ -46,8 +54,9 @@ fun Header(
         }
 
         Text(
-            modifier = Modifier
-                .fillMaxWidth(.8f),
+            modifier =
+                Modifier
+                    .fillMaxWidth(.8f),
             style = themeTypography().h6,
             text = title,
             textAlign = TextAlign.Center,
@@ -55,8 +64,9 @@ fun Header(
 
         if (actionIcon != null) {
             IconButton(
-                modifier = Modifier
-                    .requiredSize(64.dp),
+                modifier =
+                    Modifier
+                        .requiredSize(64.dp),
                 onClick = onActionIconClicked,
             ) {
                 actionIcon()

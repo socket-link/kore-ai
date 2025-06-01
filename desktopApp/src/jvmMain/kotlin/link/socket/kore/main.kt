@@ -12,7 +12,7 @@ fun main() = application {
         title = "KoreAI",
         state = WindowState(
             width = 800.dp,
-            height = 1200.dp,
+            height = 1200.dp
         )
     ) {
         window.minimumSize = Dimension(600, 800)

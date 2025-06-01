@@ -23,7 +23,7 @@ sealed class Chat(
         ChatMessage(
             role = ChatRole.System,
             content = prompt,
-        )
+        ),
     ) {
         override val content: String = prompt
     }
@@ -41,7 +41,7 @@ sealed class Chat(
             role = role,
             name = functionName,
             content = content,
-        )
+        ),
     ) {
         companion object {
             /**
@@ -68,18 +68,19 @@ sealed class Chat(
         ChatMessage(
             role = role,
             name = functionName,
-            content = with(csvContent) {
-                val resultString = StringBuilder()
-                forEach { line ->
-                    line.forEach { cell ->
-                        resultString.append(cell)
-                        resultString.append("\t")
+            content =
+                with(csvContent) {
+                    val resultString = StringBuilder()
+                    forEach { line ->
+                        line.forEach { cell ->
+                            resultString.append(cell)
+                            resultString.append("\t")
+                        }
+                        resultString.append("\n")
                     }
-                    resultString.append("\n")
-                }
-                resultString.toString()
-            },
-        )
+                    resultString.toString()
+                },
+        ),
     ) {
         override val content: String = csvContent.joinToString { it.joinToString("\t") }
     }

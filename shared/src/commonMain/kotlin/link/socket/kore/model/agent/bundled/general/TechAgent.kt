@@ -3,7 +3,6 @@ package link.socket.kore.model.agent.bundled.general
 import link.socket.kore.model.agent.AgentDefinition
 
 object TechAgent : AgentDefinition() {
-
     override val name: String = "Tech Support"
 
     override val prompt: String =

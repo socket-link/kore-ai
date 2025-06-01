@@ -5,7 +5,8 @@ enum class Seriousness {
     VERY,
     SOMEWHAT,
     SLIGHTLY,
-    NOT;
+    NOT,
+    ;
 
     fun build(): String = "Your responses should be ${name.lowercase()} serious."
 }

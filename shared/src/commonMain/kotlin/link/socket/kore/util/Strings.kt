@@ -14,5 +14,4 @@ package link.socket.kore.util
  * @receiver String The original string to be converted.
  * @return String The converted string in snake_case format.
  */
-fun String.toSnakeCase(): String =
-    lowercase().replace(" ", "_")
+fun String.toSnakeCase(): String = lowercase().replace(" ", "_")

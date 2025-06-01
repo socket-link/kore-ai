@@ -8,7 +8,6 @@ import link.socket.kore.model.chat.system.Tone
  * Abstract class representing the definition of an Agent.
  */
 abstract class AgentDefinition {
-
     private var tone: Tone = Tone.PROFESSIONAL
     private var seriousness: Seriousness = Seriousness.VERY
 
@@ -16,23 +15,25 @@ abstract class AgentDefinition {
      * Argument for the tone setting. Represents different tones an agent can have.
      */
     private val toneArg
-        get() = AgentInput.EnumArgs(
-            key = "tone",
-            name = "Tone",
-            value = Tone.PROFESSIONAL.name,
-            possibleValues = Tone.entries.map { it.name },
-        )
+        get() =
+            AgentInput.EnumArgs(
+                key = "tone",
+                name = "Tone",
+                value = Tone.PROFESSIONAL.name,
+                possibleValues = Tone.entries.map { it.name },
+            )
 
     /**
      * Argument for the seriousness setting. Represents different seriousness levels an agent can have.
      */
     private val seriousnessArg
-        get() = AgentInput.EnumArgs(
-            key = "seriousness",
-            name = "Seriousness",
-            value = Seriousness.VERY.name,
-            possibleValues = Seriousness.entries.map { it.name },
-        )
+        get() =
+            AgentInput.EnumArgs(
+                key = "seriousness",
+                name = "Seriousness",
+                value = Seriousness.VERY.name,
+                possibleValues = Seriousness.entries.map { it.name },
+            )
 
     /**
      * Name of the Agent. Must be overridden by subclasses.
@@ -54,10 +55,11 @@ abstract class AgentDefinition {
      * List of optional inputs for the agent, including tone and seriousness.
      */
     val optionalInputs: List<AgentInput>
-        get() = listOf(
-            toneArg,
-            seriousnessArg,
-        )
+        get() =
+            listOf(
+                toneArg,
+                seriousnessArg,
+            )
 
     /**
      * Parses the inputs and sets the tone and seriousness based on provided values.
@@ -72,9 +74,10 @@ abstract class AgentDefinition {
      * Constructs the System instructions to be used by the Agent, including prompt, tone, and seriousness.
      */
     val instructions: Instructions
-        get() = Instructions(
-            prompt = prompt,
-            tone = tone,
-            seriousness = seriousness,
-        )
+        get() =
+            Instructions(
+                prompt = prompt,
+                tone = tone,
+                seriousness = seriousness,
+            )
 }

@@ -4,14 +4,14 @@ import link.socket.kore.model.agent.AgentDefinition
 import link.socket.kore.model.agent.AgentInput
 
 data object WriteCodeAgent : AgentDefinition() {
-
     private var technologies: String = "Any language or framework"
 
-    private val technologiesArg = AgentInput.ListArg(
-        key = "technologyList",
-        name = "Technology Name",
-        listValue = emptyList(),
-    )
+    private val technologiesArg =
+        AgentInput.ListArg(
+            key = "technologyList",
+            name = "Technology Name",
+            listValue = emptyList(),
+        )
 
     override val name: String = "Write Code"
 
@@ -24,7 +24,8 @@ data object WriteCodeAgent : AgentDefinition() {
         technologies = inputs[technologiesArg.key]?.value ?: ""
     }
 
-    private fun instructionsFrom(technologies: String?): String = """
+    private fun instructionsFrom(technologies: String?): String =
+        """
         You are an Agent that is a programming expert, and are proficient in the following technologies: $technologies.
         Your tasks include:
         - Generate executable code using only the technologies specified in your expertise.
@@ -35,5 +36,5 @@ data object WriteCodeAgent : AgentDefinition() {
         
         Be sure to adhere to any request from the User regarding constraints around the code that you should be creating.
         Example: If a User asks to improve documentation, ensure that the code you generate _only_ includes comments and does not modify the existing code.
-    """.trimIndent()
+        """.trimIndent()
 }

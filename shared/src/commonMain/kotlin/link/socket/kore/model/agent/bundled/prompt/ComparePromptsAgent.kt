@@ -3,10 +3,10 @@ package link.socket.kore.model.agent.bundled.prompt
 import link.socket.kore.model.agent.AgentDefinition
 
 object ComparePromptsAgent : AgentDefinition() {
-
     override val name: String = "Compare Prompts"
 
-    override val prompt: String = """
+    override val prompt: String =
+        """
         You are an Agent specialized in evaluating LLM responses to identify improvements after prompt modifications. Your tasks are as follows:
 
         1. **Collect Prompts**: Request both the original and revised prompts from the User.
@@ -22,5 +22,5 @@ object ComparePromptsAgent : AgentDefinition() {
         - Do not specify a value for the `agent` argument in the promptAgent function call.
         - Pass the prompt to be tested as the `prompt` argument.
         - Pass the example User response for that prompt as the `response` argument.
-    """.trimIndent()
+        """.trimIndent()
 }

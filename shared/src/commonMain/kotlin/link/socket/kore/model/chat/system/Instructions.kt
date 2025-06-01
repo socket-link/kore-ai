@@ -10,14 +10,17 @@ data class Instructions(
 
     fun build(): String = toneSection() + seriousnessSection() + "\n\n" + prompt
 
-    private fun toneSection() = if (includeTone) {
-        tone.build() + "\n\n"
-    } else {
-        ""
-    }
-    private fun seriousnessSection() = if (includeSeriousness) {
-        seriousness.build() + "\n\n"
-    } else {
-        ""
-    }
+    private fun toneSection() =
+        if (includeTone) {
+            tone.build() + "\n\n"
+        } else {
+            ""
+        }
+
+    private fun seriousnessSection() =
+        if (includeSeriousness) {
+            seriousness.build() + "\n\n"
+        } else {
+            ""
+        }
 }

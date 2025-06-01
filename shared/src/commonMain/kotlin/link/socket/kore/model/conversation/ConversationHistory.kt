@@ -13,22 +13,21 @@ import link.socket.kore.model.chat.Chat
  */
 @OptIn(BetaOpenAI::class)
 sealed interface ConversationHistory {
-
     /**
      * Represents a threaded conversation history, characterized by multiple threads of messages.
      * Contains an ID for the associated assistant and a map linking thread IDs to their respective chat messages.
      */
     sealed class Threaded(
-        open val assistantId: AssistantId?, // The ID of the assistant tied to this conversation.
-        open val chatMessages: Map<ThreadId, List<Chat>>, // A mapping of thread IDs and their associated chat messages.
+        // The ID of the assistant tied to this conversation.
+        open val assistantId: AssistantId?,
+        // A mapping of thread IDs and their associated chat messages.
+        open val chatMessages: Map<ThreadId, List<Chat>>,
     ) : ConversationHistory {
-
         /**
          * Represents an uninitialized threaded conversation, where no messages have been added.
          * All operations related to message appending will lead to an error, as this state is not ready to hold messages.
          */
         data object Uninitialized : Threaded(null, emptyMap()) {
-
             /**
              * Returns an empty list of Chats in an uninitialized conversation state.
              * This represents a state before any messages have been added to the conversation.
@@ -56,10 +55,11 @@ sealed interface ConversationHistory {
          * @param chatMessages A map linking thread IDs to lists of chat messages within this conversation.
          */
         data class Initialized(
-            override val assistantId: AssistantId, // The assistant ID for this conversation.
-            override val chatMessages: Map<ThreadId, List<Chat>>, // The initialized map of chat messages organized by thread ID.
+            // The assistant ID for this conversation.
+            override val assistantId: AssistantId,
+            // The initialized map of chat messages organized by thread ID.
+            override val chatMessages: Map<ThreadId, List<Chat>>,
         ) : Threaded(assistantId, chatMessages) {
-
             /**
              * Returns all Chats associated with the initialized conversation, aggregating messages from all threads.
              *
@@ -100,9 +100,9 @@ sealed interface ConversationHistory {
      * @param messages A list of chat messages in the conversation.
      */
     data class NonThreaded(
-        val messages: List<Chat>, // A simple list of chat messages in the conversation.
+        // A simple list of chat messages in the conversation.
+        val messages: List<Chat>,
     ) : ConversationHistory {
-
         /**
          * Retrieves all Chat messages from the NonThreaded conversation.
          *
@@ -116,8 +116,7 @@ sealed interface ConversationHistory {
          * @param chats The Chat objects to be appended.
          * @return The updated conversation history after appending the Chat object.
          */
-        override fun appendChats(vararg chats: Chat): ConversationHistory =
-            NonThreaded(messages.append(*chats))
+        override fun appendChats(vararg chats: Chat): ConversationHistory = NonThreaded(messages.append(*chats))
 
         /**
          * Appends a ChatMessage (received from the API) to the list and returns an updated NonThreaded conversation instance.
@@ -125,8 +124,7 @@ sealed interface ConversationHistory {
          * @param message The ChatMessage to append.
          * @return The updated NonThreaded conversation after appending the ChatMessage.
          */
-        override fun appendMessage(message: ChatMessage): NonThreaded =
-            NonThreaded(messages.append(message))
+        override fun appendMessage(message: ChatMessage): NonThreaded = NonThreaded(messages.append(message))
     }
 
     /**
@@ -165,12 +163,12 @@ sealed interface ConversationHistory {
  * @param newChat The ChatMessage to append.
  * @return A new list of Chat messages including the appended ChatMessage.
  */
-fun List<Chat>.append(
-    newChat: ChatMessage,
-): List<Chat> =
+fun List<Chat>.append(newChat: ChatMessage): List<Chat> =
     mutableListOf(
-        *this.toTypedArray(), // Adds the current list
-        Chat.Text.fromChatMessage(newChat), // Converts ChatMessage to Chat.Text and appends to list.
+        // Adds the current list
+        *this.toTypedArray(),
+        // Converts ChatMessage to Chat.Text and appends to list.
+        Chat.Text.fromChatMessage(newChat),
     )
 
 /**
@@ -180,10 +178,10 @@ fun List<Chat>.append(
  * @param newChats The Chat objects to append.
  * @return A new list of Chat messages including the appended Chat objects.
  */
-fun List<Chat>.append(
-    vararg newChats: Chat
-): List<Chat> =
+fun List<Chat>.append(vararg newChats: Chat): List<Chat> =
     mutableListOf(
-        *this.toTypedArray(), // Adds the existing conversation chat list
-        *newChats, // Appends the new Chat object to the chat list
+        // Adds the existing conversation chat list
+        *this.toTypedArray(),
+        // Appends the new Chat object to the chat list
+        *newChats,
     )
