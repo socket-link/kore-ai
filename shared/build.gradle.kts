@@ -204,7 +204,7 @@ ktlint {
     additionalEditorconfig.set(
         mapOf(
             "ktlint_code_style" to "intellij_idea",
-        )
+        ),
     )
 
     filter {

@@ -67,27 +67,24 @@ fun ChatMessage(
         modifier = modifier.wrapContentHeight(),
         elevation = 1.dp,
         shape = themeShapes().small,
-        color =
-            if (message.role != Role.Assistant && message.role != Role.User) {
-                nonContentCardColor
-            } else {
-                backgroundColor
-            },
+        color = if (message.role != Role.Assistant && message.role != Role.User) {
+            nonContentCardColor
+        } else {
+            backgroundColor
+        },
     ) {
         // Card container
         Column(
-            modifier =
-                Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
         ) {
             // Info row
             Row(
-                modifier =
-                    Modifier
-                        .requiredHeight(48.dp)
-                        .fillMaxWidth(),
+                modifier = Modifier
+                    .requiredHeight(48.dp)
+                    .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (message.role != Role.User) {
@@ -146,15 +143,14 @@ fun ChatMessage(
                         Markdown(
                             modifier = Modifier.fillMaxWidth(),
                             content = messageContent,
-                            colors =
-                                markdownColor(
-                                    text = textColor,
-                                    codeText = codeTextColor,
-                                    linkText = linkTextColor,
-                                    codeBackground = codeBackgroundColor,
-                                    inlineCodeBackground = inlineCodeBackgroundColor,
-                                    dividerColor = dividerColor,
-                                ),
+                            colors = markdownColor(
+                                text = textColor,
+                                codeText = codeTextColor,
+                                linkText = linkTextColor,
+                                codeBackground = codeBackgroundColor,
+                                inlineCodeBackground = inlineCodeBackgroundColor,
+                                dividerColor = dividerColor,
+                            ),
                         )
                     }
                 }
@@ -167,11 +163,10 @@ fun ChatMessage(
                                 val colWidth = (1f / line.size)
                                 for (cell in line) {
                                     Text(
-                                        modifier =
-                                            Modifier
-                                                .border(BorderStroke(1.dp, Color.DarkGray))
-                                                .padding(2.dp)
-                                                .fillMaxWidth(colWidth),
+                                        modifier = Modifier
+                                            .border(BorderStroke(1.dp, Color.DarkGray))
+                                            .padding(2.dp)
+                                            .fillMaxWidth(colWidth),
                                         text = cell,
                                         overflow = TextOverflow.Ellipsis,
                                         textAlign = TextAlign.Center,
@@ -187,10 +182,9 @@ fun ChatMessage(
             // Actions row
             if (message.role != Role.User) {
                 Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
                 ) {
                     if (showRegenerate) {
                         IconButton(

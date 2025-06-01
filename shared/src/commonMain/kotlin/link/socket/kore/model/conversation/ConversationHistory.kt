@@ -116,7 +116,8 @@ sealed interface ConversationHistory {
          * @param chats The Chat objects to be appended.
          * @return The updated conversation history after appending the Chat object.
          */
-        override fun appendChats(vararg chats: Chat): ConversationHistory = NonThreaded(messages.append(*chats))
+        override fun appendChats(vararg chats: Chat): ConversationHistory =
+            NonThreaded(messages.append(*chats))
 
         /**
          * Appends a ChatMessage (received from the API) to the list and returns an updated NonThreaded conversation instance.
@@ -124,7 +125,8 @@ sealed interface ConversationHistory {
          * @param message The ChatMessage to append.
          * @return The updated NonThreaded conversation after appending the ChatMessage.
          */
-        override fun appendMessage(message: ChatMessage): NonThreaded = NonThreaded(messages.append(message))
+        override fun appendMessage(message: ChatMessage): NonThreaded =
+            NonThreaded(messages.append(message))
     }
 
     /**

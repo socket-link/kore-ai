@@ -30,18 +30,16 @@ fun Header(
     actionIcon: (@Composable () -> Unit)? = null,
 ) {
     Row(
-        modifier =
-            modifier
-                .requiredHeight(headerHeight)
-                .fillMaxWidth(),
+        modifier = modifier
+            .requiredHeight(headerHeight)
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (displayBackIcon) {
             IconButton(
-                modifier =
-                    Modifier
-                        .requiredSize(64.dp),
+                modifier = Modifier
+                    .requiredSize(64.dp),
                 onClick = onBackClicked,
             ) {
                 Image(
@@ -54,9 +52,8 @@ fun Header(
         }
 
         Text(
-            modifier =
-                Modifier
-                    .fillMaxWidth(.8f),
+            modifier = Modifier
+                .fillMaxWidth(.8f),
             style = themeTypography().h6,
             text = title,
             textAlign = TextAlign.Center,
@@ -64,9 +61,8 @@ fun Header(
 
         if (actionIcon != null) {
             IconButton(
-                modifier =
-                    Modifier
-                        .requiredSize(64.dp),
+                modifier = Modifier
+                    .requiredSize(64.dp),
                 onClick = onActionIconClicked,
             ) {
                 actionIcon()

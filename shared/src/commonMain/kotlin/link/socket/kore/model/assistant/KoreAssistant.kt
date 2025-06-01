@@ -24,6 +24,7 @@ data class KoreAssistant(
     override val prompt: String,
     override val availableFunctions: Map<String, FunctionProvider>,
 ) : LLMAgent {
+
     override val tag: String = "KoreAssistant${name.replace(" ", "")}-${super.tag}"
 
     private val assistantTools: List<AssistantTool> =
@@ -36,24 +37,21 @@ data class KoreAssistant(
                     parameters = tool.function.parameters ?: Parameters.Empty,
                 ),
             )
-        } +
-                listOf(
-                    AssistantTool.CodeInterpreter,
-                )
+        } + listOf(
+            AssistantTool.CodeInterpreter,
+        )
 
     private lateinit var assistant: Assistant
 
     suspend fun initialize(initialMessage: Chat?) {
         // TODO: Query for existing assistant if `assistantId` is passed
 
-        assistant =
-            openAI.assistant(
-                request =
-                    AssistantRequest(
-                        name = name,
-                        tools = assistantTools,
-                        model = modelId,
-                    ),
-            )
+        assistant = openAI.assistant(
+            request = AssistantRequest(
+                name = name,
+                tools = assistantTools,
+                model = modelId,
+            ),
+        )
     }
 }

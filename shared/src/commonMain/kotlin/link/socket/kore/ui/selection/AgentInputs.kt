@@ -93,10 +93,9 @@ fun AgentInputs(
     ) {
         // Display the agent name
         Text(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
             style = themeTypography().subtitle1,
             text = "${partiallySelectedAgent.name} Agent",
             textAlign = TextAlign.Center,
@@ -104,11 +103,10 @@ fun AgentInputs(
 
         // LazyColumn to display needed and optional inputs
         LazyColumn(
-            modifier =
-                Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
         ) {
             items(neededInputs) { input ->
                 inputComposable(input)

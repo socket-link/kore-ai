@@ -16,6 +16,7 @@ import link.socket.kore.util.randomUUID
 class ConversationRepository(
     override val scope: CoroutineScope,
 ) : Repository<ConversationId, Conversation>(scope) {
+
     override val tag: String = "Conversation${super.tag}"
 
     /**
@@ -63,6 +64,7 @@ class ConversationRepository(
 
             getValue(conversationId)?.let { conversation ->
                 val completionRequest = conversation.getCompletionRequest()
+
                 val ranTools =
                     conversation.agent.execute(completionRequest) { chats ->
                         storeValue(conversationId, conversation.add(*chats.toTypedArray()))

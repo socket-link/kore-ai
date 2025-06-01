@@ -25,10 +25,9 @@ fun HomeHeader(modifier: Modifier = Modifier) {
         elevation = 16.dp,
     ) {
         Column(
-            modifier =
-                Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth(),
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth(),
         ) {
             Header(
                 title = "Agent Conversations",

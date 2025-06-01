@@ -12,9 +12,8 @@ val OPEN_AI =
     OpenAI(
         token = KotlinConfig.openai_api_key,
         timeout = Timeout(socket = 1.hours),
-        logging =
-            LoggingConfig(
-                logLevel = LogLevel.None,
-                logger = Logger.Simple,
-            ),
+        logging = LoggingConfig(
+            logLevel = LogLevel.None,
+            logger = Logger.Simple,
+        ),
     )

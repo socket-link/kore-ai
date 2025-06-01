@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.dp
 import link.socket.kore.ui.App
 
 @Composable
-fun mainView() =
+fun MainView() =
     App(
         modifier =
             Modifier

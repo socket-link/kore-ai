@@ -62,14 +62,12 @@ fun ConversationScreen(
     }
 
     Box(
-        modifier =
-            modifier
-                .fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize(),
     ) {
         Scaffold(
-            modifier =
-                Modifier
-                    .fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize(),
             scaffoldState = scaffoldState,
             topBar = {
                 ConversationHeader(
@@ -82,9 +80,8 @@ fun ConversationScreen(
             },
             bottomBar = {
                 ConversationTextEntry(
-                    modifier =
-                        Modifier
-                            .align(Alignment.BottomCenter),
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter),
                     textFieldValue = textFieldValue,
                     onSendClicked = { onChatSent(textFieldValue.text) },
                     onTextChanged = { textFieldValue = it },
@@ -92,35 +89,30 @@ fun ConversationScreen(
             },
             snackbarHost = { snackbarState ->
                 Box(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth(),
                 ) {
                     SmallSnackbarHost(
-                        modifier =
-                            Modifier
-                                .align(Alignment.BottomStart),
+                        modifier = Modifier
+                            .align(Alignment.BottomStart),
                         snackbarHostState = snackbarState,
                     )
                 }
             },
         ) { contentPadding ->
             Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(themeColors().background)
-                        .padding(contentPadding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(themeColors().background)
+                    .padding(contentPadding),
             ) {
-                val messages =
-                    remember(conversation) {
-                        conversation.getChats()
-                    }
+                val messages = remember(conversation) {
+                    conversation.getChats()
+                }
 
                 ChatHistory(
-                    modifier =
-                        Modifier
-                            .fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize(),
                     listState = listState,
                     messages = messages,
                     isLoading = isLoading,
