@@ -28,10 +28,11 @@ fun SmallSnackbarHost(
     // Launch a coroutine to handle the Snackbar's display duration and dismissal
     LaunchedEffect(currentSnackbarData) {
         if (currentSnackbarData != null) {
-            val duration = currentSnackbarData.duration.toMillis(
-                currentSnackbarData.actionLabel != null,
-                accessibilityManager
-            )
+            val duration =
+                currentSnackbarData.duration.toMillis(
+                    currentSnackbarData.actionLabel != null,
+                    accessibilityManager,
+                )
             delay(duration)
             currentSnackbarData.dismiss()
         }
@@ -55,13 +56,14 @@ fun SmallSnackbarHost(
  */
 internal fun SnackbarDuration.toMillis(
     hasAction: Boolean,
-    accessibilityManager: AccessibilityManager?
+    accessibilityManager: AccessibilityManager?,
 ): Long {
-    val original = when (this) {
-        SnackbarDuration.Indefinite -> Long.MAX_VALUE
-        SnackbarDuration.Long -> 10000L
-        SnackbarDuration.Short -> 4000L
-    }
+    val original =
+        when (this) {
+            SnackbarDuration.Indefinite -> Long.MAX_VALUE
+            SnackbarDuration.Long -> 10000L
+            SnackbarDuration.Short -> 4000L
+        }
     if (accessibilityManager == null) {
         return original
     }
@@ -69,6 +71,6 @@ internal fun SnackbarDuration.toMillis(
         original,
         containsIcons = true,
         containsText = true,
-        containsControls = hasAction
+        containsControls = hasAction,
     )
 }

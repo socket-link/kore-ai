@@ -6,4 +6,11 @@ plugins {
     id("com.android.application").apply(false)
     id("com.android.library").apply(false)
     id("org.jetbrains.compose").apply(false)
+    id("org.jlleitschuh.gradle.ktlint").version("12.2.0").apply(false)
+}
+
+buildscript {
+    dependencies {
+        classpath("com.twitter.compose.rules:ktlint:0.0.26")
+    }
 }

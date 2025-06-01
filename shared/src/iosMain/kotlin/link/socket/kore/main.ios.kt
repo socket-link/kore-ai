@@ -6,10 +6,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
 import link.socket.kore.ui.App
 
-fun MainViewController() =
+fun mainViewController() =
     ComposeUIViewController {
         App(
-            modifier = Modifier
-                .padding(top = 64.dp),
+            modifier =
+                Modifier
+                    .padding(top = 64.dp),
         )
     }

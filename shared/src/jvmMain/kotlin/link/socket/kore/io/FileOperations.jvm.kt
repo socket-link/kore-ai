@@ -21,7 +21,11 @@ actual fun readFolderContents(folderPath: String): Result<List<String>> {
     return Result.success(files)
 }
 
-actual fun createFile(folderPath: String, fileName: String, fileContent: String): Result<String> {
+actual fun createFile(
+    folderPath: String,
+    fileName: String,
+    fileContent: String,
+): Result<String> {
     val workingDirPath = ShellLocation.HOME.resolve(folderPath).absolutePath
     val filePath = "$workingDirPath/$fileName".toPath()
 
@@ -36,7 +40,10 @@ actual fun createFile(folderPath: String, fileName: String, fileContent: String)
     return Result.success("File created: $folderPath/$fileName")
 }
 
-actual fun parseCsv(folderPath: String, fileName: String): Result<List<List<String>>> {
+actual fun parseCsv(
+    folderPath: String,
+    fileName: String,
+): Result<List<List<String>>> {
     val workingDirPath = ShellLocation.HOME.resolve(folderPath).absolutePath
     val filePath = "$workingDirPath/$fileName".toPath()
     val lines = mutableListOf<String>()
@@ -74,4 +81,3 @@ actual fun readFile(filePath: String): Result<String> {
 
     return Result.success(result)
 }
-

@@ -2,7 +2,11 @@ package link.socket.kore.model.tool
 
 import com.aallam.openai.api.chat.Tool
 import com.aallam.openai.api.core.Parameters
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
+import kotlinx.serialization.json.putJsonObject
 
 typealias LLMFunction = () -> String
 typealias LLMFunction1 = (JsonObject) -> String
@@ -18,36 +22,32 @@ sealed class FunctionDefinition(
     sealed class StringReturn(
         override val tool: Tool,
     ) : FunctionDefinition(tool) {
-
         sealed class Standard(
             override val tool: Tool,
         ) : StringReturn(tool) {
-
             data class NoParams(
                 override val tool: Tool,
-                val function: LLMFunction
+                val function: LLMFunction,
             ) : Standard(tool)
 
             data class OneParam(
                 override val tool: Tool,
-                val function: LLMFunction1
+                val function: LLMFunction1,
             ) : Standard(tool)
         }
 
         sealed class Suspend(
             override val tool: Tool,
         ) : StringReturn(tool) {
-
             data class NoParams(
                 override val tool: Tool,
-                val function: SuspendLLMFunction
+                val function: SuspendLLMFunction,
             ) : Standard(tool)
 
             data class OneParam(
                 override val tool: Tool,
-                val function: SuspendLLMFunction1
+                val function: SuspendLLMFunction1,
             ) : Standard(tool)
-
         }
 
         suspend fun execute(jsonObject: JsonObject?): String =
@@ -69,7 +69,6 @@ sealed class FunctionDefinition(
     sealed class CSVReturn(
         override val tool: Tool,
     ) : FunctionDefinition(tool) {
-
         data class NoParams(
             override val tool: Tool,
             val function: LLMCSVFunction,
@@ -83,8 +82,9 @@ sealed class FunctionDefinition(
         operator fun invoke(jsonObject: JsonObject?): List<List<String>> =
             when (this) {
                 is NoParams -> function.invoke()
-                is OneParam -> jsonObject?.let(function::invoke)
-                    ?: error("jsonObject was null")
+                is OneParam ->
+                    jsonObject?.let(function::invoke)
+                        ?: error("jsonObject was null")
             }
     }
 }
@@ -105,10 +105,11 @@ abstract class FunctionProvider(
             description: String,
             function: LLMFunction,
         ): Pair<String, FunctionProvider> =
-            name to object : FunctionProvider(
-                name,
-                functionImpl(name, description, function)
-            ) {}
+            name to
+                object : FunctionProvider(
+                    name,
+                    functionImpl(name, description, function),
+                ) {}
 
         fun provide(
             name: String,
@@ -116,20 +117,22 @@ abstract class FunctionProvider(
             function: LLMFunction1,
             parameterList: List<ParameterDefinition>,
         ): Pair<String, FunctionProvider> =
-            name to object : FunctionProvider(
-                name,
-                functionImpl(name, description, function, parameterList)
-            ) {}
+            name to
+                object : FunctionProvider(
+                    name,
+                    functionImpl(name, description, function, parameterList),
+                ) {}
 
         fun provideSuspend(
             name: String,
             description: String,
             function: SuspendLLMFunction,
         ): Pair<String, FunctionProvider> =
-            name to object : FunctionProvider(
-                name,
-                suspendFunctionImpl(name, description, function)
-            ) {}
+            name to
+                object : FunctionProvider(
+                    name,
+                    suspendFunctionImpl(name, description, function),
+                ) {}
 
         fun provideSuspend(
             name: String,
@@ -137,10 +140,11 @@ abstract class FunctionProvider(
             function: SuspendLLMFunction1,
             parameterList: List<ParameterDefinition>,
         ): Pair<String, FunctionProvider> =
-            name to object : FunctionProvider(
-                name,
-                suspendFunctionImpl(name, description, function, parameterList)
-            ) {}
+            name to
+                object : FunctionProvider(
+                    name,
+                    suspendFunctionImpl(name, description, function, parameterList),
+                ) {}
 
         fun provideCSV(
             name: String,
@@ -148,119 +152,128 @@ abstract class FunctionProvider(
             function: LLMCSVFunction1,
             parameterList: List<ParameterDefinition>,
         ): Pair<String, FunctionProvider> =
-            name to object : FunctionProvider(
-                name,
-                functionImplCsv(name, description, function, parameterList)
-            ) {}
+            name to
+                object : FunctionProvider(
+                    name,
+                    functionImplCsv(name, description, function, parameterList),
+                ) {}
 
         private fun functionImpl(
             name: String,
             description: String,
             function: LLMFunction,
-        ): FunctionDefinition = FunctionDefinition.StringReturn.Standard.NoParams(
-            Tool.function(
-                name = name,
-                description = description,
-                parameters = Parameters.Empty,
-            ),
-            function,
-        )
+        ): FunctionDefinition =
+            FunctionDefinition.StringReturn.Standard.NoParams(
+                Tool.function(
+                    name = name,
+                    description = description,
+                    parameters = Parameters.Empty,
+                ),
+                function,
+            )
 
         private fun functionImpl(
             name: String,
             description: String,
             function: LLMFunction1,
             parameterList: List<ParameterDefinition>,
-        ): FunctionDefinition = FunctionDefinition.StringReturn.Standard.OneParam(
-            Tool.function(
-                name = name,
-                description = description,
-                parameters = Parameters.buildJsonObject {
-                    put("type", "object")
-                    putJsonObject("properties") {
-                        parameterList.forEach { parameter ->
-                            put(parameter.name, parameter.definition)
-                        }
-                    }
-                    putJsonArray("required") {
-                        parameterList.forEach { parameter ->
-                            if (parameter.isRequired) {
-                                add(parameter.name)
+        ): FunctionDefinition =
+            FunctionDefinition.StringReturn.Standard.OneParam(
+                Tool.function(
+                    name = name,
+                    description = description,
+                    parameters =
+                        Parameters.buildJsonObject {
+                            put("type", "object")
+                            putJsonObject("properties") {
+                                parameterList.forEach { parameter ->
+                                    put(parameter.name, parameter.definition)
+                                }
                             }
-                        }
-                    }
-                }
-            ),
-            function,
-        )
+                            putJsonArray("required") {
+                                parameterList.forEach { parameter ->
+                                    if (parameter.isRequired) {
+                                        add(parameter.name)
+                                    }
+                                }
+                            }
+                        },
+                ),
+                function,
+            )
 
         private fun suspendFunctionImpl(
             name: String,
             description: String,
             function: SuspendLLMFunction,
-        ): FunctionDefinition = FunctionDefinition.StringReturn.Suspend.NoParams(
-            Tool.function(
-                name = name,
-                description = description,
-                parameters = Parameters.Empty,
-            ),
-            function,
-        )
+        ): FunctionDefinition =
+            FunctionDefinition.StringReturn.Suspend.NoParams(
+                Tool.function(
+                    name = name,
+                    description = description,
+                    parameters = Parameters.Empty,
+                ),
+                function,
+            )
 
         private fun suspendFunctionImpl(
             name: String,
             description: String,
             function: SuspendLLMFunction1,
             parameterList: List<ParameterDefinition>,
-        ): FunctionDefinition = FunctionDefinition.StringReturn.Suspend.OneParam(
-            Tool.function(
-                name = name,
-                description = description,
-                parameters = Parameters.buildJsonObject {
-                    put("type", "object")
-                    putJsonObject("properties") {
-                        parameterList.forEach { parameter ->
-                            put(parameter.name, parameter.definition)
-                        }
-                    }
-                    putJsonArray("required") {
-                        parameterList.forEach { parameter ->
-                            if (parameter.isRequired) {
-                                add(parameter.name)
+        ): FunctionDefinition =
+            FunctionDefinition.StringReturn.Suspend.OneParam(
+                Tool.function(
+                    name = name,
+                    description = description,
+                    parameters =
+                        Parameters.buildJsonObject {
+                            put("type", "object")
+                            putJsonObject("properties") {
+                                parameterList.forEach { parameter ->
+                                    put(parameter.name, parameter.definition)
+                                }
                             }
-                        }
-                    }
-                }
-            ),
-            function,
-        )
+                            putJsonArray("required") {
+                                parameterList.forEach { parameter ->
+                                    if (parameter.isRequired) {
+                                        add(parameter.name)
+                                    }
+                                }
+                            }
+                        },
+                ),
+                function,
+            )
 
         private fun functionImplCsv(
             name: String,
             description: String,
             function: LLMCSVFunction1,
             parameterList: List<ParameterDefinition>,
-        ): FunctionDefinition = FunctionDefinition.CSVReturn.OneParam(
-            Tool.function(
-                name = name,
-                description = description,
-                parameters = Parameters.buildJsonObject {
-                    put("type", "object")
-                    putJsonObject("properties") {
-                        parameterList.forEach { parameter ->
-                            put(parameter.name, parameter.definition)
-                        }
-                    }
-                    putJsonArray("required") {
-                        parameterList.forEach { parameter ->
-                            if (parameter.isRequired) {
-                                add(parameter.name)
+        ): FunctionDefinition =
+            FunctionDefinition.CSVReturn.OneParam(
+                Tool.function(
+                    name = name,
+                    description = description,
+                    parameters =
+                        Parameters.buildJsonObject {
+                            put("type", "object")
+                            putJsonObject("properties") {
+                                parameterList.forEach { parameter ->
+                                    put(parameter.name, parameter.definition)
+                                }
                             }
-                        }
-                    }
-                }
-            ),
-            function,
-        )
+                            putJsonArray("required") {
+                                parameterList.forEach { parameter ->
+                                    if (parameter.isRequired) {
+                                        add(parameter.name)
+                                    }
+                                }
+                            }
+                        },
+                ),
+                function,
+            )
     }
 }

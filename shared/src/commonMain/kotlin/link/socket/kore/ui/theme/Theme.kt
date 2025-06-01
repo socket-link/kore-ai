@@ -17,21 +17,24 @@ val conversationCardHeight = 128.dp
 val agentCardHeight = 64.dp
 
 @Composable
-fun themeColors() = MaterialTheme.colors.copy(
-    background = backgroundColor,
-)
+fun themeColors() =
+    MaterialTheme.colors.copy(
+        background = backgroundColor,
+    )
 
 @Composable
-fun themeTypography() = with(MaterialTheme.typography) {
-    copy(
-        body1 = body1.copy(color = bodyTextColor),
-        body2 = body2.copy(color = bodyTextColor),
-    )
-}
+fun themeTypography() =
+    with(MaterialTheme.typography) {
+        copy(
+            body1 = body1.copy(color = bodyTextColor),
+            body2 = body2.copy(color = bodyTextColor),
+        )
+    }
 
 @Composable
-fun themeShapes() = with(MaterialTheme.shapes) {
-    copy(
-        small = small.copy(CornerSize(4.dp)),
-    )
-}
+fun themeShapes() =
+    with(MaterialTheme.shapes) {
+        copy(
+            small = small.copy(CornerSize(4.dp)),
+        )
+    }

@@ -1,0 +1,27 @@
+[**/src/*Main/kotlin/**/*.kt]
+ktlint_standard_filename = disabled
+
+# Root EditorConfig file
+root = true
+
+# Common settings
+[*]
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# Kotlin settings
+[*.{kt,kts}]
+# Import formatting
+ij_kotlin_imports_layout = *
+
+# Set ktlint code style
+ktlint_code_style = intellij_idea
+
+# Disable specific ktlint rules to support Compose naming
+ktlint_function_naming = disabled
+
+# Disable all standard rules that conflict with Compose naming conventions
+ktlint_standard = disabled

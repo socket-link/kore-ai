@@ -9,7 +9,12 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
@@ -57,12 +62,14 @@ fun ConversationScreen(
     }
 
     Box(
-        modifier = modifier
-            .fillMaxSize(),
+        modifier =
+            modifier
+                .fillMaxSize(),
     ) {
         Scaffold(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier =
+                Modifier
+                    .fillMaxSize(),
             scaffoldState = scaffoldState,
             topBar = {
                 ConversationHeader(
@@ -70,13 +77,14 @@ fun ConversationScreen(
                     onBackClicked = onBackClicked,
                     onImportExportClicked = {
                         conversation.exportToFile()
-                    }
+                    },
                 )
             },
             bottomBar = {
                 ConversationTextEntry(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter),
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomCenter),
                     textFieldValue = textFieldValue,
                     onSendClicked = { onChatSent(textFieldValue.text) },
                     onTextChanged = { textFieldValue = it },
@@ -84,30 +92,35 @@ fun ConversationScreen(
             },
             snackbarHost = { snackbarState ->
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(),
                 ) {
                     SmallSnackbarHost(
-                        modifier = Modifier
-                            .align(Alignment.BottomStart),
+                        modifier =
+                            Modifier
+                                .align(Alignment.BottomStart),
                         snackbarHostState = snackbarState,
                     )
                 }
-            }
+            },
         ) { contentPadding ->
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(themeColors().background)
-                    .padding(contentPadding),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(themeColors().background)
+                        .padding(contentPadding),
             ) {
-                val messages = remember(conversation) {
-                    conversation.getChats()
-                }
+                val messages =
+                    remember(conversation) {
+                        conversation.getChats()
+                    }
 
                 ChatHistory(
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier =
+                        Modifier
+                            .fillMaxSize(),
                     listState = listState,
                     messages = messages,
                     isLoading = isLoading,

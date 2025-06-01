@@ -6,8 +6,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import link.socket.kore.ui.App
 
-@Composable fun MainView() =
+@Composable
+fun mainView() =
     App(
-        modifier = Modifier
-            .padding(top = 64.dp),
+        modifier =
+            Modifier
+                .padding(top = 64.dp),
     )

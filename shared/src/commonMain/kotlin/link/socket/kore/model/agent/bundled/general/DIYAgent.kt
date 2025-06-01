@@ -3,7 +3,6 @@ package link.socket.kore.model.agent.bundled.general
 import link.socket.kore.model.agent.AgentDefinition
 
 object DIYAgent : AgentDefinition() {
-
     override val name: String = "DIY Guidance"
 
     override val prompt: String =

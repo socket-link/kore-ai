@@ -1,7 +1,12 @@
 package link.socket.kore.data
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -21,6 +26,7 @@ abstract class Repository<Key : Any, Value>(
 
     // MutableStateFlow to emit the changes in the values map
     private val _valuesFlow: MutableStateFlow<Map<Key, Value>> = MutableStateFlow(values)
+
     // Read-only StateFlow exposed to observers
     private val valuesFlow: StateFlow<Map<Key, Value>> = _valuesFlow
 
@@ -30,7 +36,10 @@ abstract class Repository<Key : Any, Value>(
      * @param key The key with which the value will be associated.
      * @param value The value to be stored.
      */
-    fun storeValue(key: Key, value: Value) {
+    fun storeValue(
+        key: Key,
+        value: Value,
+    ) {
         values[key] = value
 
         // Emit the updated values map using the provided CoroutineScope

@@ -18,8 +18,8 @@ enum class Tone {
     EXCITED,
     EMPOWERING,
     SYMPATHETIC,
-    REFLECTIVE;
+    REFLECTIVE,
+    ;
 
     fun build(): String = "You are a ${name.lowercase()} conversational AI."
 }
-

@@ -20,9 +20,8 @@ data class Conversation(
     val id: ConversationId,
     val title: String,
     val agent: KoreAgent,
-    val conversationHistory: ConversationHistory = ConversationHistory.Threaded.Uninitialized
+    val conversationHistory: ConversationHistory = ConversationHistory.Threaded.Uninitialized,
 ) {
-
     /**
      * Initializes the conversation with an initial message if provided.
      *
@@ -32,11 +31,12 @@ data class Conversation(
     fun initialize(initialMessage: Chat? = null): Conversation =
         if (conversationHistory is ConversationHistory.Threaded.Uninitialized) {
             copy(
-                conversationHistory = ConversationHistory.NonThreaded(
-                    initialMessage?.let { message ->
-                        listOf(agent.initialSystemMessage(id), message)
-                    } ?: listOf(agent.initialSystemMessage(id))
-                )
+                conversationHistory =
+                    ConversationHistory.NonThreaded(
+                        initialMessage?.let { message ->
+                            listOf(agent.initialSystemMessage(id), message)
+                        } ?: listOf(agent.initialSystemMessage(id)),
+                    ),
             )
         } else {
             // TODO: Allow for Threaded history
@@ -54,7 +54,7 @@ data class Conversation(
             Chat.Text(
                 role = ChatRole.User,
                 content = input,
-            )
+            ),
         )
 
     /**
@@ -62,9 +62,7 @@ data class Conversation(
      *
      * @return The ChatCompletionRequest for the conversation.
      */
-    fun getCompletionRequest(): ChatCompletionRequest =
-        agent.createCompletionRequest(conversationHistory)
-
+    fun getCompletionRequest(): ChatCompletionRequest = agent.createCompletionRequest(conversationHistory)
 
     /**
      * Retrieves all chat messages in the conversation that have non-empty content.

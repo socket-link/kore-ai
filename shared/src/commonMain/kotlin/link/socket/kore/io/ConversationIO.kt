@@ -35,19 +35,19 @@ fun Conversation.getFilename(): String =
  * @return the formatted conversation as a String.
  */
 fun Conversation.asString(): String =
-        buildString {
-            appendLine("---")                          // Start of the conversation log.
-            appendLine("agent: ${agent.name}")         // Log the agent's name.
-            appendLine("---")
+    buildString {
+        appendLine("---") // Start of the conversation log.
+        appendLine("agent: ${agent.name}") // Log the agent's name.
+        appendLine("---")
 
-            val chats = getChats()
-            getChats().forEachIndexed { index, chat ->
-                val chatRole = chat.role.role.capitalize(Locale.current)  // Capitalize the role.
-                val chatLine = "\n" + "[${chatRole}]" + "\n\n" + chat.chatMessage.content
-                appendLine(chatLine)
+        val chats = getChats()
+        getChats().forEachIndexed { index, chat ->
+            val chatRole = chat.role.role.capitalize(Locale.current) // Capitalize the role.
+            val chatLine = "\n" + "[$chatRole]" + "\n\n" + chat.chatMessage.content
+            appendLine(chatLine)
 
-                if (index != chats.size - 1) {
-                    appendLine("\n---")  // Separator between chat messages.
-                }
+            if (index != chats.size - 1) {
+                appendLine("\n---") // Separator between chat messages.
             }
         }
+    }

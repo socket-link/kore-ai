@@ -18,7 +18,6 @@ import link.socket.kore.util.logWith
  * Abstract class representing an Agent that interacts with an LLM.
  */
 interface LLMAgent {
-
     companion object {
         private const val MODEL_NAME = "gpt-4o"
         private val MODEL_ID = ModelId(MODEL_NAME)
@@ -37,7 +36,8 @@ interface LLMAgent {
      * 2024/08/28: `multi_tool_use.parallel` function blocking - https://community.openai.com/t/model-tries-to-call-unknown-function-multi-tool-use-parallel/490653/35
      */
     val prompt: String
-        get() = """
+        get() =
+            """
             You are an AI Agent operating within the KoreAI library, designed to facilitate specialized interactions between developers and end-users. Your primary role is to leverage your domain-specific knowledge to assist users in solving well-defined tasks.
 
             There are two types of humans you will interact with:
@@ -56,13 +56,13 @@ interface LLMAgent {
             
             You shall only use function calling to invoke the defined functions that have been provided to you.
             **You should NEVER invent or use functions NOT defined or NOT listed by that Agent, especially the multi_tool_use.parallel function.**
-        """.trimIndent()
+            """.trimIndent()
 
     fun initialSystemMessage(conversationId: ConversationId): Chat.System =
         """
-            {
-                "conversationId": "$conversationId"
-            }
+        {
+            "conversationId": "$conversationId"
+        }
         """.trimIndent().let { metadata ->
             Chat.System("$metadata\n\n$prompt")
         }
@@ -77,9 +77,10 @@ interface LLMAgent {
      * @return List of Tools derived from [availableFunctions]
      */
     val tools: List<Tool>
-        get() = availableFunctions.map { entry ->
-            entry.value.definition.tool
-        }.toList()
+        get() =
+            availableFunctions.map { entry ->
+                entry.value.definition.tool
+            }.toList()
 
     /**
      * Executes a given ChatCompletionRequest and returns a pair containing the chat response and
@@ -96,10 +97,11 @@ interface LLMAgent {
         val completion = openAI.chatCompletion(completionRequest)
         val response = completion.choices.first()
 
-        val completionChat = Chat.Text(
-            role = response.message.role,
-            content = response.message.content ?: "",
-        )
+        val completionChat =
+            Chat.Text(
+                role = response.message.role,
+                content = response.message.content ?: "",
+            )
         onNewChats(listOf(completionChat))
         return if (response.finishReason == FinishReason.ToolCalls) {
             val toolChats = response.message.executePendingToolCalls()
@@ -118,18 +120,20 @@ interface LLMAgent {
      * @return The resulting Function Chat objects
      */
     suspend fun ChatMessage.executePendingToolCalls(): List<Chat> {
-        val jobs = toolCalls?.map { call ->
-            scope.async {
-                when (call) {
-                    is ToolCall.Function -> call.function.let { function ->
-                        logWith("$tag-executePendingToolCalls").i("Executing ${function.name} with Args:\n${function.arguments}")
-                        function.execute().also { response ->
-                            logWith("$tag-executePendingToolCalls").i("Tool ${function.name} Response: $response")
-                        }
+        val jobs =
+            toolCalls?.map { call ->
+                scope.async {
+                    when (call) {
+                        is ToolCall.Function ->
+                            call.function.let { function ->
+                                logWith("$tag-executePendingToolCalls").i("Executing ${function.name} with Args:\n${function.arguments}")
+                                function.execute().also { response ->
+                                    logWith("$tag-executePendingToolCalls").i("Tool ${function.name} Response: $response")
+                                }
+                            }
                     }
                 }
-            }
-        } ?: emptyList()
+            } ?: emptyList()
 
         return jobs.awaitAll()
     }
@@ -146,8 +150,9 @@ interface LLMAgent {
 
         return when (val definition = functionTool.definition) {
             is FunctionDefinition.StringReturn -> {
-                val content = definition.execute(functionArgs) as? String
-                    ?: error("Function $name did not return String")
+                val content =
+                    definition.execute(functionArgs) as? String
+                        ?: error("Function $name did not return String")
 
                 Chat.Text(
                     role = ChatRole.Function,
@@ -156,8 +161,9 @@ interface LLMAgent {
                 )
             }
             is FunctionDefinition.CSVReturn -> {
-                val content = (definition(functionArgs) as? List<List<String>>)
-                    ?: error("Function $name did not return CSV")
+                val content =
+                    (definition(functionArgs) as? List<List<String>>)
+                        ?: error("Function $name did not return CSV")
 
                 Chat.CSV(
                     role = ChatRole.Function,

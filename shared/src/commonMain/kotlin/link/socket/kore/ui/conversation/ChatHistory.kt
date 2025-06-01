@@ -1,6 +1,10 @@
 package link.socket.kore.ui.conversation
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -47,21 +51,23 @@ fun ChatHistory(
     LazyColumn(
         modifier = modifier,
         state = listState,
-        contentPadding = PaddingValues(
-            start = 8.dp,
-            top = 16.dp,
-            end = 8.dp,
-            bottom = 72.dp,
-        ),
+        contentPadding =
+            PaddingValues(
+                start = 8.dp,
+                top = 16.dp,
+                end = 8.dp,
+                bottom = 72.dp,
+            ),
     ) {
         itemsIndexed(
-            messages.filter { showSystemMessages || it.role != Role.System }
+            messages.filter { showSystemMessages || it.role != Role.System },
         ) { index, message ->
             ChatMessage(
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
+                modifier =
+                    Modifier
+                        .wrapContentHeight()
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
                 message = message,
                 displaySnackbar = displaySnackbar,
                 showRegenerate = (index == messages.size - 1) && message.role == Role.Assistant,
@@ -78,8 +84,9 @@ fun ChatHistory(
         if (isLoading) {
             item {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(),
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()

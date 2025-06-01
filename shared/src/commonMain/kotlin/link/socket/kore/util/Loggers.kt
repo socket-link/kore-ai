@@ -14,5 +14,4 @@ private const val PLATFORM = "kore-ai"
  * @param tag The tag to be appended to the platform name for logging purposes. If null, only the platform name will be used.
  * @return A Logger instance with the specified tag.
  */
-internal fun logWith(tag: String?): Logger =
-    Logger.withTag("$PLATFORM/$tag")
+internal fun logWith(tag: String?): Logger = Logger.withTag("$PLATFORM/$tag")

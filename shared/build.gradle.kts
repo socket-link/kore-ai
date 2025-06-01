@@ -1,8 +1,7 @@
-
-import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import java.io.FileInputStream
 import java.util.*
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     kotlin("multiplatform")
@@ -12,6 +11,7 @@ plugins {
     id("maven-publish")
     id("signing")
     id("org.jetbrains.dokka") version "1.9.20"
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 group = "link.socket"
@@ -72,7 +72,7 @@ tasks {
 
 tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
-        outputDirectory.set(file("${rootDir}/docs/api"))
+        outputDirectory.set(file("$rootDir/docs/api"))
     }
 }
 
@@ -174,23 +174,46 @@ tasks.register("kotlinConfiguration") {
     generatedSources.mkdirs()
     kotlin.sourceSets.commonMain.get().kotlin.srcDirs(generatedSources)
 
-    val localProperties = Properties().apply {
-        load(FileInputStream(File(rootProject.rootDir, "local.properties")))
-    }
+    val localProperties =
+        Properties().apply {
+            load(FileInputStream(File(rootProject.rootDir, "local.properties")))
+        }
 
-    val properties = localProperties.entries
-        .filter { (key, _) -> (key as? String)?.contains(".") == false }
-        .joinToString("\n") { (key, value) -> "\tconst val $key = \"$value\"" }
+    val properties =
+        localProperties.entries.filter { (key, _) -> (key as? String)?.contains(".") == false }
+            .joinToString("\n") { (key, value) -> "\tconst val $key = \"$value\"" }
 
     val kotlinConfig = File(generatedSources, "KotlinConfig.kt")
     kotlinConfig.writeText(
-        "package link.kore.shared.config\n\n" +
-            "object KotlinConfig {\n" +
-            "$properties\n" +
-            "}\n"
+        "package link.kore.shared.config\n\nobject KotlinConfig {\n$properties\n}\n",
     )
 }
 
 tasks.findByName("build")?.dependsOn(
-    tasks.findByName("kotlinConfiguration")
+    tasks.findByName("kotlinConfiguration"),
 )
+
+ktlint {
+    android.set(true)
+    verbose.set(true)
+    outputToConsole.set(true)
+    debug.set(true)
+
+    version.set("0.49.1")
+
+    additionalEditorconfig.set(
+        mapOf(
+            "ktlint_code_style" to "intellij_idea",
+        )
+    )
+
+    filter {
+        exclude { element -> element.file.path.contains("build/") }
+        exclude { element -> element.file.path.contains("generated/") }
+    }
+
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+    }
+}

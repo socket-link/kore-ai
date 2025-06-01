@@ -1,8 +1,21 @@
 package link.socket.kore.ui.conversation
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.IconButton
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.AddCircleOutline
 import androidx.compose.material.icons.twotone.ArrowUpward
@@ -52,74 +65,79 @@ fun ConversationTextEntry(
         val isKeyboardOpen by keyboardAsState() // State to track if the keyboard is open
 
         Surface(
-            modifier = modifier
-                .fillMaxWidth()
-                .heightIn(min = 72.dp),
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 72.dp),
             elevation = 24.dp,
         ) {
             Row(
-                modifier = modifier
-                    .padding(
-                        start = 16.dp,
-                        top = 8.dp,
-                        end = 16.dp,
-                        bottom = 24.dp,
-                    ),
+                modifier =
+                    modifier
+                        .padding(
+                            start = 16.dp,
+                            top = 8.dp,
+                            end = 16.dp,
+                            bottom = 24.dp,
+                        ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 // Icon button to handle keyboard visibility and attachments
                 IconButton(
-                    modifier = Modifier
-                        .requiredSize(iconButtonSize),
+                    modifier = Modifier.requiredSize(iconButtonSize),
                     onClick = {
                         if (isKeyboardOpen) {
                             focusManager.clearFocus()
                         } else {
                             // TODO: Handle attachments
                         }
-                    }
+                    },
                 ) {
                     Image(
-                        imageVector = if (isKeyboardOpen) {
-                            Icons.TwoTone.KeyboardDoubleArrowDown
-                        } else {
-                            Icons.TwoTone.AddCircleOutline
-                        },
+                        imageVector =
+                            if (isKeyboardOpen) {
+                                Icons.TwoTone.KeyboardDoubleArrowDown
+                            } else {
+                                Icons.TwoTone.AddCircleOutline
+                            },
                         alpha = iconAlpha,
-                        contentDescription = if (isKeyboardOpen) {
-                            "Closes keyboard"
-                        } else {
-                            "Expands attachment buttons"
-                        },
+                        contentDescription =
+                            if (isKeyboardOpen) {
+                                "Closes keyboard"
+                            } else {
+                                "Expands attachment buttons"
+                            },
                     )
                 }
 
                 // Text field for message input
                 TextField(
-                    modifier = Modifier
-                        .padding(
-                            top = 4.dp,
-                            bottom = 8.dp,
-                        )
-                        .wrapContentHeight()
-                        .fillMaxWidth(.9f)
-                        .onPreviewKeyEvent { event ->
-                            if (event.key == Key.Enter) {
-                                onTextInputCompleted()
-                                true
-                            } else {
-                                false
-                            }
-                        },
-                    colors = TextFieldDefaults.textFieldColors(
-                        textColor = Color.Gray,
-                        disabledTextColor = Color.Transparent,
-                        backgroundColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
+                    modifier =
+                        Modifier
+                            .padding(
+                                top = 4.dp,
+                                bottom = 8.dp,
+                            )
+                            .wrapContentHeight()
+                            .fillMaxWidth(.9f)
+                            .onPreviewKeyEvent { event ->
+                                if (event.key == Key.Enter) {
+                                    onTextInputCompleted()
+                                    true
+                                } else {
+                                    false
+                                }
+                            },
+                    colors =
+                        TextFieldDefaults.textFieldColors(
+                            textColor = Color.Gray,
+                            disabledTextColor = Color.Transparent,
+                            backgroundColor = Color.White,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                        ),
                     value = textFieldValue,
                     onValueChange = onTextChanged,
                     label = { Text("Your message...") },
@@ -127,8 +145,7 @@ fun ConversationTextEntry(
 
                 // Icon button to send the message
                 IconButton(
-                    modifier = Modifier
-                        .requiredSize(iconButtonSize),
+                    modifier = Modifier.requiredSize(iconButtonSize),
                     onClick = onTextInputCompleted,
                 ) {
                     Image(

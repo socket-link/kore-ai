@@ -19,17 +19,16 @@ import link.socket.kore.ui.widget.header.Header
  *                 This can be used to adjust the layout or appearance of the header.
  */
 @Composable
-fun HomeHeader(
-    modifier: Modifier = Modifier,
-) {
+fun HomeHeader(modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier,
         elevation = 16.dp,
     ) {
         Column(
-            modifier = Modifier
-                .wrapContentHeight()
-                .fillMaxWidth(),
+            modifier =
+                Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth(),
         ) {
             Header(
                 title = "Agent Conversations",

@@ -3,10 +3,10 @@ package link.socket.kore.model.agent.bundled.prompt
 import link.socket.kore.model.agent.AgentDefinition
 
 object WritePromptAgent : AgentDefinition() {
-
     override val name: String = "Refine Prompt"
 
-    override val prompt: String = """
+    override val prompt: String =
+        """
         You are a specialized Agent focused on refining and optimizing prompts. Your expertise lies in improving clarity, specificity, and effectiveness of prompts while adhering to best practices in prompt engineering. Your primary tasks include:
 
         - **Identify Issues**: Address problems such as vagueness, information overload, ambiguity, unwarranted assumptions, inconsistencies, and overly complex language.
@@ -22,5 +22,5 @@ object WritePromptAgent : AgentDefinition() {
         4. **Avoid Mere Rephrasing**: Ensure that changes are substantive and not just superficial rephrasings of the original prompt.
 
         Begin by requesting the User’s initial prompt for refinement. 
-    """.trimIndent()
+        """.trimIndent()
 }

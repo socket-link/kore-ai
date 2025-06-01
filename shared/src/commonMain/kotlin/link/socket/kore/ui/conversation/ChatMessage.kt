@@ -3,7 +3,15 @@ package link.socket.kore.ui.conversation
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -25,7 +33,13 @@ import com.aallam.openai.api.core.Role
 import com.mikepenz.markdown.compose.Markdown
 import com.mikepenz.markdown.model.markdownColor
 import link.socket.kore.model.chat.Chat
-import link.socket.kore.ui.theme.*
+import link.socket.kore.ui.theme.iconAlpha
+import link.socket.kore.ui.theme.iconButtonSize
+import link.socket.kore.ui.theme.nonContentCardColor
+import link.socket.kore.ui.theme.separatorIconSize
+import link.socket.kore.ui.theme.themeColors
+import link.socket.kore.ui.theme.themeShapes
+import link.socket.kore.ui.theme.themeTypography
 
 /**
  * A composable function that displays a chat message.
@@ -53,24 +67,27 @@ fun ChatMessage(
         modifier = modifier.wrapContentHeight(),
         elevation = 1.dp,
         shape = themeShapes().small,
-        color = if (message.role != Role.Assistant && message.role != Role.User) {
-            nonContentCardColor
-        } else {
-            backgroundColor
-        }
+        color =
+            if (message.role != Role.Assistant && message.role != Role.User) {
+                nonContentCardColor
+            } else {
+                backgroundColor
+            },
     ) {
         // Card container
         Column(
-            modifier = Modifier
-                .wrapContentHeight()
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            modifier =
+                Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
         ) {
             // Info row
             Row(
-                modifier = Modifier
-                    .requiredHeight(48.dp)
-                    .fillMaxWidth(),
+                modifier =
+                    Modifier
+                        .requiredHeight(48.dp)
+                        .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (message.role != Role.User) {
@@ -114,7 +131,8 @@ fun ChatMessage(
             // Content section
             when (message) {
                 is Chat.System,
-                is Chat.Text -> {
+                is Chat.Text,
+                    -> {
                     val messageContent = message.chatMessage.content ?: ""
 
                     if (message.role == Role.User) {
@@ -128,14 +146,15 @@ fun ChatMessage(
                         Markdown(
                             modifier = Modifier.fillMaxWidth(),
                             content = messageContent,
-                            colors = markdownColor(
-                                text = textColor,
-                                codeText = codeTextColor,
-                                linkText = linkTextColor,
-                                codeBackground = codeBackgroundColor,
-                                inlineCodeBackground = inlineCodeBackgroundColor,
-                                dividerColor = dividerColor,
-                            )
+                            colors =
+                                markdownColor(
+                                    text = textColor,
+                                    codeText = codeTextColor,
+                                    linkText = linkTextColor,
+                                    codeBackground = codeBackgroundColor,
+                                    inlineCodeBackground = inlineCodeBackgroundColor,
+                                    dividerColor = dividerColor,
+                                ),
                         )
                     }
                 }
@@ -148,10 +167,11 @@ fun ChatMessage(
                                 val colWidth = (1f / line.size)
                                 for (cell in line) {
                                     Text(
-                                        modifier = Modifier
-                                            .border(BorderStroke(1.dp, Color.DarkGray))
-                                            .padding(2.dp)
-                                            .fillMaxWidth(colWidth),
+                                        modifier =
+                                            Modifier
+                                                .border(BorderStroke(1.dp, Color.DarkGray))
+                                                .padding(2.dp)
+                                                .fillMaxWidth(colWidth),
                                         text = cell,
                                         overflow = TextOverflow.Ellipsis,
                                         textAlign = TextAlign.Center,
@@ -167,16 +187,17 @@ fun ChatMessage(
             // Actions row
             if (message.role != Role.User) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
                 ) {
                     if (showRegenerate) {
                         IconButton(
                             modifier = Modifier.requiredSize(iconButtonSize),
                             onClick = {
                                 // TODO: Handle click
-                            }
+                            },
                         ) {
                             Image(
                                 imageVector = Icons.TwoTone.ReplayCircleFilled,
@@ -195,7 +216,7 @@ fun ChatMessage(
                                 AnnotatedString(message.chatMessage.content ?: ""),
                             )
                             displaySnackbar("Copied to clipboard")
-                        }
+                        },
                     ) {
                         Image(
                             imageVector = Icons.TwoTone.FileCopy,

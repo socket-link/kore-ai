@@ -4,9 +4,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import link.socket.kore.model.agent.AgentDefinition
 import link.socket.kore.model.agent.KoreAgent
 import link.socket.kore.model.app.Application
@@ -23,7 +35,9 @@ import link.socket.kore.ui.theme.themeTypography
  * Enum class representing the different screens in the application.
  */
 enum class Screen {
-    HOME, SELECTION, CONVERSATION;
+    HOME,
+    SELECTION,
+    CONVERSATION,
 }
 
 /**
@@ -45,9 +59,7 @@ fun Application.createAgent(agentDefinition: AgentDefinition): KoreAgent =
  * @param modifier The [Modifier] to be applied to the root composable.
  */
 @Composable
-fun App(
-    modifier: Modifier = Modifier,
-) {
+fun App(modifier: Modifier = Modifier) {
     MaterialTheme(
         colors = themeColors(),
         typography = themeTypography(),
@@ -75,15 +87,16 @@ fun App(
                     .collectAsState(null)
             } ?: mutableStateOf(null)
 
-        val selectedConversation = remember(selectedConversationId, selectedConversationValue) {
-            derivedStateOf {
-                if (selectedConversationId != null) {
-                    selectedConversationValue.value
-                } else {
-                    null
+        val selectedConversation =
+            remember(selectedConversationId, selectedConversationValue) {
+                derivedStateOf {
+                    if (selectedConversationId != null) {
+                        selectedConversationValue.value
+                    } else {
+                        null
+                    }
                 }
             }
-        }
 
         var isLoading by remember { mutableStateOf(false) }
 
@@ -127,37 +140,34 @@ fun App(
             when (selectedScreen) {
                 Screen.HOME -> {
                     HomeScreen(
-                        modifier = Modifier
-                            .fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),
                         agentConversationsList = allConversations.value.values.toList(),
                         onCreateConversationSelected = {
                             selectedScreen = Screen.SELECTION
                         },
                         onConversationSelected = { conversation ->
                             onConversationSelected(conversation.id)
-                        }
+                        },
                     )
                 }
 
                 Screen.SELECTION -> {
                     AgentSelectionScreen(
-                        modifier = Modifier
-                            .fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),
                         onSubmit = { agentDefinition ->
                             val agent = application.createAgent(agentDefinition)
                             onNewConversation(agent)
                         },
                         onBackClicked = {
                             selectedScreen = Screen.HOME
-                        }
+                        },
                     )
                 }
 
                 Screen.CONVERSATION -> {
                     selectedConversation.value?.let {
                         ConversationScreen(
-                            modifier = Modifier
-                                .fillMaxSize(),
+                            modifier = Modifier.fillMaxSize(),
                             listState = conversationListState,
                             conversation = it,
                             isLoading = isLoading,
@@ -173,7 +183,7 @@ fun App(
                             onBackClicked = {
                                 selectedConversationId = null
                                 selectedScreen = Screen.HOME
-                            }
+                            },
                         )
                     }
                 }

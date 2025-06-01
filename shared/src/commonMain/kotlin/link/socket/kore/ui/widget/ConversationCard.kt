@@ -29,29 +29,33 @@ fun ConversationCard(
     onClick: () -> Unit,
 ) {
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .requiredHeight(conversationCardHeight),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .requiredHeight(conversationCardHeight),
         elevation = 2.dp,
         onClick = onClick,
     ) {
         Column(
-            modifier = Modifier
-                .padding(
-                    horizontal = 12.dp,
-                    vertical = 8.dp,
-                ),
+            modifier =
+                Modifier
+                    .padding(
+                        horizontal = 12.dp,
+                        vertical = 8.dp,
+                    ),
         ) {
             Text(
-                modifier = Modifier
-                    .padding(bottom = 8.dp),
+                modifier =
+                    Modifier
+                        .padding(bottom = 8.dp),
                 style = themeTypography().h6,
                 text = conversation.title,
             )
 
             Text(
-                modifier = Modifier
-                    .padding(bottom = 4.dp),
+                modifier =
+                    Modifier
+                        .padding(bottom = 4.dp),
                 style = themeTypography().body1,
                 text = "${conversation.agent.name} Agent",
             )

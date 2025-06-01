@@ -1,10 +1,26 @@
 package link.socket.kore.ui.selection
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -33,7 +49,7 @@ fun AgentInputs(
     // State to hold the input values
     val inputValues by remember {
         mutableStateOf(
-            mutableMapOf<String, AgentInput>()
+            mutableMapOf<String, AgentInput>(),
         )
     }
 
@@ -77,9 +93,10 @@ fun AgentInputs(
     ) {
         // Display the agent name
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
             style = themeTypography().subtitle1,
             text = "${partiallySelectedAgent.name} Agent",
             textAlign = TextAlign.Center,
@@ -87,10 +104,11 @@ fun AgentInputs(
 
         // LazyColumn to display needed and optional inputs
         LazyColumn(
-            modifier = Modifier
-                .wrapContentHeight()
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+            modifier =
+                Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
         ) {
             items(neededInputs) { input ->
                 inputComposable(input)
@@ -105,9 +123,10 @@ fun AgentInputs(
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
-                        val finalizedAgent = partiallySelectedAgent.apply {
-                            parseInputs(inputValues)
-                        }
+                        val finalizedAgent =
+                            partiallySelectedAgent.apply {
+                                parseInputs(inputValues)
+                            }
                         onAgentSubmission(finalizedAgent)
                     },
                 ) {
@@ -171,7 +190,7 @@ private fun EnumInput(
                         onValueChanged(
                             input.copy(
                                 value = enumValue,
-                            )
+                            ),
                         )
                         showDropdown = false
                     },
@@ -205,7 +224,7 @@ private fun StringInput(
         onValueChange = { value ->
             textFieldValue = value
             onValueChanged(
-                input.copy(value = value.text)
+                input.copy(value = value.text),
             )
         },
         label = { Text(input.name) },
@@ -231,7 +250,7 @@ private fun ListInput(
 
     val inputs by remember {
         mutableStateOf(
-            mutableListOf("")
+            mutableListOf(""),
         )
     }
 
@@ -254,7 +273,7 @@ private fun ListInput(
                         inputs[index] = value.text
                     }
                     onValueChanged(
-                        input.copy(listValue = inputs)
+                        input.copy(listValue = inputs),
                     )
                 },
                 label = { Text(input.name) },
