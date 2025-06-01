@@ -22,6 +22,7 @@ data class KoreAgent(
     val definition: AgentDefinition,
     val conversationRepository: ConversationRepository,
 ) : LLMAgent {
+
     val name: String = definition.name
 
     override val tag: String = "Kore${name.replace(" ", "")}-${super.tag}"
@@ -32,10 +33,13 @@ data class KoreAgent(
      * Prompt for the Agent, extending the base prompt from LLMAgent
      */
     override val prompt: String
-        get() =
-            "${super.prompt}\n\n" +
-                "You are an Agent that can provide answers to Chat prompts through LLM completion.\n" +
-                definition.instructions.build()
+        get() = """
+            ${super.prompt}
+
+            You are an Agent that can provide answers to Chat prompts through LLM completion.
+            
+            ${definition.instructions.build()}
+        """.trimIndent()
 
     override val availableFunctions: Map<String, FunctionProvider>
         get() =

@@ -182,22 +182,21 @@ abstract class FunctionProvider(
                 Tool.function(
                     name = name,
                     description = description,
-                    parameters =
-                        Parameters.buildJsonObject {
-                            put("type", "object")
-                            putJsonObject("properties") {
-                                parameterList.forEach { parameter ->
-                                    put(parameter.name, parameter.definition)
+                    parameters = Parameters.buildJsonObject {
+                        put("type", "object")
+                        putJsonObject("properties") {
+                            parameterList.forEach { parameter ->
+                                put(parameter.name, parameter.definition)
+                            }
+                        }
+                        putJsonArray("required") {
+                            parameterList.forEach { parameter ->
+                                if (parameter.isRequired) {
+                                    add(parameter.name)
                                 }
                             }
-                            putJsonArray("required") {
-                                parameterList.forEach { parameter ->
-                                    if (parameter.isRequired) {
-                                        add(parameter.name)
-                                    }
-                                }
-                            }
-                        },
+                        }
+                    },
                 ),
                 function,
             )
@@ -226,22 +225,21 @@ abstract class FunctionProvider(
                 Tool.function(
                     name = name,
                     description = description,
-                    parameters =
-                        Parameters.buildJsonObject {
-                            put("type", "object")
-                            putJsonObject("properties") {
-                                parameterList.forEach { parameter ->
-                                    put(parameter.name, parameter.definition)
+                    parameters = Parameters.buildJsonObject {
+                        put("type", "object")
+                        putJsonObject("properties") {
+                            parameterList.forEach { parameter ->
+                                put(parameter.name, parameter.definition)
+                            }
+                        }
+                        putJsonArray("required") {
+                            parameterList.forEach { parameter ->
+                                if (parameter.isRequired) {
+                                    add(parameter.name)
                                 }
                             }
-                            putJsonArray("required") {
-                                parameterList.forEach { parameter ->
-                                    if (parameter.isRequired) {
-                                        add(parameter.name)
-                                    }
-                                }
-                            }
-                        },
+                        }
+                    },
                 ),
                 function,
             )
@@ -256,22 +254,21 @@ abstract class FunctionProvider(
                 Tool.function(
                     name = name,
                     description = description,
-                    parameters =
-                        Parameters.buildJsonObject {
-                            put("type", "object")
-                            putJsonObject("properties") {
-                                parameterList.forEach { parameter ->
-                                    put(parameter.name, parameter.definition)
+                    parameters = Parameters.buildJsonObject {
+                        put("type", "object")
+                        putJsonObject("properties") {
+                            parameterList.forEach { parameter ->
+                                put(parameter.name, parameter.definition)
+                            }
+                        }
+                        putJsonArray("required") {
+                            parameterList.forEach { parameter ->
+                                if (parameter.isRequired) {
+                                    add(parameter.name)
                                 }
                             }
-                            putJsonArray("required") {
-                                parameterList.forEach { parameter ->
-                                    if (parameter.isRequired) {
-                                        add(parameter.name)
-                                    }
-                                }
-                            }
-                        },
+                        }
+                    },
                 ),
                 function,
             )

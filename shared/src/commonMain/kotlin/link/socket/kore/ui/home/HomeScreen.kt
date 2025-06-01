@@ -51,11 +51,10 @@ fun HomeScreen(
             floatingActionButton = {
                 // Floating action button to create a new conversation
                 Box(
-                    modifier =
-                        Modifier.padding(
-                            end = 8.dp,
-                            bottom = 16.dp,
-                        ),
+                    modifier = Modifier.padding(
+                        end = 8.dp,
+                        bottom = 16.dp,
+                    ),
                 ) {
                     FloatingActionButton(
                         onClick = onCreateConversationSelected,
@@ -70,14 +69,13 @@ fun HomeScreen(
         ) { contentPadding ->
             // LazyColumn to display the list of conversations
             LazyColumn(
-                modifier =
-                    Modifier
-                        .padding(contentPadding)
-                        .padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = 8.dp,
-                        ),
+                modifier = Modifier
+                    .padding(contentPadding)
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 8.dp,
+                    ),
             ) {
                 // Spacer to add some space at the top of the list
                 item {

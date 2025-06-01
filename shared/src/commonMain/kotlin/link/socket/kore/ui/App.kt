@@ -87,16 +87,15 @@ fun App(modifier: Modifier = Modifier) {
                     .collectAsState(null)
             } ?: mutableStateOf(null)
 
-        val selectedConversation =
-            remember(selectedConversationId, selectedConversationValue) {
-                derivedStateOf {
-                    if (selectedConversationId != null) {
-                        selectedConversationValue.value
-                    } else {
-                        null
-                    }
+        val selectedConversation = remember(selectedConversationId, selectedConversationValue) {
+            derivedStateOf {
+                if (selectedConversationId != null) {
+                    selectedConversationValue.value
+                } else {
+                    null
                 }
             }
+        }
 
         var isLoading by remember { mutableStateOf(false) }
 

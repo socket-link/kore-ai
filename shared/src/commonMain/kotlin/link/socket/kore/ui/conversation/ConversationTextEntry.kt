@@ -65,21 +65,19 @@ fun ConversationTextEntry(
         val isKeyboardOpen by keyboardAsState() // State to track if the keyboard is open
 
         Surface(
-            modifier =
-                modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 72.dp),
+            modifier = modifier
+                .fillMaxWidth()
+                .heightIn(min = 72.dp),
             elevation = 24.dp,
         ) {
             Row(
-                modifier =
-                    modifier
-                        .padding(
-                            start = 16.dp,
-                            top = 8.dp,
-                            end = 16.dp,
-                            bottom = 24.dp,
-                        ),
+                modifier = modifier
+                    .padding(
+                        start = 16.dp,
+                        top = 8.dp,
+                        end = 16.dp,
+                        bottom = 24.dp,
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
@@ -95,49 +93,45 @@ fun ConversationTextEntry(
                     },
                 ) {
                     Image(
-                        imageVector =
-                            if (isKeyboardOpen) {
-                                Icons.TwoTone.KeyboardDoubleArrowDown
-                            } else {
-                                Icons.TwoTone.AddCircleOutline
-                            },
+                        imageVector = if (isKeyboardOpen) {
+                            Icons.TwoTone.KeyboardDoubleArrowDown
+                        } else {
+                            Icons.TwoTone.AddCircleOutline
+                        },
                         alpha = iconAlpha,
-                        contentDescription =
-                            if (isKeyboardOpen) {
-                                "Closes keyboard"
-                            } else {
-                                "Expands attachment buttons"
-                            },
+                        contentDescription = if (isKeyboardOpen) {
+                            "Closes keyboard"
+                        } else {
+                            "Expands attachment buttons"
+                        },
                     )
                 }
 
                 // Text field for message input
                 TextField(
-                    modifier =
-                        Modifier
-                            .padding(
-                                top = 4.dp,
-                                bottom = 8.dp,
-                            )
-                            .wrapContentHeight()
-                            .fillMaxWidth(.9f)
-                            .onPreviewKeyEvent { event ->
-                                if (event.key == Key.Enter) {
-                                    onTextInputCompleted()
-                                    true
-                                } else {
-                                    false
-                                }
-                            },
-                    colors =
-                        TextFieldDefaults.textFieldColors(
-                            textColor = Color.Gray,
-                            disabledTextColor = Color.Transparent,
-                            backgroundColor = Color.White,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                        ),
+                    modifier = Modifier
+                        .padding(
+                            top = 4.dp,
+                            bottom = 8.dp,
+                        )
+                        .wrapContentHeight()
+                        .fillMaxWidth(.9f)
+                        .onPreviewKeyEvent { event ->
+                            if (event.key == Key.Enter) {
+                                onTextInputCompleted()
+                                true
+                            } else {
+                                false
+                            }
+                        },
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = Color.Gray,
+                        disabledTextColor = Color.Transparent,
+                        backgroundColor = Color.White,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                    ),
                     value = textFieldValue,
                     onValueChange = onTextChanged,
                     label = { Text("Your message...") },

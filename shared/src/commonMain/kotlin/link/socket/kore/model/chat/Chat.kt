@@ -19,8 +19,8 @@ sealed class Chat(
     data class System(
         val prompt: String,
     ) : Chat(
-        ChatRole.System,
-        ChatMessage(
+        role = ChatRole.System,
+        chatMessage = ChatMessage(
             role = ChatRole.System,
             content = prompt,
         ),
@@ -36,8 +36,8 @@ sealed class Chat(
         override val content: String,
         val functionName: String? = null,
     ) : Chat(
-        role,
-        ChatMessage(
+        role = role,
+        chatMessage = ChatMessage(
             role = role,
             name = functionName,
             content = content,
@@ -64,22 +64,21 @@ sealed class Chat(
         val csvContent: List<List<String>>,
         val functionName: String? = null,
     ) : Chat(
-        role,
-        ChatMessage(
+        role = role,
+        chatMessage = ChatMessage(
             role = role,
             name = functionName,
-            content =
-                with(csvContent) {
-                    val resultString = StringBuilder()
-                    forEach { line ->
-                        line.forEach { cell ->
-                            resultString.append(cell)
-                            resultString.append("\t")
-                        }
-                        resultString.append("\n")
+            content = with(csvContent) {
+                val resultString = StringBuilder()
+                forEach { line ->
+                    line.forEach { cell ->
+                        resultString.append(cell)
+                        resultString.append("\t")
                     }
-                    resultString.toString()
-                },
+                    resultString.append("\n")
+                }
+                resultString.toString()
+            },
         ),
     ) {
         override val content: String = csvContent.joinToString { it.joinToString("\t") }

@@ -31,12 +31,11 @@ data class Conversation(
     fun initialize(initialMessage: Chat? = null): Conversation =
         if (conversationHistory is ConversationHistory.Threaded.Uninitialized) {
             copy(
-                conversationHistory =
-                    ConversationHistory.NonThreaded(
-                        initialMessage?.let { message ->
-                            listOf(agent.initialSystemMessage(id), message)
-                        } ?: listOf(agent.initialSystemMessage(id)),
-                    ),
+                conversationHistory = ConversationHistory.NonThreaded(
+                    initialMessage?.let { message ->
+                        listOf(agent.initialSystemMessage(id), message)
+                    } ?: listOf(agent.initialSystemMessage(id)),
+                ),
             )
         } else {
             // TODO: Allow for Threaded history

@@ -25,7 +25,7 @@ fun Conversation.exportToFile() {
  * @return the filename as a String with FILE_EXTENSION appended.
  */
 fun Conversation.getFilename(): String =
-    // Utilizing the title of the conversation for naming the file, converted to snake case.
+    // Uses the title of the conversation for naming the file, converted to snake case.
     title.toSnakeCase().plus(FILE_EXTENSION)
 
 /**
@@ -41,7 +41,8 @@ fun Conversation.asString(): String =
         appendLine("---")
 
         val chats = getChats()
-        getChats().forEachIndexed { index, chat ->
+
+        chats.forEachIndexed { index, chat ->
             val chatRole = chat.role.role.capitalize(Locale.current) // Capitalize the role.
             val chatLine = "\n" + "[$chatRole]" + "\n\n" + chat.chatMessage.content
             appendLine(chatLine)

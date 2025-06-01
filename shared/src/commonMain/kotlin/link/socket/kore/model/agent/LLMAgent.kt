@@ -1,6 +1,11 @@
 package link.socket.kore.model.agent
 
-import com.aallam.openai.api.chat.*
+import com.aallam.openai.api.chat.ChatCompletionRequest
+import com.aallam.openai.api.chat.ChatMessage
+import com.aallam.openai.api.chat.ChatRole
+import com.aallam.openai.api.chat.FunctionCall
+import com.aallam.openai.api.chat.Tool
+import com.aallam.openai.api.chat.ToolCall
 import com.aallam.openai.api.core.FinishReason
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
@@ -18,6 +23,7 @@ import link.socket.kore.util.logWith
  * Abstract class representing an Agent that interacts with an LLM.
  */
 interface LLMAgent {
+
     companion object {
         private const val MODEL_NAME = "gpt-4o"
         private val MODEL_ID = ModelId(MODEL_NAME)
@@ -36,8 +42,7 @@ interface LLMAgent {
      * 2024/08/28: `multi_tool_use.parallel` function blocking - https://community.openai.com/t/model-tries-to-call-unknown-function-multi-tool-use-parallel/490653/35
      */
     val prompt: String
-        get() =
-            """
+        get() = """
             You are an AI Agent operating within the KoreAI library, designed to facilitate specialized interactions between developers and end-users. Your primary role is to leverage your domain-specific knowledge to assist users in solving well-defined tasks.
 
             There are two types of humans you will interact with:
@@ -56,13 +61,13 @@ interface LLMAgent {
             
             You shall only use function calling to invoke the defined functions that have been provided to you.
             **You should NEVER invent or use functions NOT defined or NOT listed by that Agent, especially the multi_tool_use.parallel function.**
-            """.trimIndent()
+        """.trimIndent()
 
     fun initialSystemMessage(conversationId: ConversationId): Chat.System =
         """
-        {
-            "conversationId": "$conversationId"
-        }
+            {
+                "conversationId": "$conversationId"
+            }
         """.trimIndent().let { metadata ->
             Chat.System("$metadata\n\n$prompt")
         }
@@ -103,6 +108,7 @@ interface LLMAgent {
                 content = response.message.content ?: "",
             )
         onNewChats(listOf(completionChat))
+
         return if (response.finishReason == FinishReason.ToolCalls) {
             val toolChats = response.message.executePendingToolCalls()
             onNewChats(toolChats)
@@ -126,9 +132,13 @@ interface LLMAgent {
                     when (call) {
                         is ToolCall.Function ->
                             call.function.let { function ->
-                                logWith("$tag-executePendingToolCalls").i("Executing ${function.name} with Args:\n${function.arguments}")
+                                logWith("$tag-executePendingToolCalls").i(
+                                    "Executing ${function.name} with Args:\n${function.arguments}",
+                                )
                                 function.execute().also { response ->
-                                    logWith("$tag-executePendingToolCalls").i("Tool ${function.name} Response: $response")
+                                    logWith("$tag-executePendingToolCalls").i(
+                                        "Tool ${function.name} Response: $response",
+                                    )
                                 }
                             }
                     }
@@ -150,9 +160,7 @@ interface LLMAgent {
 
         return when (val definition = functionTool.definition) {
             is FunctionDefinition.StringReturn -> {
-                val content =
-                    definition.execute(functionArgs) as? String
-                        ?: error("Function $name did not return String")
+                val content = definition.execute(functionArgs)
 
                 Chat.Text(
                     role = ChatRole.Function,
@@ -161,9 +169,7 @@ interface LLMAgent {
                 )
             }
             is FunctionDefinition.CSVReturn -> {
-                val content =
-                    (definition(functionArgs) as? List<List<String>>)
-                        ?: error("Function $name did not return CSV")
+                val content = definition(functionArgs)
 
                 Chat.CSV(
                     role = ChatRole.Function,

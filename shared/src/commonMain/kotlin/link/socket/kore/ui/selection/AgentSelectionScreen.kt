@@ -65,18 +65,16 @@ fun AgentSelectionScreen(
     }
 
     Scaffold(
-        modifier =
-            modifier
-                .fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize(),
         topBar = {
             Surface(
                 elevation = 16.dp,
             ) {
                 Column(
-                    modifier =
-                        Modifier
-                            .wrapContentHeight()
-                            .fillMaxWidth(),
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .fillMaxWidth(),
                 ) {
                     Header(
                         title = "Agent Selection",
@@ -88,12 +86,11 @@ fun AgentSelectionScreen(
         },
         floatingActionButton = {
             Box(
-                modifier =
-                    Modifier
-                        .padding(
-                            end = 8.dp,
-                            bottom = 16.dp,
-                        ),
+                modifier = Modifier
+                    .padding(
+                        end = 8.dp,
+                        bottom = 16.dp,
+                    ),
             ) {
                 FloatingActionButton(
                     onClick = {
@@ -145,9 +142,8 @@ fun AgentColumn(
         )
 
     LazyColumn(
-        modifier =
-            modifier
-                .fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
@@ -179,17 +175,15 @@ fun AgentRow(
 ) {
     Column {
         Text(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(start = 20.dp, bottom = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, bottom = 8.dp),
             text = category,
         )
 
         LazyRow(
-            modifier =
-                Modifier
-                    .fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
@@ -220,9 +214,8 @@ fun AgentCard(
     onAgentSelected: (AgentDefinition) -> Unit,
 ) {
     Card(
-        modifier =
-            Modifier
-                .requiredSize(200.dp),
+        modifier = Modifier
+            .requiredSize(200.dp),
         elevation = 4.dp,
         onClick = {
             onAgentSelected(agent)
@@ -230,10 +223,9 @@ fun AgentCard(
     ) {
         Column {
             Text(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
                 text = agent.name,
                 textAlign = TextAlign.Center,
             )
