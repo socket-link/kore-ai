@@ -2,7 +2,14 @@ package link.socket.kore.model.agent.bundled
 
 import link.socket.kore.model.agent.AgentDefinition
 import link.socket.kore.model.agent.AgentInput
+import link.socket.kore.model.agent.bundled.code.APIDesignAgent
 import link.socket.kore.model.agent.bundled.code.CleanJsonAgent
+import link.socket.kore.model.agent.bundled.code.DocumentationAgent
+import link.socket.kore.model.agent.bundled.code.PerformanceOptimizationAgent
+import link.socket.kore.model.agent.bundled.code.PlatformCompatibilityAgent
+import link.socket.kore.model.agent.bundled.code.QATestingAgent
+import link.socket.kore.model.agent.bundled.code.ReleaseManagementAgent
+import link.socket.kore.model.agent.bundled.code.SecurityReviewAgent
 import link.socket.kore.model.agent.bundled.code.WriteCodeAgent
 import link.socket.kore.model.agent.bundled.general.BusinessAgent
 import link.socket.kore.model.agent.bundled.general.CareerAgent
@@ -24,7 +31,14 @@ import link.socket.kore.model.agent.bundled.reasoning.ReActAgent
 
 val codeAgents =
     listOf(
+        APIDesignAgent,
         CleanJsonAgent,
+        DocumentationAgent,
+        PerformanceOptimizationAgent,
+        PlatformCompatibilityAgent,
+        QATestingAgent,
+        ReleaseManagementAgent,
+        SecurityReviewAgent,
         WriteCodeAgent,
     )
 
@@ -81,19 +95,26 @@ val agentArgsList: List<String> =
 
 fun String?.getAgentDefinition(prompt: String?): AgentDefinition =
     when (this) {
+        APIDesignAgent.name -> APIDesignAgent
         BusinessAgent.name -> BusinessAgent
         CareerAgent.name -> CareerAgent
         CleanJsonAgent.name -> CleanJsonAgent
-        CookingAgent.name -> CookingAgent
         ComparePromptsAgent.name -> ComparePromptsAgent
+        CookingAgent.name -> CookingAgent
         DelegateTasksAgent.name -> DelegateTasksAgent
         DIYAgent.name -> DIYAgent
+        DocumentationAgent.name -> DocumentationAgent
         EmailAgent.name -> EmailAgent
         FinancialAgent.name -> FinancialAgent
         HealthAgent.name -> HealthAgent
         LanguageAgent.name -> LanguageAgent
         MediaAgent.name -> MediaAgent
+        PerformanceOptimizationAgent.name -> PerformanceOptimizationAgent
+        PlatformCompatibilityAgent.name -> PlatformCompatibilityAgent
+        QATestingAgent.name -> QATestingAgent
         ReActAgent.name -> ReActAgent
+        ReleaseManagementAgent.name -> ReleaseManagementAgent
+        SecurityReviewAgent.name -> SecurityReviewAgent
         StudyAgent.name -> StudyAgent
         TechAgent.name -> TechAgent
         TravelAgent.name -> TravelAgent
