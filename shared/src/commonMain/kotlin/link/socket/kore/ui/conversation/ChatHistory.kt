@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.aallam.openai.api.core.Role
-import link.socket.kore.model.chat.Chat
+import link.socket.kore.domain.chat.Chat
 import link.socket.kore.ui.theme.themeColors
 
 /**

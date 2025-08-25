@@ -19,11 +19,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import link.socket.kore.model.agent.AgentDefinition
-import link.socket.kore.model.agent.KoreAgent
-import link.socket.kore.model.app.Application
-import link.socket.kore.model.conversation.Conversation
-import link.socket.kore.model.conversation.ConversationId
+import link.socket.kore.domain.agent.AgentDefinition
+import link.socket.kore.domain.agent.AgentProvider
+import link.socket.kore.domain.agent.KoreAgent
+import link.socket.kore.domain.app.Application
+import link.socket.kore.domain.conversation.Conversation
+import link.socket.kore.domain.conversation.ConversationId
+import link.socket.kore.domain.model.llm.AI_Configuration
 import link.socket.kore.ui.conversation.ConversationScreen
 import link.socket.kore.ui.home.HomeScreen
 import link.socket.kore.ui.selection.AgentSelectionScreen
@@ -31,35 +33,27 @@ import link.socket.kore.ui.theme.themeColors
 import link.socket.kore.ui.theme.themeShapes
 import link.socket.kore.ui.theme.themeTypography
 
-/**
- * Enum class representing the different screens in the application.
- */
 enum class Screen {
     HOME,
     SELECTION,
     CONVERSATION,
 }
 
-/**
- * Extension function to create a [KoreAgent] from an [AgentDefinition].
- *
- * @param agentDefinition The definition of the agent to be created.
- * @return A new instance of [KoreAgent].
- */
-fun Application.createAgent(agentDefinition: AgentDefinition): KoreAgent =
-    KoreAgent(
-        CoroutineScope(Dispatchers.IO),
-        agentDefinition,
-        conversationRepository,
-    )
+fun Application.createAgent(
+    config: AI_Configuration<*, *>,
+    agentDefinition: AgentDefinition,
+): KoreAgent = AgentProvider.createAgent(
+    config = config,
+    scope = CoroutineScope(Dispatchers.IO),
+    definition = agentDefinition,
+    conversationRepository = conversationRepository,
+)
 
-/**
- * Composable function representing the main application UI.
- *
- * @param modifier The [Modifier] to be applied to the root composable.
- */
 @Composable
-fun App(modifier: Modifier = Modifier) {
+fun App(
+    config: AI_Configuration<*, *>,
+    modifier: Modifier = Modifier,
+) {
     MaterialTheme(
         colors = themeColors(),
         typography = themeTypography(),
@@ -128,7 +122,10 @@ fun App(modifier: Modifier = Modifier) {
 
             scope.launch {
                 onExecutingConversation()
-                application.conversationRepository.runConversation(selectedConversationId!!)
+                application.conversationRepository.runConversation(
+                    config = config,
+                    conversationId = selectedConversationId!!,
+                )
                 onConversationFinishedExecuting()
             }
         }
@@ -154,7 +151,10 @@ fun App(modifier: Modifier = Modifier) {
                     AgentSelectionScreen(
                         modifier = Modifier.fillMaxSize(),
                         onSubmit = { agentDefinition ->
-                            val agent = application.createAgent(agentDefinition)
+                            val agent = application.createAgent(
+                                config = config,
+                                agentDefinition = agentDefinition,
+                            )
                             onNewConversation(agent)
                         },
                         onBackClicked = {
@@ -174,7 +174,11 @@ fun App(modifier: Modifier = Modifier) {
                                 selectedConversationId?.let { id ->
                                     scope.launch {
                                         onExecutingConversation()
-                                        application.conversationRepository.addUserChat(id, input)
+                                        application.conversationRepository.addUserChat(
+                                            config = config,
+                                            conversationId = id,
+                                            input = input,
+                                        )
                                         onConversationFinishedExecuting()
                                     }
                                 }

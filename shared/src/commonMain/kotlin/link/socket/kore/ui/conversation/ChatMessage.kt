@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.aallam.openai.api.core.Role
 import com.mikepenz.markdown.compose.Markdown
 import com.mikepenz.markdown.model.markdownColor
-import link.socket.kore.model.chat.Chat
+import link.socket.kore.domain.chat.Chat
 import link.socket.kore.ui.theme.iconAlpha
 import link.socket.kore.ui.theme.iconButtonSize
 import link.socket.kore.ui.theme.nonContentCardColor

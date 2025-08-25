@@ -1,10 +1,11 @@
 package link.socket.kore.data
 
 import kotlinx.coroutines.CoroutineScope
-import link.socket.kore.model.agent.KoreAgent
-import link.socket.kore.model.chat.Chat
-import link.socket.kore.model.conversation.Conversation
-import link.socket.kore.model.conversation.ConversationId
+import link.socket.kore.domain.agent.KoreAgent
+import link.socket.kore.domain.chat.Chat
+import link.socket.kore.domain.conversation.Conversation
+import link.socket.kore.domain.conversation.ConversationId
+import link.socket.kore.domain.model.llm.AI_Configuration
 import link.socket.kore.util.logWith
 import link.socket.kore.util.randomUUID
 
@@ -48,13 +49,10 @@ class ConversationRepository(
         return id
     }
 
-    /**
-     * Runs the conversation with the given ConversationId. It repeatedly processes
-     * the completion request until there are no more tools to execute.
-     *
-     * @param conversationId The ID of the conversation to be run
-     */
-    suspend fun runConversation(conversationId: ConversationId) {
+    suspend fun runConversation(
+        config: AI_Configuration<*, *>,
+        conversationId: ConversationId
+    ) {
         var shouldRerun = false
 
         logWith("$tag-runConversation").i("Starting Conversation: $conversationId")
@@ -63,18 +61,23 @@ class ConversationRepository(
             logWith("$tag-runConversation").i("Running Conversation: $conversationId")
 
             getValue(conversationId)?.let { conversation ->
-                val completionRequest = conversation.getCompletionRequest()
+                with(conversation) {
+                    val completionRequest = getCompletionRequest(config.llm)
+                    println(completionRequest)
 
-                val ranTools =
-                    conversation.agent.execute(completionRequest) { chats ->
-                        storeValue(conversationId, conversation.add(*chats.toTypedArray()))
+                    val ranTools = agent.execute(
+                        client = config.clientProvider.provideClient(),
+                        completionRequest = completionRequest,
+                    ) { chats ->
+                        storeValue(conversationId, add(*chats.toTypedArray()))
                     }
 
-                if (ranTools) {
-                    logWith("$tag-runConversation").i("${conversation.agent.tag} ran tools: $conversationId")
-                }
+                    if (ranTools) {
+                        logWith("$tag-runConversation").i("${agent.tag} ran tools: $conversationId")
+                    }
 
-                shouldRerun = ranTools
+                    shouldRerun = ranTools
+                }
             }
         } while (shouldRerun)
 
@@ -89,6 +92,7 @@ class ConversationRepository(
      * @param input The user input to be added as a chat
      */
     suspend fun addUserChat(
+        config: AI_Configuration<*, *>,
         conversationId: ConversationId,
         input: String,
     ) {
@@ -96,7 +100,7 @@ class ConversationRepository(
 
         getValue(conversationId)?.apply {
             storeValue(conversationId, addUserChat(input))
-            runConversation(conversationId)
+            runConversation(config, conversationId)
         }
     }
 }

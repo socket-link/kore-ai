@@ -29,12 +29,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import link.socket.kore.model.agent.AgentDefinition
-import link.socket.kore.model.agent.AgentInput
-import link.socket.kore.model.agent.bundled.codeAgents
-import link.socket.kore.model.agent.bundled.generalAgents
-import link.socket.kore.model.agent.bundled.promptAgents
-import link.socket.kore.model.agent.bundled.reasoningAgents
+import link.socket.kore.domain.agent.AgentDefinition
+import link.socket.kore.domain.agent.AgentInput
+import link.socket.kore.domain.agent.bundled.codeAgents
+import link.socket.kore.domain.agent.bundled.generalAgents
+import link.socket.kore.domain.agent.bundled.promptAgents
+import link.socket.kore.domain.agent.bundled.reasoningAgents
 import link.socket.kore.ui.widget.header.Header
 
 /**

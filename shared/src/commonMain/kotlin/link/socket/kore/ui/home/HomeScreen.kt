@@ -16,7 +16,7 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import link.socket.kore.model.conversation.Conversation
+import link.socket.kore.domain.conversation.Conversation
 import link.socket.kore.ui.widget.ConversationCard
 
 /**

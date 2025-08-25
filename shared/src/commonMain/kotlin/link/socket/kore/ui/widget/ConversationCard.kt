@@ -10,7 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import link.socket.kore.model.conversation.Conversation
+import link.socket.kore.domain.conversation.Conversation
 import link.socket.kore.ui.theme.conversationCardHeight
 import link.socket.kore.ui.theme.themeTypography
 

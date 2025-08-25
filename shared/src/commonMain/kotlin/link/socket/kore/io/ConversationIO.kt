@@ -2,7 +2,7 @@ package link.socket.kore.io
 
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
-import link.socket.kore.model.conversation.Conversation
+import link.socket.kore.domain.conversation.Conversation
 import link.socket.kore.util.toSnakeCase
 
 // Constants for export folder and file extension.
