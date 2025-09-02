@@ -19,23 +19,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import link.socket.kore.domain.agent.AgentDefinition
 import link.socket.kore.domain.agent.AgentProvider
 import link.socket.kore.domain.agent.KoreAgent
+import link.socket.kore.domain.agent.definition.AgentDefinition
 import link.socket.kore.domain.app.Application
 import link.socket.kore.domain.conversation.Conversation
 import link.socket.kore.domain.conversation.ConversationId
 import link.socket.kore.domain.model.llm.AI_Configuration
+import link.socket.kore.ui.agent.AgentCreationScreen
 import link.socket.kore.ui.conversation.ConversationScreen
 import link.socket.kore.ui.home.HomeScreen
-import link.socket.kore.ui.selection.AgentSelectionScreen
 import link.socket.kore.ui.theme.themeColors
 import link.socket.kore.ui.theme.themeShapes
 import link.socket.kore.ui.theme.themeTypography
 
 enum class Screen {
     HOME,
-    SELECTION,
+    AGENT_CREATION,
     CONVERSATION,
 }
 
@@ -139,7 +139,7 @@ fun App(
                         modifier = Modifier.fillMaxSize(),
                         agentConversationsList = allConversations.value.values.toList(),
                         onCreateConversationSelected = {
-                            selectedScreen = Screen.SELECTION
+                            selectedScreen = Screen.AGENT_CREATION
                         },
                         onConversationSelected = { conversation ->
                             onConversationSelected(conversation.id)
@@ -147,8 +147,8 @@ fun App(
                     )
                 }
 
-                Screen.SELECTION -> {
-                    AgentSelectionScreen(
+                Screen.AGENT_CREATION -> {
+                    AgentCreationScreen(
                         modifier = Modifier.fillMaxSize(),
                         onSubmit = { agentDefinition ->
                             val agent = application.createAgent(

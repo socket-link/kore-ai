@@ -8,8 +8,8 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import link.socket.kore.data.ConversationRepository
 import link.socket.kore.domain.agent.KoreAgent
-import link.socket.kore.domain.agent.bundled.agentArgsList
-import link.socket.kore.domain.agent.bundled.getAgentDefinition
+import link.socket.kore.domain.agent.definition.agentArgsList
+import link.socket.kore.domain.agent.definition.getAgentDefinition
 import link.socket.kore.domain.conversation.ConversationId
 import link.socket.kore.domain.model.llm.AI_Configuration
 import link.socket.kore.domain.model.tool.FunctionProvider

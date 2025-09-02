@@ -7,7 +7,7 @@ import androidx.compose.material.icons.twotone.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.agent.AgentDefinition
+import link.socket.kore.domain.agent.definition.AgentDefinition
 import link.socket.kore.ui.widget.header.Header
 
 /**

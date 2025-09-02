@@ -4,6 +4,7 @@ package link.socket.kore.domain.agent
 
 import kotlinx.coroutines.CoroutineScope
 import link.socket.kore.data.ConversationRepository
+import link.socket.kore.domain.agent.definition.AgentDefinition
 import link.socket.kore.domain.capability.AgentCapability
 import link.socket.kore.domain.capability.IOCapability
 import link.socket.kore.domain.model.llm.AI_Configuration
