@@ -107,6 +107,11 @@ kotlin {
                 implementation(kotlin("reflect"))
             }
         }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
         val androidMain by getting {
             dependencies {
                 api("androidx.activity:activity-compose:1.9.1")
@@ -121,6 +126,11 @@ kotlin {
                 implementation(compose.desktop.common)
                 implementation("com.lordcodes.turtle:turtle:0.10.0")
                 implementation("io.ktor:ktor-client-okhttp:2.3.6")
+            }
+        }
+        val jvmTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
             }
         }
         val iosX64Main by getting

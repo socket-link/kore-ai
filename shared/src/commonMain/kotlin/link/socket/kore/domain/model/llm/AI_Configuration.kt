@@ -3,10 +3,7 @@ package link.socket.kore.domain.model.llm
 import link.socket.kore.domain.model.tool.ToolDefinition
 
 
-val DEFAULT_AI_CONFIGURATION = AI_Configuration(
-    llm = LLM_Gemini._2_5_Flash,
-    clientProvider = AI_ClientProvider.Google,
-)
+val DEFAULT_AI_CONFIGURATION = aiConfiguration()
 
 data class AI_Configuration <
     TD : ToolDefinition,
