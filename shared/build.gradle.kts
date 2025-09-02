@@ -117,6 +117,7 @@ kotlin {
                 api("androidx.activity:activity-compose:1.9.1")
                 api("androidx.appcompat:appcompat:1.7.0")
                 api("androidx.core:core-ktx:1.13.1")
+                implementation("androidx.compose.ui:ui-tooling-preview")
                 implementation("com.lordcodes.turtle:turtle:0.10.0")
                 implementation("io.ktor:ktor-client-okhttp:2.3.6")
             }

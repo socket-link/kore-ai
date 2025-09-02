@@ -13,6 +13,8 @@ fun MainView(
 
 @Preview
 @Composable
-fun AppPreview() {
-    App(DEFAULT_AI_CONFIGURATION)
+fun MainViewPreview() {
+    MainView(
+        clientProvider = DEFAULT_AI_CONFIGURATION,
+    )
 }
