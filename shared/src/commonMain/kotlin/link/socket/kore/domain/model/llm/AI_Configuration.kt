@@ -10,5 +10,5 @@ data class AI_Configuration <
     L : LLM<TD>
     > (
     val llm: LLM<TD>,
-    val clientProvider: AI_ClientProvider<TD, L>,
+    val clientProvider: AI_Provider<TD, L>,
 )

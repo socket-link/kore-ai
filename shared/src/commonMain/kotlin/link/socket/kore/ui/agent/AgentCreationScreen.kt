@@ -1,8 +1,9 @@
 package link.socket.kore.ui.agent
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,17 +12,14 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FabPosition
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,24 +27,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.agent.AgentInput
 import link.socket.kore.domain.agent.definition.AgentDefinition
 import link.socket.kore.domain.agent.definition.codeAgents
 import link.socket.kore.domain.agent.definition.generalAgents
 import link.socket.kore.domain.agent.definition.promptAgents
 import link.socket.kore.domain.agent.definition.reasoningAgents
+import link.socket.kore.domain.model.llm.AI_Provider
+import link.socket.kore.domain.model.llm.LLM
+import link.socket.kore.ui.model.ProviderModelSelector
 import link.socket.kore.ui.widget.header.Header
-
-enum class LLMProvider {
-    Gemini,
-    Claude,
-    ChatGPT,
-}
-
-private enum class Screen {
-    SELECTION,
-    CREATION,
-}
 
 @Composable
 fun AgentCreationScreen(
@@ -54,10 +43,27 @@ fun AgentCreationScreen(
     onSubmit: (AgentDefinition) -> Unit,
     onBackClicked: () -> Unit,
 ) {
-    var partiallySelectedAgent by remember { mutableStateOf<AgentDefinition?>(null) }
-    var currentScreen by remember { mutableStateOf(Screen.SELECTION) }
+    var partiallySelectedAgent by remember {
+        mutableStateOf<AgentDefinition?>(null)
+    }
 
-    val neededInputs: List<AgentInput> by remember(partiallySelectedAgent) {
+    var selectedProvider by remember {
+        mutableStateOf<AI_Provider<*, *>?>(null)
+    }
+
+    var selectedModel by remember {
+        mutableStateOf<LLM<*>?>(null)
+    }
+
+    val selectableProviders = remember {
+        AI_Provider.ALL_PROVIDERS
+    }
+
+    val selectableModels = remember(selectedProvider) {
+        derivedStateOf { selectedProvider?.availableModels }
+    }
+
+    val neededInputs by remember(partiallySelectedAgent) {
         mutableStateOf(partiallySelectedAgent?.neededInputs ?: emptyList())
     }
 
@@ -85,70 +91,53 @@ fun AgentCreationScreen(
                         displayBackIcon = true,
                         onBackClicked = onBackClicked,
                     )
-                }
-            }
-        },
-        floatingActionButton = {
-            if (currentScreen == Screen.SELECTION) {
-                Box(
-                    modifier = Modifier
-                        .padding(
-                            end = 8.dp,
-                            bottom = 16.dp,
-                        ),
-                ) {
-                    FloatingActionButton(
-                        onClick = {
-                            currentScreen = Screen.CREATION
+
+                    ProviderModelSelector(
+                        selectedProvider = selectedProvider,
+                        selectedModel = selectedModel,
+                        selectableProviders = selectableProviders,
+                        selectableModels = selectableModels.value,
+                        onProviderSelected = { provider ->
+                            selectedProvider = provider
+                            selectedModel = provider.defaultModel
                         },
-                    ) {
-                        Icon(Icons.Filled.Add, contentDescription = "Add")
-                    }
+                        onModelSelected = { model ->
+                            selectedModel = model
+                        }
+                    )
+
                 }
             }
         },
-        floatingActionButtonPosition = FabPosition.End,
     ) { paddingValues ->
-        when (currentScreen) {
-            Screen.SELECTION -> {
-                if (neededInputs.isEmpty()) {
-                    AgentColumn(
-                        modifier = Modifier.padding(paddingValues),
-                        onAgentSelected = onAgentSelected,
-                    )
-                } else {
-                    AgentInputs(
-                        modifier = Modifier.padding(paddingValues),
-                        partiallySelectedAgent = partiallySelectedAgent!!,
-                        neededInputs = neededInputs,
-                        optionalInputs = partiallySelectedAgent!!.optionalInputs,
-                        onAgentSubmission = { agentDefinition ->
-                            onSubmit(agentDefinition)
-                        },
-                    )
-                }
-            }
-            Screen.CREATION -> {
-                AgentCreationScreen(
+        Column {
+            if (neededInputs.isEmpty()) {
+                AgentColumn(
                     modifier = Modifier.padding(paddingValues),
-                    onSubmit = { agentDefinition ->
+                    onAgentSelected = onAgentSelected,
+                )
+            } else {
+                AgentInputs(
+                    modifier = Modifier.padding(paddingValues),
+                    partiallySelectedAgent = partiallySelectedAgent!!,
+                    neededInputs = neededInputs,
+                    optionalInputs = partiallySelectedAgent!!.optionalInputs,
+                    onAgentSubmission = { agentDefinition ->
                         onSubmit(agentDefinition)
                     },
-                    onBackClicked = {
-                        currentScreen = Screen.SELECTION
-                    }
                 )
             }
+
+            AgentCreationFlow(
+                modifier = Modifier.padding(paddingValues),
+                onSubmit = { agentDefinition ->
+                    onSubmit(agentDefinition)
+                },
+            )
         }
     }
 }
 
-/**
- * Composable function to display a column of agents.
- *
- * @param modifier Modifier to be applied to the layout.
- * @param onAgentSelected Callback function to handle agent selection.
- */
 @Composable
 fun AgentColumn(
     modifier: Modifier = Modifier,
@@ -181,13 +170,6 @@ fun AgentColumn(
     }
 }
 
-/**
- * Composable function to display a row of agents.
- *
- * @param category The category of agents.
- * @param agents List of agent definitions.
- * @param onAgentSelected Callback function to handle agent selection.
- */
 @Composable
 fun AgentRow(
     category: String,
@@ -222,12 +204,6 @@ fun AgentRow(
     }
 }
 
-/**
- * Composable function to display an agent card.
- *
- * @param agent The agent definition.
- * @param onAgentSelected Callback function to handle agent selection.
- */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AgentCard(
@@ -236,7 +212,7 @@ fun AgentCard(
 ) {
     Card(
         modifier = Modifier
-            .requiredSize(200.dp),
+            .requiredSize(128.dp),
         elevation = 4.dp,
         onClick = {
             onAgentSelected(agent)
@@ -250,6 +226,40 @@ fun AgentCard(
                 text = agent.name,
                 textAlign = TextAlign.Center,
             )
+        }
+    }
+}
+
+@Composable
+fun AgentCreationFlow(
+    modifier: Modifier = Modifier,
+    onSubmit: (AgentDefinition) -> Unit,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            text = "Create Agent - LLM Configuration"
+        )
+
+        Spacer(modifier = Modifier.padding(8.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Button(
+                onClick = {
+//                    onSubmit()
+                }
+            ) {
+                Text("Save")
+            }
         }
     }
 }

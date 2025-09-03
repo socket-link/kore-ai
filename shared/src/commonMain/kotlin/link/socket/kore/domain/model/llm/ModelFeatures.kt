@@ -1,11 +1,11 @@
 package link.socket.kore.domain.model.llm
 
-import io.ktor.util.date.GMTDate
+import io.ktor.util.date.*
 import link.socket.kore.domain.model.tool.ProvidedTool
 
 data class ModelFeatures(
     val availableTools: List<ProvidedTool<*>>,
-    val limits: Limits,
+    val limits: Limits?,
     val reasoningLevel: RelativeReasoning,
     val speed: RelativeSpeed,
     val supportedInputs: SupportedInputs,

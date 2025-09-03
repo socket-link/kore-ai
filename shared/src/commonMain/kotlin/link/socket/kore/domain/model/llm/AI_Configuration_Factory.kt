@@ -34,14 +34,14 @@ fun aiConfiguration(): AI_Configuration<Tool_Gemini, LLM_Gemini> =
 fun aiConfiguration(model: LLM_Gemini): AI_Configuration<Tool_Gemini, LLM_Gemini> =
     AI_Configuration(
         llm = model,
-        clientProvider = AI_ClientProvider.Google,
+        clientProvider = AI_Provider.Google,
     )
 
 /** Create a configuration for Anthropic Claude models. */
 fun aiConfiguration(model: LLM_Claude): AI_Configuration<Tool_Claude, LLM_Claude> =
     AI_Configuration(
         llm = model,
-        clientProvider = AI_ClientProvider.Anthropic,
+        clientProvider = AI_Provider.Anthropic,
     )
 
 /**
@@ -51,5 +51,5 @@ fun aiConfiguration(model: LLM_Claude): AI_Configuration<Tool_Claude, LLM_Claude
 fun aiConfiguration(model: LLM_ChatGPT): AI_Configuration<Tool_OpenAI, LLM_ChatGPT> =
     AI_Configuration(
         llm = model,
-        clientProvider = AI_ClientProvider.OpenAI,
+        clientProvider = AI_Provider.OpenAI,
     )

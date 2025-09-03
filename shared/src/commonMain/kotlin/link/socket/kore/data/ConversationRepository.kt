@@ -66,7 +66,7 @@ class ConversationRepository(
                     println(completionRequest)
 
                     val ranTools = agent.execute(
-                        client = config.clientProvider.provideClient(),
+                        client = config.clientProvider.client,
                         completionRequest = completionRequest,
                     ) { chats ->
                         storeValue(conversationId, add(*chats.toTypedArray()))

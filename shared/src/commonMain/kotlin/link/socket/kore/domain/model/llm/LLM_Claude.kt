@@ -2,8 +2,7 @@
 
 package link.socket.kore.domain.model.llm
 
-import io.ktor.util.date.GMTDate
-import io.ktor.util.date.Month
+import io.ktor.util.date.*
 import link.socket.kore.domain.model.llm.ModelFeatures.Limits
 import link.socket.kore.domain.model.llm.ModelFeatures.Limits.TokenLimits
 import link.socket.kore.domain.model.llm.ModelFeatures.RelativeReasoning
@@ -66,26 +65,6 @@ sealed class LLM_Claude(
     )
 
     companion object Companion {
-
-        val ALL_MODELS = listOf(
-            Opus_4_1,
-            Opus_4,
-            Sonnet_4,
-            Sonnet_3_7,
-            Haiku_3_5,
-            Haiku_3,
-        )
-
-
-        // ---- Model Names ----
-
-        private const val OPUS_4_1_NAME = "claude-opus-4-1"
-        private const val OPUS_4_NAME = "claude-opus-4-0"
-        private const val SONNET_4_NAME = "claude-sonnet-4-0"
-        private const val SONNET_3_7_NAME = "claude-3-7-sonnet-latest"
-        private const val HAIKU_3_5_NAME = "claude-3-5-haiku-latest"
-        private const val HAIKU_3_NAME = "claude-3-haiku-20240307"
-
 
         // ---- Tools ----
 
@@ -200,6 +179,7 @@ sealed class LLM_Claude(
         )
 
 
+
         // ---- Training Cutoffs ----
 
         private val Opus_Cutoff = GMTDate(
@@ -289,6 +269,30 @@ sealed class LLM_Claude(
                 pdf = supportsPdf,
             ),
             trainingCutoffDate = cutoffDate,
+        )
+
+
+        // ---- Model Names ----
+
+        private const val OPUS_4_1_NAME = "claude-opus-4-1"
+        private const val OPUS_4_NAME = "claude-opus-4-0"
+        private const val SONNET_4_NAME = "claude-sonnet-4-0"
+        private const val SONNET_3_7_NAME = "claude-3-7-sonnet-latest"
+        private const val HAIKU_3_5_NAME = "claude-3-5-haiku-latest"
+        private const val HAIKU_3_NAME = "claude-3-haiku-20240307"
+
+
+        // ---- Models ----
+
+        val DEFAULT = Sonnet_4
+
+        val ALL_MODELS = listOf(
+            Opus_4_1,
+            Opus_4,
+            Sonnet_4,
+            Sonnet_3_7,
+            Haiku_3_5,
+            Haiku_3,
         )
     }
 }

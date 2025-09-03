@@ -2,8 +2,7 @@
 
 package link.socket.kore.domain.model.llm
 
-import io.ktor.util.date.GMTDate
-import io.ktor.util.date.Month
+import io.ktor.util.date.*
 import link.socket.kore.domain.model.llm.ModelFeatures.Limits
 import link.socket.kore.domain.model.llm.ModelFeatures.Limits.TokenLimits
 import link.socket.kore.domain.model.llm.ModelFeatures.RelativeReasoning
@@ -39,24 +38,6 @@ sealed class LLM_Gemini(
     )
 
     companion object Companion {
-
-        val ALL_MODELS = listOf(
-            _2_5_Pro,
-            _2_5_Flash,
-            _2_5_Flash_Lite,
-            _2_0_Flash,
-            _2_0_Flash_Lite,
-        )
-
-
-        // ---- Model Names ----
-
-        private const val _2_5_PRO_NAME = "gemini-2.5-pro"
-        private const val _2_5_FLASH_NAME = "gemini-2.5-flash"
-        private const val _2_5_FLASH_LITE_NAME = "gemini-2.5-flash-lite"
-        private const val _2_0_FLASH_NAME = "gemini-2.0-flash"
-        private const val _2_0_FLASH_LITE_NAME = "gemini-2.0-flash-lite"
-
 
         // ---- Tools ----
 
@@ -316,6 +297,28 @@ sealed class LLM_Gemini(
                 video = true,
             ),
             trainingCutoffDate = _2_0_Cutoff,
+        )
+
+
+        // ---- Model Names ----
+
+        private const val _2_5_PRO_NAME = "gemini-2.5-pro"
+        private const val _2_5_FLASH_NAME = "gemini-2.5-flash"
+        private const val _2_5_FLASH_LITE_NAME = "gemini-2.5-flash-lite"
+        private const val _2_0_FLASH_NAME = "gemini-2.0-flash"
+        private const val _2_0_FLASH_LITE_NAME = "gemini-2.0-flash-lite"
+
+
+        // ---- Models ----
+
+        val DEFAULT = _2_5_Flash
+
+        val ALL_MODELS = listOf(
+            _2_5_Pro,
+            _2_5_Flash,
+            _2_5_Flash_Lite,
+            _2_0_Flash,
+            _2_0_Flash_Lite,
         )
     }
 }

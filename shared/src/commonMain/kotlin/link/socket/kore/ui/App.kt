@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -26,6 +27,7 @@ import link.socket.kore.domain.app.Application
 import link.socket.kore.domain.conversation.Conversation
 import link.socket.kore.domain.conversation.ConversationId
 import link.socket.kore.domain.model.llm.AI_Configuration
+import link.socket.kore.domain.model.llm.DEFAULT_AI_CONFIGURATION
 import link.socket.kore.ui.agent.AgentCreationScreen
 import link.socket.kore.ui.conversation.ConversationScreen
 import link.socket.kore.ui.home.HomeScreen
@@ -51,27 +53,31 @@ fun Application.createAgent(
 
 @Composable
 fun App(
-    config: AI_Configuration<*, *>,
     modifier: Modifier = Modifier,
 ) {
+    val selectedConfig = remember< MutableState<AI_Configuration<*, *>>> {
+        mutableStateOf(DEFAULT_AI_CONFIGURATION)
+    }
+
+    val scope = rememberCoroutineScope()
+
+    val application = remember(scope) { Application(scope) }
+
+    val allConversations: State<Map<ConversationId, Conversation>> =
+        application
+            .conversationRepository
+            .observeValues()
+            .collectAsState()
+
     MaterialTheme(
         colors = themeColors(),
         typography = themeTypography(),
         shapes = themeShapes(),
     ) {
-        val scope = rememberCoroutineScope()
-        val application = remember(scope) { Application(scope) }
-
         var selectedScreen by remember { mutableStateOf(Screen.HOME) }
         var selectedConversationId by remember { mutableStateOf<ConversationId?>(null) }
 
         val conversationListState = rememberLazyListState()
-
-        val allConversations: State<Map<ConversationId, Conversation>> =
-            application
-                .conversationRepository
-                .observeValues()
-                .collectAsState()
 
         val selectedConversationValue: State<Conversation?> =
             selectedConversationId?.let { id ->
@@ -123,7 +129,7 @@ fun App(
             scope.launch {
                 onExecutingConversation()
                 application.conversationRepository.runConversation(
-                    config = config,
+                    config = selectedConfig.value,
                     conversationId = selectedConversationId!!,
                 )
                 onConversationFinishedExecuting()
@@ -152,7 +158,7 @@ fun App(
                         modifier = Modifier.fillMaxSize(),
                         onSubmit = { agentDefinition ->
                             val agent = application.createAgent(
-                                config = config,
+                                config = selectedConfig.value,
                                 agentDefinition = agentDefinition,
                             )
                             onNewConversation(agent)
@@ -175,7 +181,7 @@ fun App(
                                     scope.launch {
                                         onExecutingConversation()
                                         application.conversationRepository.addUserChat(
-                                            config = config,
+                                            config = selectedConfig.value,
                                             conversationId = id,
                                             input = input,
                                         )

@@ -10,7 +10,7 @@ class AiConfigurationFactoryTest {
     fun `default aiConfiguration uses Gemini 2_5 Flash with Google provider`() {
         val config = aiConfiguration()
         assertSame(LLM_Gemini._2_5_Flash, config.llm)
-        assertSame(AI_ClientProvider.Google, config.clientProvider)
+        assertSame(AI_Provider.Google, config.clientProvider)
         assertEquals("gemini-2.5-flash", config.llm.name)
     }
 
@@ -18,6 +18,6 @@ class AiConfigurationFactoryTest {
     fun `aiConfiguration for Gemini model uses Google provider`() {
         val config = aiConfiguration(LLM_Gemini._2_5_Pro)
         assertSame(LLM_Gemini._2_5_Pro, config.llm)
-        assertSame(AI_ClientProvider.Google, config.clientProvider)
+        assertSame(AI_Provider.Google, config.clientProvider)
     }
 }
