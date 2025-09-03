@@ -24,9 +24,6 @@ data class KoreAgent(
     override val prompt: String
         get() = """
             ${super.prompt}
-
-            You are an Agent that can provide answers to Chat prompts through LLM completion.
-            
             ${definition.instructions.build()}
         """.trimIndent()
 

@@ -9,9 +9,9 @@ import com.aallam.openai.client.OpenAIHost
 import kotlin.time.Duration.Companion.hours
 import link.kore.shared.config.KotlinConfig
 import link.socket.kore.domain.model.tool.ToolDefinition
+import link.socket.kore.domain.model.tool.Tool_ChatGPT
 import link.socket.kore.domain.model.tool.Tool_Claude
 import link.socket.kore.domain.model.tool.Tool_Gemini
-import link.socket.kore.domain.model.tool.Tool_OpenAI
 
 private const val ANTHROPIC_API_ENDPOINT = "https://api.anthropic.com/v1/"
 private const val GOOGLE_API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/"
@@ -69,7 +69,7 @@ sealed interface AI_Provider <
         }
     }
 
-    data object OpenAI : AI_Provider<Tool_OpenAI, LLM_ChatGPT> {
+    data object OpenAI : AI_Provider<Tool_ChatGPT, LLM_ChatGPT> {
         override val id: ProviderId = "openai"
         override val name: String = "OpenAI"
 

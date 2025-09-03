@@ -2,8 +2,6 @@ package link.socket.kore.ui.agent
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,7 +10,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
@@ -34,7 +31,6 @@ import link.socket.kore.domain.agent.definition.promptAgents
 import link.socket.kore.domain.agent.definition.reasoningAgents
 import link.socket.kore.domain.model.llm.AI_Provider
 import link.socket.kore.domain.model.llm.LLM
-import link.socket.kore.ui.model.ProviderModelSelector
 import link.socket.kore.ui.widget.header.Header
 
 @Composable
@@ -87,36 +83,30 @@ fun AgentCreationScreen(
                         .fillMaxWidth(),
                 ) {
                     Header(
-                        title = "Agent Selection",
+                        title = "Agent Configuration",
                         displayBackIcon = true,
                         onBackClicked = onBackClicked,
                     )
-
-                    ProviderModelSelector(
-                        selectedProvider = selectedProvider,
-                        selectedModel = selectedModel,
-                        selectableProviders = selectableProviders,
-                        selectableModels = selectableModels.value,
-                        onProviderSelected = { provider ->
-                            selectedProvider = provider
-                            selectedModel = provider.defaultModel
-                        },
-                        onModelSelected = { model ->
-                            selectedModel = model
-                        }
-                    )
-
                 }
             }
         },
     ) { paddingValues ->
         Column {
-            if (neededInputs.isEmpty()) {
-                AgentColumn(
-                    modifier = Modifier.padding(paddingValues),
-                    onAgentSelected = onAgentSelected,
-                )
-            } else {
+            AgentConfiguration(
+                selectedProvider = selectedProvider,
+                selectedModel = selectedModel,
+                selectableProviders = selectableProviders,
+                selectableModels = selectableModels.value,
+                onProviderSelected = { provider ->
+                    selectedProvider = provider
+                    selectedModel = provider.defaultModel
+                },
+                onModelSelected = { model ->
+                    selectedModel = model
+                }
+            )
+
+            if (neededInputs.isNotEmpty()) {
                 AgentInputs(
                     modifier = Modifier.padding(paddingValues),
                     partiallySelectedAgent = partiallySelectedAgent!!,
@@ -128,11 +118,9 @@ fun AgentCreationScreen(
                 )
             }
 
-            AgentCreationFlow(
+            AgentColumn(
                 modifier = Modifier.padding(paddingValues),
-                onSubmit = { agentDefinition ->
-                    onSubmit(agentDefinition)
-                },
+                onAgentSelected = onAgentSelected,
             )
         }
     }
@@ -226,40 +214,6 @@ fun AgentCard(
                 text = agent.name,
                 textAlign = TextAlign.Center,
             )
-        }
-    }
-}
-
-@Composable
-fun AgentCreationFlow(
-    modifier: Modifier = Modifier,
-    onSubmit: (AgentDefinition) -> Unit,
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            text = "Create Agent - LLM Configuration"
-        )
-
-        Spacer(modifier = Modifier.padding(8.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Button(
-                onClick = {
-//                    onSubmit()
-                }
-            ) {
-                Text("Save")
-            }
         }
     }
 }

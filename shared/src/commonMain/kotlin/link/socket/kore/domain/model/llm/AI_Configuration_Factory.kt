@@ -4,7 +4,7 @@ package link.socket.kore.domain.model.llm
 
 import link.socket.kore.domain.model.tool.Tool_Claude
 import link.socket.kore.domain.model.tool.Tool_Gemini
-import link.socket.kore.domain.model.tool.Tool_OpenAI
+import link.socket.kore.domain.model.tool.Tool_ChatGPT
 
 /**
  * Developer-friendly helpers to configure the LLM provider + model without dealing with generics.
@@ -48,7 +48,7 @@ fun aiConfiguration(model: LLM_Claude): AI_Configuration<Tool_Claude, LLM_Claude
  * Create a configuration for OpenAI ChatGPT models.
  * Note: concrete ChatGPT models are not defined yet; this overload is provided for API completeness.
  */
-fun aiConfiguration(model: LLM_ChatGPT): AI_Configuration<Tool_OpenAI, LLM_ChatGPT> =
+fun aiConfiguration(model: LLM_ChatGPT): AI_Configuration<Tool_ChatGPT, LLM_ChatGPT> =
     AI_Configuration(
         llm = model,
         clientProvider = AI_Provider.OpenAI,

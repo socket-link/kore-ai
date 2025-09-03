@@ -13,46 +13,65 @@ import link.socket.kore.domain.model.tool.Tool_Gemini
 
 sealed class LLM_Gemini(
     override val name: String,
+    override val displayName: String,
+    override val description: String,
     override val features: ModelFeatures,
-) : LLM<Tool_Gemini>(name, features) {
+) : LLM<Tool_Gemini>(name, displayName, description, features) {
 
     data object _2_5_Pro : LLM_Gemini(
-        name = _2_5_PRO_NAME,
-        features = _2_5_Pro_Features,
+        name = _2_5_Pro_NAME,
+        displayName = _2_5_Pro_DISPLAY_NAME,
+        description = _2_5_Pro_DESCRIPTION,
+        features = _2_5_Pro_FEATURES,
     )
+
     data object _2_5_Flash : LLM_Gemini(
-        name = _2_5_FLASH_NAME,
-        features = _2_5_Flash_Features,
+        name = _2_5_Flash_NAME,
+        displayName = _2_5_Flash_DISPLAY_NAME,
+        description = _2_5_Flash_DESCRIPTION,
+        features = _2_5_Flash_FEATURES,
     )
+
     data object _2_5_Flash_Lite : LLM_Gemini(
-        name = _2_5_FLASH_LITE_NAME,
-        features = _2_5_Flash_Lite_Features,
+        name = _2_5_Flash_Lite_NAME,
+        displayName = _2_5_Flash_Lite_DISPLAY_NAME,
+        description = _2_5_Flash_Lite_DESCRIPTION,
+        features = _2_5_Flash_Lite_FEATURES,
     )
+
     data object _2_0_Flash : LLM_Gemini(
-        name = _2_0_FLASH_NAME,
-        features = _2_0_Flash_Features,
+        name = _2_0_Flash_NAME,
+        displayName = _2_0_Flash_DISPLAY_NAME,
+        description = _2_0_Flash_DESCRIPTION,
+        features = _2_0_Flash_FEATURES,
     )
+
     data object _2_0_Flash_Lite : LLM_Gemini(
-        name = _2_0_FLASH_LITE_NAME,
-        features = _2_0_Flash_Lite_Features,
+        name = _2_0_Flash_Lite_NAME,
+        displayName = _2_0_Flash_Lite_DISPLAY_NAME,
+        description = _2_0_Flash_Lite_DESCRIPTION,
+        features = _2_0_Flash_Lite_FEATURES,
     )
 
     companion object Companion {
 
         // ---- Tools ----
 
-        private val _2_5_Tools = listOf(
+        private val _2_5_Pro_TOOLS: List<ProvidedTool<Tool_Gemini>> = listOf(
             ProvidedTool.CodeExecution(Tool_Gemini.CodeExecution),
             ProvidedTool.UrlContext(Tool_Gemini.UrlContext),
             ProvidedTool.WebSearch(Tool_Gemini.WebSearch),
         )
 
-        private val _2_0_Flash_Tools = listOf(
+        private val _2_5_Flash_TOOLS: List<ProvidedTool<Tool_Gemini>> = _2_5_Pro_TOOLS
+        private val _2_5_Flash_Lite_TOOLS: List<ProvidedTool<Tool_Gemini>> = _2_5_Flash_TOOLS
+
+        private val _2_0_Flash_TOOLS: List<ProvidedTool<Tool_Gemini>> = listOf(
             ProvidedTool.CodeExecution(Tool_Gemini.CodeExecution),
             ProvidedTool.WebSearch(Tool_Gemini.WebSearch),
         )
 
-        private val _2_0_Flash_Lite_Tools = emptyList<ProvidedTool<Tool_Gemini>>()
+        private val _2_0_Flash_Lite_TOOLS = emptyList<ProvidedTool<Tool_Gemini>>()
 
 
         // ---- Rate Limits ----
@@ -137,35 +156,35 @@ sealed class LLM_Gemini(
             tier3RequestLimits = Pair(TIER_3_2_0_FLASH_LITE_RPM, TIER_3_2_0_FLASH_LITE_RPD),
         )
 
-        private val _2_5_Pro_RateLimits = _2_5_Pro_RateLimitsFactory.createRateLimits(
+        private val _2_5_Pro_RATE_LIMITS = _2_5_Pro_RateLimitsFactory.createRateLimits(
             tierFreeTPM = TokenCount._250k,
             tier1TPM = TokenCount._2m,
             tier2TPM = TokenCount._5m,
             tier3TPM = TokenCount._8m,
         )
 
-        private val _2_5_Flash_RateLimits = _2_5_Flash_RateLimitsFactory.createRateLimits(
+        private val _2_5_Flash_RATE_LIMITS = _2_5_Flash_RateLimitsFactory.createRateLimits(
             tierFreeTPM = TokenCount._250k,
             tier1TPM = TokenCount._1m,
             tier2TPM = TokenCount._3m,
             tier3TPM = TokenCount._8m,
         )
 
-        private val _2_5_Flash_Lite_RateLimits = _2_5_Flash_Lite_RateLimitsFactory.createRateLimits(
+        private val _2_5_Flash_Lite_RATE_LIMITS = _2_5_Flash_Lite_RateLimitsFactory.createRateLimits(
             tierFreeTPM = TokenCount._250k,
             tier1TPM = TokenCount._4m,
             tier2TPM = TokenCount._10m,
             tier3TPM = TokenCount._30m,
         )
 
-        private val _2_0_Flash_RateLimits = _2_0_Flash_RateLimitsFactory.createRateLimits(
+        private val _2_0_Flash_RATE_LIMITS = _2_0_Flash_RateLimitsFactory.createRateLimits(
             tierFreeTPM = TokenCount._1m,
             tier1TPM = TokenCount._4m,
             tier2TPM = TokenCount._10m,
             tier3TPM = TokenCount._30m,
         )
 
-        private val _2_0_Flash_Lite_RateLimits = _2_0_Flash_Lite_RateLimitsFactory.createRateLimits(
+        private val _2_0_Flash_Lite_RATE_LIMITS = _2_0_Flash_Lite_RateLimitsFactory.createRateLimits(
             tierFreeTPM = TokenCount._1m,
             tier1TPM = TokenCount._4m,
             tier2TPM = TokenCount._10m,
@@ -177,48 +196,53 @@ sealed class LLM_Gemini(
 
         private val CONTEXT_WINDOW_TOKENS = TokenCount._1m
 
-        private val _2_5_TokenLimits = TokenLimits(
+        private val _2_5_Pro_TOKEN_LIMITS = TokenLimits(
             contextWindow = CONTEXT_WINDOW_TOKENS,
             maxOutput = TokenCount._64k,
         )
 
-        private val _2_0_TokenLimits = TokenLimits(
+        private val _2_5_Flash_TOKEN_LIMITS = _2_5_Pro_TOKEN_LIMITS
+        private val _2_5_Flash_Lite_TOKEN_LIMITS = _2_5_Pro_TOKEN_LIMITS
+
+        private val _2_0_Flash_TOKEN_LIMITS = TokenLimits(
             contextWindow = CONTEXT_WINDOW_TOKENS,
             maxOutput = TokenCount._8192,
         )
 
+        private val _2_0_Flash_Lite_TOKEN_LIMITS = _2_0_Flash_TOKEN_LIMITS
+
 
         // ---- Limits ----
 
-        private val _2_5_Pro_Limits = Limits(
-            rate = _2_5_Pro_RateLimits,
-            token = _2_5_TokenLimits,
+        private val _2_5_Pro_LIMITS = Limits(
+            rate = _2_5_Pro_RATE_LIMITS,
+            token = _2_5_Pro_TOKEN_LIMITS,
         )
 
-        private val _2_5_Flash_Limits = Limits(
-            rate = _2_5_Flash_RateLimits,
-            token = _2_5_TokenLimits,
+        private val _2_5_Flash_LIMITS = Limits(
+            rate = _2_5_Flash_RATE_LIMITS,
+            token = _2_5_Flash_TOKEN_LIMITS,
         )
 
-        private val _2_5_Flash_Lite_Limits = Limits(
-            rate = _2_5_Flash_Lite_RateLimits,
-            token = _2_5_TokenLimits,
+        private val _2_5_Flash_Lite_LIMITS = Limits(
+            rate = _2_5_Flash_Lite_RATE_LIMITS,
+            token = _2_5_Flash_Lite_TOKEN_LIMITS,
         )
 
-        private val _2_0_Flash_Limits = Limits(
-            rate = _2_0_Flash_RateLimits,
-            token = _2_0_TokenLimits,
+        private val _2_0_Flash_LIMITS = Limits(
+            rate = _2_0_Flash_RATE_LIMITS,
+            token = _2_0_Flash_TOKEN_LIMITS,
         )
 
-        private val _2_0_Flash_Lite_Limits = Limits(
-            rate = _2_0_Flash_Lite_RateLimits,
-            token = _2_0_TokenLimits,
+        private val _2_0_Flash_Lite_LIMITS = Limits(
+            rate = _2_0_Flash_Lite_RATE_LIMITS,
+            token = _2_0_Flash_Lite_TOKEN_LIMITS,
         )
 
 
         // ---- Training Cutoffs ----
 
-        private val _2_5_Cutoff = GMTDate(
+        private val _2_5_Pro_CUTOFF = GMTDate(
             year = 2025,
             month = Month.JANUARY,
             dayOfMonth = 1,
@@ -227,7 +251,10 @@ sealed class LLM_Gemini(
             seconds = 0,
         )
 
-        private val _2_0_Cutoff = GMTDate(
+        private val _2_5_Flash_CUTOFF = _2_5_Pro_CUTOFF
+        private val _2_5_Flash_Lite_CUTOFF = _2_5_Flash_CUTOFF
+
+        private val _2_0_Flash_CUTOFF = GMTDate(
             year = 2024,
             month = Month.AUGUST,
             dayOfMonth = 1,
@@ -236,77 +263,91 @@ sealed class LLM_Gemini(
             seconds = 0,
         )
 
+        private val _2_0_Flash_Lite_CUTOFF = _2_0_Flash_CUTOFF
+
+
+        // --- Supported Inputs ----
+
+        private val _2_5_Pro_SUPPORTED_INPUTS = SupportedInputs.ALL
+        private val _2_5_Flash_SUPPORTED_INPUTS = SupportedInputs(
+            audio = true,
+            image = true,
+            text = true,
+            video = true,
+        )
+        private val _2_5_Flash_Lite_SUPPORTED_INPUTS = _2_5_Pro_SUPPORTED_INPUTS
+        private val _2_0_Flash_SUPPORTED_INPUTS = _2_5_Flash_SUPPORTED_INPUTS
+        private val _2_0_Flash_Lite_SUPPORTED_INPUTS = _2_0_Flash_SUPPORTED_INPUTS
 
         // ---- Model Features ----
 
-        private val _2_5_Pro_Features = ModelFeatures(
-            availableTools = _2_5_Tools,
-            limits = _2_5_Pro_Limits,
+        private val _2_5_Pro_FEATURES = ModelFeatures(
+            availableTools = _2_5_Pro_TOOLS,
+            limits = _2_5_Pro_LIMITS,
             reasoningLevel = RelativeReasoning.HIGH,
             speed = RelativeSpeed.SLOW,
-            supportedInputs = SupportedInputs.ALL,
-            trainingCutoffDate = _2_5_Cutoff,
+            supportedInputs = _2_5_Pro_SUPPORTED_INPUTS,
+            trainingCutoffDate = _2_5_Pro_CUTOFF,
         )
 
-        private val _2_5_Flash_Features = ModelFeatures(
-            availableTools = _2_5_Tools,
-            limits = _2_5_Flash_Limits,
+        private val _2_5_Flash_FEATURES = ModelFeatures(
+            availableTools = _2_5_Flash_TOOLS,
+            limits = _2_5_Flash_LIMITS,
             reasoningLevel = RelativeReasoning.NORMAL,
             speed = RelativeSpeed.NORMAL,
-            supportedInputs = SupportedInputs(
-                audio = true,
-                image = true,
-                text = true,
-                video = true,
-            ),
-            trainingCutoffDate = _2_5_Cutoff,
+            supportedInputs = _2_5_Flash_SUPPORTED_INPUTS,
+            trainingCutoffDate = _2_5_Flash_CUTOFF,
         )
 
-        private val _2_5_Flash_Lite_Features = ModelFeatures(
-            availableTools = _2_5_Tools,
-            limits = _2_5_Flash_Lite_Limits,
+        private val _2_5_Flash_Lite_FEATURES = ModelFeatures(
+            availableTools = _2_5_Flash_Lite_TOOLS,
+            limits = _2_5_Flash_Lite_LIMITS,
             reasoningLevel = RelativeReasoning.NORMAL,
             speed = RelativeSpeed.FAST,
-            supportedInputs = SupportedInputs.ALL,
-            trainingCutoffDate = _2_5_Cutoff,
+            supportedInputs = _2_5_Flash_Lite_SUPPORTED_INPUTS,
+            trainingCutoffDate = _2_5_Flash_Lite_CUTOFF,
         )
 
-        private val _2_0_Flash_Features = ModelFeatures(
-            availableTools = _2_0_Flash_Tools,
-            limits = _2_0_Flash_Limits,
+        private val _2_0_Flash_FEATURES = ModelFeatures(
+            availableTools = _2_0_Flash_TOOLS,
+            limits = _2_0_Flash_LIMITS,
             reasoningLevel = RelativeReasoning.NORMAL,
             speed = RelativeSpeed.FAST,
-            supportedInputs = SupportedInputs(
-                audio = true,
-                image = true,
-                text = true,
-                video = true,
-            ),
-            trainingCutoffDate = _2_0_Cutoff,
+            supportedInputs = _2_0_Flash_SUPPORTED_INPUTS,
+            trainingCutoffDate = _2_0_Flash_CUTOFF,
         )
 
-        private val _2_0_Flash_Lite_Features = ModelFeatures(
-            availableTools =_2_0_Flash_Lite_Tools,
-            limits = _2_0_Flash_Lite_Limits,
+        private val _2_0_Flash_Lite_FEATURES = ModelFeatures(
+            availableTools =_2_0_Flash_Lite_TOOLS,
+            limits = _2_0_Flash_Lite_LIMITS,
             reasoningLevel = RelativeReasoning.LOW,
             speed = RelativeSpeed.FAST,
-            supportedInputs = SupportedInputs(
-                audio = true,
-                image = true,
-                text = true,
-                video = true,
-            ),
-            trainingCutoffDate = _2_0_Cutoff,
+            supportedInputs = _2_0_Flash_Lite_SUPPORTED_INPUTS,
+            trainingCutoffDate = _2_0_Flash_Lite_CUTOFF,
         )
 
 
         // ---- Model Names ----
 
-        private const val _2_5_PRO_NAME = "gemini-2.5-pro"
-        private const val _2_5_FLASH_NAME = "gemini-2.5-flash"
-        private const val _2_5_FLASH_LITE_NAME = "gemini-2.5-flash-lite"
-        private const val _2_0_FLASH_NAME = "gemini-2.0-flash"
-        private const val _2_0_FLASH_LITE_NAME = "gemini-2.0-flash-lite"
+        private const val _2_5_Pro_NAME = "gemini-2.5-pro"
+        private const val _2_5_Pro_DISPLAY_NAME = "Gemini 2.5 Pro"
+        private const val _2_5_Pro_DESCRIPTION = "Gemini 2.5 Pro is our state-of-the-art thinking model, capable of reasoning over complex problems in code, math, and STEM, as well as analyzing large datasets, codebases, and documents using long context."
+
+        private const val _2_5_Flash_NAME = "gemini-2.5-flash"
+        private const val _2_5_Flash_DISPLAY_NAME = "Gemini 2.5 Flash"
+        private const val _2_5_Flash_DESCRIPTION = "Our best model in terms of price-performance, offering well-rounded capabilities. 2.5 Flash is best for large scale processing, low-latency, high volume tasks that require thinking, and agentic use cases."
+
+        private const val _2_5_Flash_Lite_NAME = "gemini-2.5-flash-lite"
+        private const val _2_5_Flash_Lite_DISPLAY_NAME = "Gemini 2.5 Flash Lite"
+        private const val _2_5_Flash_Lite_DESCRIPTION = "A Gemini 2.5 Flash model optimized for cost-efficiency and high throughput."
+
+        private const val _2_0_Flash_NAME = "gemini-2.0-flash"
+        private const val _2_0_Flash_DISPLAY_NAME = "Gemini 2.0 Flash"
+        private const val _2_0_Flash_DESCRIPTION = "Gemini 2.0 Flash delivers next-gen features and improved capabilities, including superior speed, native tool use, and a 1M token context window."
+
+        private const val _2_0_Flash_Lite_NAME = "gemini-2.0-flash-lite"
+        private const val _2_0_Flash_Lite_DISPLAY_NAME = "Gemini 2.0 Flash Lite"
+        private const val _2_0_Flash_Lite_DESCRIPTION = "A Gemini 2.0 Flash model optimized for cost efficiency and low latency."
 
 
         // ---- Models ----

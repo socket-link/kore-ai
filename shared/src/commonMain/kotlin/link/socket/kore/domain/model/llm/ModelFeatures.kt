@@ -59,6 +59,21 @@ data class ModelFeatures(
                 text = true,
                 video = true,
             )
+
+            val TEXT = SupportedInputs(
+                text = true,
+            )
+
+            val TEXT_AND_IMAGE = SupportedInputs(
+                image = true,
+                text = true,
+            )
+
+            val TEXT_IMAGE_AND_PDF = SupportedInputs(
+                image = true,
+                text = true,
+                pdf = true,
+            )
         }
     }
 }

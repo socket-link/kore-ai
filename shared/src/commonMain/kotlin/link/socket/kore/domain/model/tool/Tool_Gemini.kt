@@ -1,9 +1,11 @@
+@file:Suppress("ClassName")
+
 package link.socket.kore.domain.model.tool
 
 sealed class Tool_Gemini(
     override val type: String,
     override val name: String,
-) : ToolDefinition.Gemini(type, name) {
+) : ToolDefinition(type, name) {
 
     data object CodeExecution : Tool_Gemini(
         type = "",

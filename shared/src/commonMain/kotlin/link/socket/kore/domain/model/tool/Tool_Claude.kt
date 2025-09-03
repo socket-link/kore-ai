@@ -1,9 +1,11 @@
+@file:Suppress("ClassName")
+
 package link.socket.kore.domain.model.tool
 
 sealed class Tool_Claude(
     override val type: String,
     override val name: String,
-) : ToolDefinition.Claude(type, name) {
+) : ToolDefinition(type, name) {
 
     data object Bash : Tool_Claude(
         type = "bash_20250124",
