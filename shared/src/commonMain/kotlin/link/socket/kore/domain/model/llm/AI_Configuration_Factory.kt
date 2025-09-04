@@ -1,55 +1,79 @@
-@file:Suppress("unused")
-
 package link.socket.kore.domain.model.llm
 
-import link.socket.kore.domain.model.tool.Tool_Claude
-import link.socket.kore.domain.model.tool.Tool_Gemini
-import link.socket.kore.domain.model.tool.Tool_ChatGPT
+import com.aallam.openai.client.OpenAI as Client
+import link.socket.kore.domain.model.tool.ToolDefinition
 
-/**
- * Developer-friendly helpers to configure the LLM provider + model without dealing with generics.
- *
- * Examples:
- * - Default (Gemini Flash):
- *   val config = aiConfiguration()
- *
- * - Explicit Gemini model:
- *   val config = aiConfiguration(LLM_Gemini._2_5_Pro)
- *
- * - Explicit Claude model:
- *   val config = aiConfiguration(LLM_Claude.Sonnet_3_7)
- *
- * - Explicit OpenAI model (when available):
- *   val config = aiConfiguration(LLM_ChatGPT /* model TBD */)
- */
+val DEFAULT_AI_CONFIGURATION = aiConfiguration(
+    model = LLM_Gemini.Flash_2_5,
+    backup = aiConfiguration(LLM_Claude.Sonnet_3_7),
+)
 
-/**
- * Default configuration.
- * Currently defaults to Google Gemini 2.5 Flash.
- */
-fun aiConfiguration(): AI_Configuration<Tool_Gemini, LLM_Gemini> =
-    aiConfiguration(LLM_Gemini._2_5_Flash)
+data class AI_ConfigurationWithFallback(
+    val mainConfigurationProvider: AI_Configuration<ToolDefinition, LLM<ToolDefinition>>,
+    val backupConfigurationProvider: AI_Configuration<ToolDefinition, LLM<ToolDefinition>>?,
+) : AI_Configuration<ToolDefinition, LLM<ToolDefinition>>() {
+
+    private var usedBackupConfiguration = false
+
+    override val client: Client = try {
+        mainConfigurationProvider.client
+    } catch (e: Exception) {
+        e.printStackTrace()
+
+        val client = backupConfigurationProvider?.client
+            ?: throw IllegalStateException(
+                "Failed to initialize client for ${backupConfigurationProvider?.selectedLLM?.name}",
+            )
+        usedBackupConfiguration = true
+        client
+    }
+
+    override val selectedLLM: LLM<ToolDefinition> by lazy {
+        if (!usedBackupConfiguration) {
+            return@lazy mainConfigurationProvider.selectedLLM
+        } else {
+            backupConfigurationProvider?.selectedLLM
+                ?: throw IllegalStateException(
+                    "Failed to initialize LLM for ${backupConfigurationProvider?.selectedLLM?.name}",
+                )
+        }
+    }
+}
 
 /** Create a configuration for Google Gemini models. */
-fun aiConfiguration(model: LLM_Gemini): AI_Configuration<Tool_Gemini, LLM_Gemini> =
-    AI_Configuration(
-        llm = model,
-        clientProvider = AI_Provider.Google,
-    )
+fun aiConfiguration(
+    model: LLM_Gemini,
+    backup: AI_Configuration<ToolDefinition, LLM<ToolDefinition>>? = null,
+): AI_Configuration<ToolDefinition, LLM<ToolDefinition>> = AI_ConfigurationWithFallback(
+    mainConfigurationProvider = StandardAI_Configuration(
+        client = AI_Provider._Google.client,
+        selectedLLM = model as LLM<ToolDefinition>
+    ),
+    backupConfigurationProvider = backup,
+)
 
 /** Create a configuration for Anthropic Claude models. */
-fun aiConfiguration(model: LLM_Claude): AI_Configuration<Tool_Claude, LLM_Claude> =
-    AI_Configuration(
-        llm = model,
-        clientProvider = AI_Provider.Anthropic,
-    )
+fun aiConfiguration(
+    model: LLM_Claude,
+    backup: AI_Configuration<ToolDefinition, LLM<ToolDefinition>>? = null,
+): AI_ConfigurationWithFallback = AI_ConfigurationWithFallback(
+    mainConfigurationProvider = StandardAI_Configuration(
+        client = AI_Provider._Anthropic.client,
+        selectedLLM = model as LLM<ToolDefinition>
+    ),
+    backupConfigurationProvider = backup,
+)
 
 /**
- * Create a configuration for OpenAI ChatGPT models.
- * Note: concrete ChatGPT models are not defined yet; this overload is provided for API completeness.
+ * Create a configuration for OpenAI models.
  */
-fun aiConfiguration(model: LLM_ChatGPT): AI_Configuration<Tool_ChatGPT, LLM_ChatGPT> =
-    AI_Configuration(
-        llm = model,
-        clientProvider = AI_Provider.OpenAI,
-    )
+fun aiConfiguration(
+    model: LLM_OpenAI,
+    backup: AI_Configuration<ToolDefinition, LLM<ToolDefinition>>? = null,
+): AI_ConfigurationWithFallback = AI_ConfigurationWithFallback(
+    mainConfigurationProvider = StandardAI_Configuration(
+        client = AI_Provider._OpenAI.client,
+        selectedLLM = model as LLM<ToolDefinition>
+    ),
+    backupConfigurationProvider = backup,
+)

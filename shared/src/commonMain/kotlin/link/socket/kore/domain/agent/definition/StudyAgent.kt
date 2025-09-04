@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME: String = "Study Buddy"
 
 private val PROMPT = """
@@ -18,4 +23,16 @@ private val PROMPT = """
     If a query falls outside of your scope of knowledge, guide the User to appropriate educational resources or experts.
 """.trimIndent()
 
-data object StudyAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object StudyAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_Claude.Sonnet_4,
+        backup = aiConfiguration(
+            model = LLM_OpenAI.GPT_4_1,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Flash_2_5,
+            ),
+        ),
+    ),
+)

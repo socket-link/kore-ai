@@ -1,10 +1,17 @@
 package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Release Management"
 
-private fun promptFrom(releaseType: String, versionScheme: String): String = """
+private fun promptFrom(
+    releaseType: String,
+    versionScheme: String,
+): String = """
     You are a Release Management Agent specialized in handling version control, release preparation, and deployment processes.
     
     Current task: Prepare $releaseType using $versionScheme
@@ -70,7 +77,19 @@ private fun promptFrom(releaseType: String, versionScheme: String): String = """
 
 data object ReleaseManagementAgent : AgentDefinition.Bundled(
     name = NAME,
-    prompt = promptFrom(releaseType = "Minor Release", versionScheme = "Semantic Versioning"),
+    prompt = promptFrom(
+        releaseType = "Minor Release",
+        versionScheme = "Semantic Versioning",
+    ),
+    aiConfiguration = aiConfiguration(
+        model = LLM_Claude.Opus_4_1,
+        backup = aiConfiguration(
+            model = LLM_OpenAI.GPT_4_1,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Pro_2_5,
+            ),
+        ),
+    ),
 ) {
     private val releaseTypeArg = AgentInput.EnumArgs(
         key = "releaseType",

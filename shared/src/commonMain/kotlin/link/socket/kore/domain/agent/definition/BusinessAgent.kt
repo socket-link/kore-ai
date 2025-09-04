@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME: String = "Business Advisor"
 
 private val PROMPT: String = """
@@ -16,4 +21,16 @@ private val PROMPT: String = """
     - Provide structured, step-by-step guidance tailored to their needs.
 """.trimIndent()
 
-data object BusinessAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object BusinessAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_OpenAI.GPT_5,
+        backup = aiConfiguration(
+            model = LLM_Claude.Opus_4_1,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Pro_2_5,
+            ),
+        ),
+    ),
+)

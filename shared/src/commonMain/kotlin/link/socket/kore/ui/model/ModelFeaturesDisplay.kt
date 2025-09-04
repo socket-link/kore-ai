@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -18,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
@@ -47,15 +49,29 @@ enum class UserTier(val displayName: String) {
     TIER_5("Tier 5")
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ModelFeaturesDisplay(
     features: ModelFeatures,
     modifier: Modifier = Modifier
 ) {
+    var cardExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    val cardHeight = remember(cardExpanded) {
+        if (cardExpanded) 300.dp else 150.dp
+    }
+
     Card(
-        modifier = modifier.padding(16.dp),
+        modifier = modifier
+            .requiredHeight(cardHeight)
+            .padding(16.dp),
         elevation = 4.dp,
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        onClick = {
+            cardExpanded = !cardExpanded
+        }
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

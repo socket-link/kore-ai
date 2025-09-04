@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME: String = "ReAct Agent"
 
 // Inspiration from https://www.width.ai/post/react-prompting
@@ -30,4 +35,16 @@ private val PROMPT: String = """
     Reflect 1: We have found that Lorelai Gilmore's father is named Richard. This approach was fast and effective.
 """.trimIndent()
 
-data object ReActAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object ReActAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_OpenAI.o3,
+        backup = aiConfiguration(
+            model = LLM_Claude.Opus_4_1,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Pro_2_5,
+            ),
+        ),
+    ),
+)

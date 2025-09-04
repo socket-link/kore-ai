@@ -179,7 +179,7 @@ sealed class AgentCapability(open val agentTag: String) : Capability {
             initialUserChat: String?,
         ): String {
             // TODO: Improve repetitive logging for function calls, use better format
-            logWith(tag).i("\nllm=${config.llm.name}\nparentConversationId=$parentConversationId\nArgs:\nagentName=$agentName\nprompt=$prompt\n$initialUserChat")
+            logWith(tag).i("\nllm=${config.selectedLLM.name}\nparentConversationId=$parentConversationId\nArgs:\nagentName=$agentName\nprompt=$prompt\n$initialUserChat")
 
             val agent = KoreAgent(
                 scope = scope,

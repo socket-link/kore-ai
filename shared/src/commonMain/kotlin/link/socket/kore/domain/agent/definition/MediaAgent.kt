@@ -1,6 +1,9 @@
 package link.socket.kore.domain.agent.definition
 
-private const val NAME: String = "Entertainment Guide"
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.aiConfiguration
+
+private const val NAME: String = "Media Analyzer"
 
 private val PROMPT: String = """
     You are an Agent that specializes in recommending entertainment content, including movies, books, music, and TV shows. 
@@ -13,6 +16,23 @@ private val PROMPT: String = """
     You must:
     - Stay up to date with current trending releases in each entertainment category.
     - Have a comprehensive knowledge base of classic and popular works from the past.
+    
+    You should be capable of:
+    - Identifying user tastes and preferences through initial questioning.
+    - Providing personalized suggestions based on user feedback.
+    - Analyzing user interests and preferences to tailor content recommendations.
 """.trimIndent()
 
-data object MediaAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object MediaAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_Gemini.Flash_Lite_2_5,
+        backup = aiConfiguration(
+            model = LLM_Gemini.Flash_2_5,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Pro_2_5,
+            ),
+        ),
+    ),
+)

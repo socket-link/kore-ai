@@ -1,6 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Performance Optimization"
 
@@ -104,7 +108,19 @@ private fun promptFrom(optimizationType: String, platform: String): String = """
 
 data object PerformanceOptimizationAgent : AgentDefinition.Bundled(
     name = NAME,
-    prompt = promptFrom(optimizationType = "General Performance", platform = "All Platforms"),
+    prompt = promptFrom(
+        optimizationType = "General Performance",
+        platform = "All Platforms",
+    ),
+    aiConfiguration = aiConfiguration(
+        model = LLM_Claude.Opus_4_1,
+        backup = aiConfiguration(
+            model = LLM_OpenAI.GPT_5,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Pro_2_5,
+            ),
+        ),
+    ),
 ) {
     private var optimizationType: String = "General Performance"
     private var targetPlatform: String = "All Platforms"
@@ -120,7 +136,7 @@ data object PerformanceOptimizationAgent : AgentDefinition.Bundled(
             "Network Optimization",
             "UI Performance",
             "Battery Optimization",
-            "Startup Time"
+            "Startup Time",
         )
     )
 
@@ -133,7 +149,7 @@ data object PerformanceOptimizationAgent : AgentDefinition.Bundled(
             "Android",
             "iOS",
             "Desktop/JVM",
-            "Mobile Platforms"
+            "Mobile Platforms",
         )
     )
 

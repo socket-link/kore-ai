@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME = "Clean JSON"
 
 private val PROMPT = """
@@ -9,4 +14,16 @@ private val PROMPT = """
     You should fix any invalid input, and provide a valid JSON object back to the User.
 """.trimIndent()
 
-data object CleanJsonAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object CleanJsonAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_Gemini.Flash_Lite_2_5,
+        backup = aiConfiguration(
+            model = LLM_Claude.Haiku_3_5,
+            backup = aiConfiguration(
+                model = LLM_OpenAI.GPT_4o_mini,
+            ),
+        ),
+    ),
+)

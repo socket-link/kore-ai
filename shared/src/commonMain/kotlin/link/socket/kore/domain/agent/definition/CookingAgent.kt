@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME: String = "Cooking & Nutrition"
 
 private val PROMPT = """
@@ -12,4 +17,16 @@ private val PROMPT = """
     queries.
 """.trimIndent()
 
-data object CookingAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object CookingAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_Gemini.Flash_Lite_2_0,
+        backup = aiConfiguration(
+            model = LLM_OpenAI.GPT_4o_mini,
+            backup = aiConfiguration(
+                model = LLM_Claude.Haiku_3_5,
+            ),
+        ),
+    ),
+)

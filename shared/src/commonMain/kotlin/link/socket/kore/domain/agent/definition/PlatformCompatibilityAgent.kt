@@ -1,6 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Platform Compatibility"
 
@@ -75,7 +79,19 @@ private fun promptFrom(platforms: String, checkType: String): String = """
 
 data object PlatformCompatibilityAgent : AgentDefinition.Bundled(
     name = NAME,
-    prompt = promptFrom(platforms = "All Platforms", checkType = "API Compatibility"),
+    prompt = promptFrom(
+        platforms = "All Platforms",
+        checkType = "API Compatibility",
+    ),
+    aiConfiguration = aiConfiguration(
+        model = LLM_Gemini.Pro_2_5,
+        backup = aiConfiguration(
+            model = LLM_OpenAI.GPT_4_1,
+            backup = aiConfiguration(
+                model = LLM_Claude.Opus_4_1,
+            ),
+        ),
+    ),
 ) {
     private var targetPlatforms: String = "All Platforms"
     private var checkType: String = "API Compatibility"
@@ -90,7 +106,7 @@ data object PlatformCompatibilityAgent : AgentDefinition.Bundled(
             "iOS + Android",
             "Desktop Only",
             "Mobile Only",
-            "Native Platforms"
+            "Native Platforms",
         )
     )
 
@@ -104,7 +120,7 @@ data object PlatformCompatibilityAgent : AgentDefinition.Bundled(
             "Performance Parity",
             "Feature Completeness",
             "Dependency Validation",
-            "Build Configuration"
+            "Build Configuration",
         )
     )
 

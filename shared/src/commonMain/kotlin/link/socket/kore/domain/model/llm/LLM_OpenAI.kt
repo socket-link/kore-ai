@@ -8,120 +8,120 @@ import link.socket.kore.domain.model.llm.ModelFeatures.Limits.TokenLimits
 import link.socket.kore.domain.model.llm.ModelFeatures.SupportedInputs.Companion.TEXT
 import link.socket.kore.domain.model.llm.ModelFeatures.SupportedInputs.Companion.TEXT_AND_IMAGE
 import link.socket.kore.domain.model.tool.ProvidedTool
-import link.socket.kore.domain.model.tool.Tool_ChatGPT
+import link.socket.kore.domain.model.tool.Tool_OpenAI
 
-sealed class LLM_ChatGPT(
+sealed class LLM_OpenAI(
     override val name: String,
     override val displayName: String,
     override val description: String,
     override val features: ModelFeatures,
-) : LLM<Tool_ChatGPT>(name, displayName, description, features) {
+) : LLM<Tool_OpenAI>(name, displayName, description, features) {
 
-    data object GPT_5 : LLM_ChatGPT(
+    data object GPT_5 : LLM_OpenAI(
         name = GPT_5_NAME,
         displayName = GPT_5_DISPLAY_NAME,
         description = GPT_5_DESCRIPTION,
         features = GPT_5_FEATURES,
     )
 
-    data object GPT_5_mini : LLM_ChatGPT(
+    data object GPT_5_mini : LLM_OpenAI(
         name = GPT_5_mini_NAME,
         displayName = GPT_5_mini_DISPLAY_NAME,
         description = GPT_5_mini_DESCRIPTION,
         features = GPT_5_mini_FEATURES,
     )
 
-    data object GPT_5_nano : LLM_ChatGPT(
+    data object GPT_5_nano : LLM_OpenAI(
         name = GPT_5_nano_NAME,
         displayName = GPT_5_nano_DISPLAY_NAME,
         description = GPT_5_nano_DESCRIPTION,
         features = GPT_5_nano_FEATURES,
     )
 
-    data object GPT_4_1 : LLM_ChatGPT(
+    data object GPT_4_1 : LLM_OpenAI(
         name = GPT_4_1_NAME,
         displayName = GPT_4_1_DISPLAY_NAME,
         description = GPT_4_1_DESCRIPTION,
         features = GPT_4_1_FEATURES,
     )
 
-    data object GPT_4_1_mini : LLM_ChatGPT(
+    data object GPT_4_1_mini : LLM_OpenAI(
         name = GPT_4_1_mini_NAME,
         displayName = GPT_4_1_mini_DISPLAY_NAME,
         description = GPT_4_1_mini_DESCRIPTION,
         features = GPT_4_1_mini_FEATURES,
     )
 
-    data object GPT_4o : LLM_ChatGPT(
+    data object GPT_4o : LLM_OpenAI(
         name = GPT_4o_NAME,
         displayName = GPT_4o_DISPLAY_NAME,
         description = GPT_4o_DESCRIPTION,
         features = GPT_4o_FEATURES,
     )
 
-    data object GPT_4o_mini : LLM_ChatGPT(
+    data object GPT_4o_mini : LLM_OpenAI(
         name = GPT_4o_mini_NAME,
         displayName = GPT_4o_mini_DISPLAY_NAME,
         description = GPT_4o_mini_DESCRIPTION,
         features = GPT_4o_mini_FEATURES,
     )
 
-    data object o4_mini : LLM_ChatGPT(
+    data object o4_mini : LLM_OpenAI(
         name = o4_mini_NAME,
         displayName = o4_mini_DISPLAY_NAME,
         description = o4_mini_DESCRIPTION,
         features = o4_mini_FEATURES,
     )
 
-    data object o3 : LLM_ChatGPT(
+    data object o3 : LLM_OpenAI(
         name = o3_NAME,
         displayName = o3_DISPLAY_NAME,
         description = o3_DESCRIPTION,
         features = o3_FEATURES,
     )
 
-    data object o3_mini : LLM_ChatGPT(
+    data object o3_mini : LLM_OpenAI(
         name = o3_mini_NAME,
         displayName = o3_mini_DISPLAY_NAME,
         description = o3_mini_DESCRIPTION,
         features = o3_mini_FEATURES,
     )
 
-    companion object {
+    companion object Companion {
 
         // ---- Tools ----
 
-        private val GPT_5_TOOLS: List<ProvidedTool<Tool_ChatGPT>> = listOf(
-            ProvidedTool.CodeExecution(Tool_ChatGPT.CodeExecution),
-            ProvidedTool.FileSearch(Tool_ChatGPT.FileSearch),
-            ProvidedTool.ImageGeneration(Tool_ChatGPT.ImageGeneration),
-            ProvidedTool.MCP(Tool_ChatGPT.MCP),
-            ProvidedTool.WebSearch(Tool_ChatGPT.WebSearch),
+        private val GPT_5_TOOLS: List<ProvidedTool<Tool_OpenAI>> = listOf(
+            ProvidedTool.CodeExecution(Tool_OpenAI.CodeExecution),
+            ProvidedTool.FileSearch(Tool_OpenAI.FileSearch),
+            ProvidedTool.ImageGeneration(Tool_OpenAI.ImageGeneration),
+            ProvidedTool.MCP(Tool_OpenAI.MCP),
+            ProvidedTool.WebSearch(Tool_OpenAI.WebSearch),
         )
 
-        private val GPT_5_mini_TOOLS: List<ProvidedTool<Tool_ChatGPT>> = listOf(
-            ProvidedTool.CodeExecution(Tool_ChatGPT.CodeExecution),
-            ProvidedTool.FileSearch(Tool_ChatGPT.FileSearch),
-            ProvidedTool.MCP(Tool_ChatGPT.MCP),
-            ProvidedTool.WebSearch(Tool_ChatGPT.WebSearch),
+        private val GPT_5_mini_TOOLS: List<ProvidedTool<Tool_OpenAI>> = listOf(
+            ProvidedTool.CodeExecution(Tool_OpenAI.CodeExecution),
+            ProvidedTool.FileSearch(Tool_OpenAI.FileSearch),
+            ProvidedTool.MCP(Tool_OpenAI.MCP),
+            ProvidedTool.WebSearch(Tool_OpenAI.WebSearch),
         )
 
-        private val GPT_5_nano_TOOLS: List<ProvidedTool<Tool_ChatGPT>> = listOf(
-            ProvidedTool.CodeExecution(Tool_ChatGPT.CodeExecution),
-            ProvidedTool.FileSearch(Tool_ChatGPT.FileSearch),
-            ProvidedTool.ImageGeneration(Tool_ChatGPT.ImageGeneration),
-            ProvidedTool.MCP(Tool_ChatGPT.MCP),
+        private val GPT_5_nano_TOOLS: List<ProvidedTool<Tool_OpenAI>> = listOf(
+            ProvidedTool.CodeExecution(Tool_OpenAI.CodeExecution),
+            ProvidedTool.FileSearch(Tool_OpenAI.FileSearch),
+            ProvidedTool.ImageGeneration(Tool_OpenAI.ImageGeneration),
+            ProvidedTool.MCP(Tool_OpenAI.MCP),
         )
 
-        private val GPT_4_1_TOOLS: List<ProvidedTool<Tool_ChatGPT>> = GPT_5_TOOLS
+        private val GPT_4_1_TOOLS: List<ProvidedTool<Tool_OpenAI>> = GPT_5_TOOLS
 
         // TODO: Verify
-        private val GPT_4_1_mini_TOOLS: List<ProvidedTool<Tool_ChatGPT>> = listOf()
-        private val GPT_4o_TOOLS: List<ProvidedTool<Tool_ChatGPT>> = listOf()
-        private val GPT_4o_mini_TOOLS: List<ProvidedTool<Tool_ChatGPT>> = listOf()
-        private val o4_mini_TOOLS: List<ProvidedTool<Tool_ChatGPT>> = listOf()
-        private val o3_TOOLS: List<ProvidedTool<Tool_ChatGPT>> = listOf()
-        private val o3_mini_TOOLS: List<ProvidedTool<Tool_ChatGPT>> = listOf()
+        private val GPT_4_1_mini_TOOLS: List<ProvidedTool<Tool_OpenAI>> = listOf()
+        private val GPT_4o_TOOLS: List<ProvidedTool<Tool_OpenAI>> = listOf()
+        private val GPT_4o_mini_TOOLS: List<ProvidedTool<Tool_OpenAI>> = listOf()
+        private val o4_mini_TOOLS: List<ProvidedTool<Tool_OpenAI>> = listOf()
+        private val o3_TOOLS: List<ProvidedTool<Tool_OpenAI>> = listOf()
+        private val o3_mini_TOOLS: List<ProvidedTool<Tool_OpenAI>> = listOf()
 
 
         // ---- Rate Limits ----

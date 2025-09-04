@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME: String = "Travel Advice"
 
 private val PROMPT = """
@@ -14,4 +19,16 @@ private val PROMPT = """
     If you cannot fulfill a request due to lack of knowledge or expertise, guide the user towards reliable travel information or suggest professional travel consultation services.
 """.trimIndent()
 
-data object TravelAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object TravelAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_Claude.Sonnet_4,
+        backup = aiConfiguration(
+            model = LLM_OpenAI.GPT_5_mini,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Flash_2_5,
+            ),
+        ),
+    ),
+)

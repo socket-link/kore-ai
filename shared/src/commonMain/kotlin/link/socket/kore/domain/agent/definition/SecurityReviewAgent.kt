@@ -1,6 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Security Review"
 
@@ -113,7 +117,19 @@ private fun promptFrom(securityFocus: String, threatModel: String): String = """
 
 data object SecurityReviewAgent : AgentDefinition.Bundled(
     name = NAME,
-    prompt = promptFrom(securityFocus = "General Security Audit", threatModel = "Library/Framework"),
+    prompt = promptFrom(
+        securityFocus = "General Security Audit",
+        threatModel = "Library/Framework",
+    ),
+    aiConfiguration = aiConfiguration(
+        model = LLM_Claude.Opus_4_1,
+        backup = aiConfiguration(
+            model = LLM_Gemini.Pro_2_5,
+            backup = aiConfiguration(
+                model = LLM_OpenAI.GPT_5,
+            ),
+        ),
+    ),
 ) {
     private var securityFocus: String = "General Security Audit"
     private var threatModel: String = "Library/Framework"
@@ -149,5 +165,6 @@ data object SecurityReviewAgent : AgentDefinition.Bundled(
     override val prompt: String
         get() = promptFrom(securityFocus, threatModel)
 
-    override val neededInputs: List<AgentInput> = listOf(securityFocusArg, threatModelArg)
+    override val neededInputs: List<AgentInput>
+        get() = listOf(securityFocusArg, threatModelArg)
 }

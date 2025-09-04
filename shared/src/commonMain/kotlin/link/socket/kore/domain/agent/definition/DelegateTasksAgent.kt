@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME = "Delegate Tasks"
 
 private val PROMPT = """
@@ -35,4 +40,16 @@ private val PROMPT = """
     8. **Feedback**: "Subtask X completed successfully. Subtask Z completed with minor issues."
 """.trimIndent()
 
-data object DelegateTasksAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object DelegateTasksAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_Claude.Opus_4_1,
+        backup = aiConfiguration(
+            model = LLM_OpenAI.GPT_5,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Pro_2_5,
+            ),
+        ),
+    ),
+)

@@ -1,6 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
 
 private fun promptFrom(reviewType: String, principle: String): String = """
     You are an API Design Agent specialized in reviewing and optimizing Kotlin APIs for libraries and frameworks.
@@ -84,7 +88,19 @@ private fun promptFrom(reviewType: String, principle: String): String = """
 
 data object APIDesignAgent : AgentDefinition.Bundled(
     name = "API Design",
-    prompt = promptFrom(reviewType = "Public API Review", principle = "Kotlin Idioms"),
+    prompt = promptFrom(
+        reviewType = "Public API Review",
+        principle = "Kotlin Idioms",
+    ),
+    aiConfiguration = aiConfiguration(
+        model = LLM_Claude.Opus_4_1,
+        backup = aiConfiguration(
+            model = LLM_OpenAI.GPT_4_1,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Pro_2_5,
+            ),
+        )
+    )
 ) {
     private var reviewType: String = "Public API Review"
     private var designPrinciple: String = "Kotlin Idioms"

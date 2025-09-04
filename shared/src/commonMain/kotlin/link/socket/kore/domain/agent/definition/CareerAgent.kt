@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME: String = "Career Coach"
 
 private val PROMPT = """
@@ -19,4 +24,16 @@ private val PROMPT = """
     Ensure that your guidance is based on current industry trends and best practices. Always maintain an encouraging and supportive tone to help Users stay confident during their job search and career progression.
 """.trimIndent()
 
-data object CareerAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object CareerAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_Claude.Sonnet_4,
+        backup = aiConfiguration(
+            model = LLM_OpenAI.GPT_5_mini,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Flash_2_5,
+            ),
+        ),
+    ),
+)

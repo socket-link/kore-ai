@@ -1,6 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Write Code"
 
@@ -21,6 +25,15 @@ private fun promptFrom(technologies: String?): String = """
 data object WriteCodeAgent : AgentDefinition.Bundled(
     name = NAME,
     prompt = promptFrom(technologies = "Kotlin"),
+    aiConfiguration = aiConfiguration(
+        model = LLM_Claude.Opus_4_1,
+        backup = aiConfiguration(
+            model = LLM_OpenAI.GPT_4_1,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Pro_2_5,
+            ),
+        ),
+    ),
 ) {
     private var technologies: String = "Any language or framework"
 
@@ -34,5 +47,6 @@ data object WriteCodeAgent : AgentDefinition.Bundled(
     override val prompt: String
         get() = promptFrom(technologies)
 
-    override val neededInputs: List<AgentInput> = listOf(technologiesArg)
+    override val neededInputs: List<AgentInput>
+        get() = listOf(technologiesArg)
 }

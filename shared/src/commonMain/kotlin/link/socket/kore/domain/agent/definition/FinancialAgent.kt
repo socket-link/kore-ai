@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME: String = "Financial Advisor"
 
 private val PROMPT: String = """
@@ -20,4 +25,16 @@ private val PROMPT: String = """
     7. Ensuring data privacy and security by following the appropriate protocols while handling financial information.
 """.trimIndent()
 
-data object FinancialAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object FinancialAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_Claude.Opus_4_1,
+        backup = aiConfiguration(
+            model = LLM_Gemini.Pro_2_5,
+            backup = aiConfiguration(
+                model = LLM_OpenAI.GPT_5,
+            ),
+        ),
+    ),
+)

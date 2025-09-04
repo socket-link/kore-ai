@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME = "Tech Support"
 
 private val PROMPT = """
@@ -15,4 +20,16 @@ private val PROMPT = """
     If the problem is beyond your scope of knowledge, you should suggest seeking professional help or contacting the manufacturer's support.
 """.trimIndent()
 
-data object TechAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object TechAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_Gemini.Flash_Lite_2_5,
+        backup = aiConfiguration(
+            model = LLM_Claude.Haiku_3_5,
+            backup = aiConfiguration(
+                model = LLM_OpenAI.GPT_5_mini,
+            ),
+        ),
+    ),
+)

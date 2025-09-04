@@ -1,10 +1,17 @@
 package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Documentation"
 
-private fun promptFrom(docType: String, audience: String): String = """
+private fun promptFrom(
+    docType: String,
+    audience: String,
+): String = """
     You are a Documentation Agent specialized in creating high-quality technical documentation.
     
     Your current focus: Generate $docType for $audience
@@ -44,7 +51,19 @@ private fun promptFrom(docType: String, audience: String): String = """
 
 data object DocumentationAgent : AgentDefinition.Bundled(
     name = NAME,
-    prompt = promptFrom(docType = "API Documentation", audience = "Developers"),
+    prompt = promptFrom(
+        docType = "API Documentation",
+        audience = "Developers",
+    ),
+    aiConfiguration = aiConfiguration(
+        model = LLM_Gemini.Flash_2_5,
+        backup = aiConfiguration(
+            model = LLM_Claude.Sonnet_4,
+            backup = aiConfiguration(
+                model = LLM_OpenAI.GPT_4_1,
+            ),
+        ),
+    ),
 ) {
     private var docType: String = "API Documentation"
     private var targetAudience: String = "Developers"
@@ -59,7 +78,7 @@ data object DocumentationAgent : AgentDefinition.Bundled(
             "README",
             "Release Notes",
             "Developer Guide",
-            "Tutorial"
+            "Tutorial",
         )
     )
 
@@ -72,12 +91,13 @@ data object DocumentationAgent : AgentDefinition.Bundled(
             "End Users",
             "Technical Writers", 
             "Product Managers",
-            "QA Engineers"
+            "QA Engineers",
         )
     )
 
     override val prompt: String
         get() = promptFrom(docType, targetAudience)
 
-    override val neededInputs: List<AgentInput> = listOf(docTypeArg, audienceArg)
+    override val neededInputs: List<AgentInput>
+        get() = listOf(docTypeArg, audienceArg)
 }

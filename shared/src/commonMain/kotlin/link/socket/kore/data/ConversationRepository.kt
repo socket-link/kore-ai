@@ -62,11 +62,11 @@ class ConversationRepository(
 
             getValue(conversationId)?.let { conversation ->
                 with(conversation) {
-                    val completionRequest = getCompletionRequest(config.llm)
+                    val completionRequest = getCompletionRequest(config.selectedLLM)
                     println(completionRequest)
 
                     val ranTools = agent.execute(
-                        client = config.clientProvider.client,
+                        client = config.client,
                         completionRequest = completionRequest,
                     ) { chats ->
                         storeValue(conversationId, add(*chats.toTypedArray()))

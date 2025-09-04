@@ -1,6 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "QA Testing"
 
@@ -58,7 +62,19 @@ private fun promptFrom(testType: String, platform: String): String = """
 
 data object QATestingAgent : AgentDefinition.Bundled(
     name = NAME,
-    prompt = promptFrom(testType = "Unit Tests", platform = "Common"),
+    prompt = promptFrom(
+        testType = "Unit Tests",
+        platform = "Common",
+    ),
+    aiConfiguration = aiConfiguration(
+        model = LLM_OpenAI.GPT_5_mini,
+        backup = aiConfiguration(
+            model = LLM_Gemini.Flash_2_5,
+            backup = aiConfiguration(
+                model = LLM_Claude.Sonnet_4,
+            ),
+        ),
+    ),
 ) {
     private var testType: String = "Unit Tests"
     private var platform: String = "Common"
@@ -73,7 +89,7 @@ data object QATestingAgent : AgentDefinition.Bundled(
             "UI Tests",
             "End-to-End Tests",
             "Performance Tests",
-            "Security Tests"
+            "Security Tests",
         )
     )
 
@@ -86,12 +102,13 @@ data object QATestingAgent : AgentDefinition.Bundled(
             "Android",
             "Desktop/JVM",
             "iOS",
-            "All Platforms"
+            "All Platforms",
         )
     )
 
     override val prompt: String
         get() = promptFrom(testType, platform)
 
-    override val neededInputs: List<AgentInput> = listOf(testTypeArg, platformArg)
+    override val neededInputs: List<AgentInput>
+        get() = listOf(testTypeArg, platformArg)
 }

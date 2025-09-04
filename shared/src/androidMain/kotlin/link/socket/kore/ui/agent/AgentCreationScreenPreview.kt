@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import link.socket.kore.domain.model.llm.AI_Provider
-import link.socket.kore.domain.model.llm.LLM_ChatGPT
+import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.ui.model.ProviderModelSelector
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 800)
@@ -32,8 +32,8 @@ fun PreviewAgentColumn() {
 @Composable
 fun PreviewProviderModelSelector() {
     ProviderModelSelector(
-        selectedProvider = AI_Provider.OpenAI,
-        selectedModel = LLM_ChatGPT.DEFAULT,
+        selectedProvider = AI_Provider._OpenAI,
+        selectedModel = LLM_OpenAI.DEFAULT,
         selectableProviders = emptyList(),
         selectableModels = emptyList(),
         onProviderSelected = {},

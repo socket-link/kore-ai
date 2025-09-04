@@ -1,3 +1,5 @@
+@file:Suppress("ClassName")
+
 package link.socket.kore.domain.model.llm
 
 import com.aallam.openai.api.http.Timeout
@@ -9,9 +11,9 @@ import com.aallam.openai.client.OpenAIHost
 import kotlin.time.Duration.Companion.hours
 import link.kore.shared.config.KotlinConfig
 import link.socket.kore.domain.model.tool.ToolDefinition
-import link.socket.kore.domain.model.tool.Tool_ChatGPT
 import link.socket.kore.domain.model.tool.Tool_Claude
 import link.socket.kore.domain.model.tool.Tool_Gemini
+import link.socket.kore.domain.model.tool.Tool_OpenAI
 
 private const val ANTHROPIC_API_ENDPOINT = "https://api.anthropic.com/v1/"
 private const val GOOGLE_API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/"
@@ -29,7 +31,7 @@ sealed interface AI_Provider <
 
     val client: Client
 
-    data object Anthropic : AI_Provider<Tool_Claude, LLM_Claude> {
+    data object _Anthropic : AI_Provider<Tool_Claude, LLM_Claude> {
         override val id: ProviderId = "anthropic"
         override val name: String = "Anthropic"
 
@@ -49,7 +51,7 @@ sealed interface AI_Provider <
         }
     }
 
-    data object Google : AI_Provider<Tool_Gemini, LLM_Gemini> {
+    data object _Google : AI_Provider<Tool_Gemini, LLM_Gemini> {
         override val id: ProviderId = "google"
         override val name: String = "Google"
 
@@ -69,16 +71,16 @@ sealed interface AI_Provider <
         }
     }
 
-    data object OpenAI : AI_Provider<Tool_ChatGPT, LLM_ChatGPT> {
+    data object _OpenAI : AI_Provider<Tool_OpenAI, LLM_OpenAI> {
         override val id: ProviderId = "openai"
         override val name: String = "OpenAI"
 
-        override val defaultModel: LLM_ChatGPT by lazy {
-            LLM_ChatGPT.DEFAULT
+        override val defaultModel: LLM_OpenAI by lazy {
+            LLM_OpenAI.DEFAULT
         }
 
-        override val availableModels: List<LLM_ChatGPT> by lazy {
-            LLM_ChatGPT.ALL_MODELS
+        override val availableModels: List<LLM_OpenAI> by lazy {
+            LLM_OpenAI.ALL_MODELS
         }
 
         override val client: Client by lazy {
@@ -90,9 +92,9 @@ sealed interface AI_Provider <
 
     companion object {
         val ALL_PROVIDERS = listOf(
-            Anthropic,
-            Google,
-            OpenAI,
+            _Anthropic,
+            _Google,
+            _OpenAI,
         )
 
         fun createClient(

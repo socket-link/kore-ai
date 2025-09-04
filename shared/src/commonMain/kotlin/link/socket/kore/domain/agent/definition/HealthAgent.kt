@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME: String = "Health & Wellness"
 
 private val PROMPT: String = """
@@ -14,4 +19,16 @@ private val PROMPT: String = """
     - Encourage Users to consult with healthcare professionals for any specific medical concerns that you cannot adequately address.
 """.trimIndent()
 
-data object HealthAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object HealthAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_Claude.Sonnet_4,
+        backup = aiConfiguration(
+            model = LLM_OpenAI.GPT_5_mini,
+            backup = aiConfiguration(
+                model = LLM_Gemini.Flash_2_5,
+            ),
+        )
+    )
+)

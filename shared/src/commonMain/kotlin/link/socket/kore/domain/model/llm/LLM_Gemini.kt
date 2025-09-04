@@ -18,35 +18,35 @@ sealed class LLM_Gemini(
     override val features: ModelFeatures,
 ) : LLM<Tool_Gemini>(name, displayName, description, features) {
 
-    data object _2_5_Pro : LLM_Gemini(
+    data object Pro_2_5 : LLM_Gemini(
         name = _2_5_Pro_NAME,
         displayName = _2_5_Pro_DISPLAY_NAME,
         description = _2_5_Pro_DESCRIPTION,
         features = _2_5_Pro_FEATURES,
     )
 
-    data object _2_5_Flash : LLM_Gemini(
+    data object Flash_2_5 : LLM_Gemini(
         name = _2_5_Flash_NAME,
         displayName = _2_5_Flash_DISPLAY_NAME,
         description = _2_5_Flash_DESCRIPTION,
         features = _2_5_Flash_FEATURES,
     )
 
-    data object _2_5_Flash_Lite : LLM_Gemini(
+    data object Flash_Lite_2_5 : LLM_Gemini(
         name = _2_5_Flash_Lite_NAME,
         displayName = _2_5_Flash_Lite_DISPLAY_NAME,
         description = _2_5_Flash_Lite_DESCRIPTION,
         features = _2_5_Flash_Lite_FEATURES,
     )
 
-    data object _2_0_Flash : LLM_Gemini(
+    data object Flash_2_0 : LLM_Gemini(
         name = _2_0_Flash_NAME,
         displayName = _2_0_Flash_DISPLAY_NAME,
         description = _2_0_Flash_DESCRIPTION,
         features = _2_0_Flash_FEATURES,
     )
 
-    data object _2_0_Flash_Lite : LLM_Gemini(
+    data object Flash_Lite_2_0 : LLM_Gemini(
         name = _2_0_Flash_Lite_NAME,
         displayName = _2_0_Flash_Lite_DISPLAY_NAME,
         description = _2_0_Flash_Lite_DESCRIPTION,
@@ -352,14 +352,14 @@ sealed class LLM_Gemini(
 
         // ---- Models ----
 
-        val DEFAULT = _2_5_Flash
+        val DEFAULT = Flash_2_5
 
         val ALL_MODELS = listOf(
-            _2_5_Pro,
-            _2_5_Flash,
-            _2_5_Flash_Lite,
-            _2_0_Flash,
-            _2_0_Flash_Lite,
+            Pro_2_5,
+            Flash_2_5,
+            Flash_Lite_2_5,
+            Flash_2_0,
+            Flash_Lite_2_0,
         )
     }
 }

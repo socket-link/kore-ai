@@ -1,5 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.llm.LLM_Claude
+import link.socket.kore.domain.model.llm.LLM_Gemini
+import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.model.llm.aiConfiguration
+
 private const val NAME = "Language Tutor"
 
 private val PROMPT = """
@@ -16,4 +21,16 @@ private val PROMPT = """
     - Encourage language practice by offering conversational prompts and correcting Users in a supportive and positive manner.
 """.trimIndent()
 
-data object LanguageAgent : AgentDefinition.Bundled(NAME, PROMPT)
+data object LanguageAgent : AgentDefinition.Bundled(
+    name = NAME,
+    prompt = PROMPT,
+    aiConfiguration = aiConfiguration(
+        model = LLM_Gemini.Flash_Lite_2_5,
+        backup = aiConfiguration(
+            model = LLM_Claude.Haiku_3_5,
+            backup = aiConfiguration(
+                model = LLM_OpenAI.GPT_4o_mini,
+            ),
+        ),
+    ),
+)
