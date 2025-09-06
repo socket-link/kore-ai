@@ -160,11 +160,11 @@ fun App(
 
                     AgentCreationScreen(
                         modifier = Modifier.fillMaxSize(),
-                        partiallySelectedAgent = partiallySelectedAgent,
-                        setPartiallySelectedAgent = { agent ->
+                        selectedAgentDefinition = partiallySelectedAgent,
+                        setSelectedAgentDefinitionChanged = { agent ->
                             partiallySelectedAgent = agent
                         },
-                        onSubmit = { agentDefinition ->
+                        onCreateAgent = { agentDefinition ->
                             val agent = application.createAgent(
                                 config = selectedConfig.value,
                                 agentDefinition = agentDefinition,

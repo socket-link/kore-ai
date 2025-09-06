@@ -66,12 +66,7 @@ fun ModelFeaturesDisplay(
 
             // Supported Inputs
             ModelInputTypes(features.supportedInputs)
-            
-            // Available Tools
-            if (features.availableTools.isNotEmpty()) {
-                ModelTools(features.availableTools)
-            }
-            
+
             // Limits Overview
             features.limits?.let { limits ->
                 ModelTokenLimits(limits)

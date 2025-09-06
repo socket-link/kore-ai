@@ -36,14 +36,13 @@ import link.socket.kore.domain.model.llm.LLM
 import link.socket.kore.ui.model.ModelFeaturesDisplay
 import link.socket.kore.ui.model.ModelOverview
 import link.socket.kore.ui.model.ModelSelector
-import link.socket.kore.ui.theme.themeTypography
 import link.socket.kore.ui.widget.header.Header
 
 @Composable
 fun AgentCreationScreen(
-    partiallySelectedAgent: AgentDefinition?,
-    setPartiallySelectedAgent: (AgentDefinition?) -> Unit,
-    onSubmit: (AgentDefinition) -> Unit,
+    selectedAgentDefinition: AgentDefinition?,
+    setSelectedAgentDefinitionChanged: (AgentDefinition?) -> Unit,
+    onCreateAgent: (AgentDefinition) -> Unit,
     onBackClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -70,9 +69,9 @@ fun AgentCreationScreen(
 
     val onAgentSelected: (AgentDefinition) -> Unit = { agentDefinition ->
         if (agentDefinition.neededInputs.isNotEmpty()) {
-            setPartiallySelectedAgent(agentDefinition)
+            setSelectedAgentDefinitionChanged(agentDefinition)
         } else {
-            onSubmit(agentDefinition)
+            onCreateAgent(agentDefinition)
         }
     }
 
@@ -88,7 +87,7 @@ fun AgentCreationScreen(
                         .fillMaxWidth(),
                 ) {
                     Header(
-                        title = "Agent Configuration",
+                        title = "Agent Setup",
                         displayBackIcon = true,
                         onBackClicked = onBackClicked,
                     )
@@ -99,49 +98,19 @@ fun AgentCreationScreen(
         Column(
             modifier = Modifier.padding(paddingValues),
         ) {
-            Card {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                ) {
-                    // Display the agent name
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        style = themeTypography().h6,
-                        text = "${partiallySelectedAgent?.name} Agent",
-                        textAlign = TextAlign.Start,
-                    )
-
-                    Text(
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .fillMaxWidth(),
-                        style = MaterialTheme.typography.caption,
-                        text = partiallySelectedAgent?.description.orEmpty(),
-                        textAlign = TextAlign.Start,
-                    )
-
-                    Text(
-                        modifier = Modifier
-                            .padding(top = 16.dp)
-                            .fillMaxWidth(),
-                        style = MaterialTheme.typography.subtitle2,
-                        text = "Requirements",
-                        textAlign = TextAlign.Start,
-                        fontWeight = MaterialTheme.typography.subtitle2.fontWeight,
-                    )
-
-                    if (partiallySelectedAgent == null) {
-                        AgentColumn(
-                            onAgentSelected = onAgentSelected,
-                        )
-                    }
-                }
+            if (selectedAgentDefinition == null) {
+                AgentColumn(
+                    onAgentSelected = setSelectedAgentDefinitionChanged,
+                )
+            } else {
+                AgentDetails(
+                    agentDefinition = selectedAgentDefinition,
+                )
             }
 
-            val suggestedModels = remember(partiallySelectedAgent) {
+            val suggestedModels = remember(selectedAgentDefinition) {
                 // TODO: Improve syntax
-                (partiallySelectedAgent?.aiConfiguration as? AI_ConfigurationWithFallback)?.getSuggestedModels()
+                (selectedAgentDefinition?.aiConfiguration as? AI_ConfigurationWithFallback)?.getSuggestedModels()
             }
 
             if (selectedModel != null) {

@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -21,20 +20,11 @@ import link.socket.kore.domain.model.tool.ProvidedTool
 
 @Composable
 fun ModelTools(tools: List<ProvidedTool<*>>) {
-    Column {
-        Text(
-            text = "Available Tools",
-            style = MaterialTheme.typography.subtitle2,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            items(tools) { tool ->
-                ToolChip(tool::class.simpleName ?: "Tool")
-            }
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        items(tools) { tool ->
+            ToolChip(tool::class.simpleName ?: "Tool")
         }
     }
 }

@@ -14,9 +14,9 @@ import link.socket.kore.ui.model.ModelSelector
 fun PreviewAgentCreationScreen() {
     AgentCreationScreen(
         modifier = Modifier.fillMaxSize(),
-        partiallySelectedAgent = WriteCodeAgent,
-        setPartiallySelectedAgent = {},
-        onSubmit = {},
+        selectedAgentDefinition = WriteCodeAgent,
+        setSelectedAgentDefinitionChanged = {},
+        onCreateAgent = {},
         onBackClicked = {}
     )
 }
