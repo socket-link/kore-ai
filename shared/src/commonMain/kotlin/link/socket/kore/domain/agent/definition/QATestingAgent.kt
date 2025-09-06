@@ -7,6 +7,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "QA Testing"
+private const val DESCRIPTION = "Quality assurance testing agent that creates comprehensive test suites including unit, integration, UI, and platform-specific tests for Kotlin Multiplatform projects"
 
 private fun promptFrom(testType: String, platform: String): String = """
     You are a QA Testing Agent specialized in creating comprehensive test suites for Kotlin Multiplatform projects.
@@ -62,18 +63,15 @@ private fun promptFrom(testType: String, platform: String): String = """
 
 data object QATestingAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = promptFrom(
         testType = "Unit Tests",
         platform = "Common",
     ),
     aiConfiguration = aiConfiguration(
-        model = LLM_OpenAI.GPT_5_mini,
-        backup = aiConfiguration(
-            model = LLM_Gemini.Flash_2_5,
-            backup = aiConfiguration(
-                model = LLM_Claude.Sonnet_4,
-            ),
-        ),
+        LLM_OpenAI.GPT_5_mini,
+        aiConfiguration(LLM_Gemini.Flash_2_5),
+        aiConfiguration(LLM_Claude.Sonnet_4),
     ),
 ) {
     private var testType: String = "Unit Tests"

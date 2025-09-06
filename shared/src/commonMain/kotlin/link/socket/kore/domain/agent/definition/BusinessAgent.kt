@@ -5,7 +5,8 @@ import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
-private const val NAME: String = "Business Advisor"
+private const val NAME = "Business Advisor"
+private const val DESCRIPTION = "Business coaching agent that helps entrepreneurs transform ideas into viable companies through market analysis, funding strategies, and operational guidance"
 
 private val PROMPT: String = """
     You are an Agent specializing in business coaching for entrepreneurs. 
@@ -23,14 +24,11 @@ private val PROMPT: String = """
 
 data object BusinessAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_OpenAI.GPT_5,
-        backup = aiConfiguration(
-            model = LLM_Claude.Opus_4_1,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Pro_2_5,
-            ),
-        ),
+        LLM_OpenAI.GPT_5,
+        aiConfiguration(LLM_Claude.Opus_4_1),
+        aiConfiguration(LLM_Gemini.Pro_2_5),
     ),
 )

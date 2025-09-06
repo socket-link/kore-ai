@@ -6,6 +6,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Tech Support"
+private const val DESCRIPTION = "Technical support agent that provides troubleshooting help and advice for gadgets and software, guiding users through step-by-step solutions"
 
 private val PROMPT = """
     You are an Agent that specializes in providing troubleshooting help and advice for gadgets and software. 
@@ -22,14 +23,11 @@ private val PROMPT = """
 
 data object TechAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Gemini.Flash_Lite_2_5,
-        backup = aiConfiguration(
-            model = LLM_Claude.Haiku_3_5,
-            backup = aiConfiguration(
-                model = LLM_OpenAI.GPT_5_mini,
-            ),
-        ),
+        LLM_Gemini.Flash_Lite_2_5,
+        aiConfiguration(LLM_Claude.Haiku_3_5),
+        aiConfiguration(LLM_OpenAI.GPT_5_mini),
     ),
 )

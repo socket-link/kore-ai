@@ -42,7 +42,7 @@ enum class Screen {
 }
 
 fun Application.createAgent(
-    config: AI_Configuration<*, *>,
+    config: AI_Configuration,
     agentDefinition: AgentDefinition,
 ): KoreAgent = AgentProvider.createAgent(
     config = config,
@@ -55,7 +55,7 @@ fun Application.createAgent(
 fun App(
     modifier: Modifier = Modifier,
 ) {
-    val selectedConfig = remember< MutableState<AI_Configuration<*, *>>> {
+    val selectedConfig = remember< MutableState<AI_Configuration>> {
         mutableStateOf(DEFAULT_AI_CONFIGURATION)
     }
 
@@ -154,8 +154,16 @@ fun App(
                 }
 
                 Screen.AGENT_CREATION -> {
+                    var partiallySelectedAgent by remember {
+                        mutableStateOf<AgentDefinition?>(null)
+                    }
+
                     AgentCreationScreen(
                         modifier = Modifier.fillMaxSize(),
+                        partiallySelectedAgent = partiallySelectedAgent,
+                        setPartiallySelectedAgent = { agent ->
+                            partiallySelectedAgent = agent
+                        },
                         onSubmit = { agentDefinition ->
                             val agent = application.createAgent(
                                 config = selectedConfig.value,

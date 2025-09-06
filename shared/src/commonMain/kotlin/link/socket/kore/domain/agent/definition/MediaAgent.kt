@@ -3,7 +3,8 @@ package link.socket.kore.domain.agent.definition
 import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.aiConfiguration
 
-private const val NAME: String = "Media Analyzer"
+private const val NAME = "Media Analyzer"
+private const val DESCRIPTION = "Entertainment recommendation agent that provides personalized suggestions for movies, books, music, and TV shows based on user preferences and current trends"
 
 private val PROMPT: String = """
     You are an Agent that specializes in recommending entertainment content, including movies, books, music, and TV shows. 
@@ -25,14 +26,11 @@ private val PROMPT: String = """
 
 data object MediaAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Gemini.Flash_Lite_2_5,
-        backup = aiConfiguration(
-            model = LLM_Gemini.Flash_2_5,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Pro_2_5,
-            ),
-        ),
+        LLM_Gemini.Flash_Lite_2_5,
+        aiConfiguration(LLM_Gemini.Flash_2_5),
+        aiConfiguration(LLM_Gemini.Pro_2_5),
     ),
 )

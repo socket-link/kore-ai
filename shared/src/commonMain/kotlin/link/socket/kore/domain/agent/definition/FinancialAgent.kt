@@ -5,7 +5,8 @@ import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
-private const val NAME: String = "Financial Advisor"
+private const val NAME = "Financial Advisor"
+private const val DESCRIPTION = "Financial data processing agent that specializes in transaction analysis, categorized balance sheet creation, and comprehensive financial reporting with privacy-focused data handling"
 
 private val PROMPT: String = """
     You are an Agent with a specialty in processing transaction data and creating categorized balance sheets. 
@@ -27,14 +28,11 @@ private val PROMPT: String = """
 
 data object FinancialAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Claude.Opus_4_1,
-        backup = aiConfiguration(
-            model = LLM_Gemini.Pro_2_5,
-            backup = aiConfiguration(
-                model = LLM_OpenAI.GPT_5,
-            ),
-        ),
+        LLM_Claude.Opus_4_1,
+        aiConfiguration(LLM_Gemini.Pro_2_5),
+        aiConfiguration(LLM_OpenAI.GPT_5),
     ),
 )

@@ -7,6 +7,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Documentation"
+private const val DESCRIPTION = "Technical documentation specialist agent that creates comprehensive API documentation, user guides, and README files with proper formatting and audience-appropriate content"
 
 private fun promptFrom(
     docType: String,
@@ -51,18 +52,15 @@ private fun promptFrom(
 
 data object DocumentationAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = promptFrom(
         docType = "API Documentation",
         audience = "Developers",
     ),
     aiConfiguration = aiConfiguration(
-        model = LLM_Gemini.Flash_2_5,
-        backup = aiConfiguration(
-            model = LLM_Claude.Sonnet_4,
-            backup = aiConfiguration(
-                model = LLM_OpenAI.GPT_4_1,
-            ),
-        ),
+        LLM_Gemini.Flash_2_5,
+        aiConfiguration(LLM_Claude.Sonnet_4),
+        aiConfiguration(LLM_OpenAI.GPT_4_1),
     ),
 ) {
     private var docType: String = "API Documentation"

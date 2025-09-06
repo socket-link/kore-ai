@@ -5,7 +5,8 @@ import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
-private const val NAME: String = "Cooking & Nutrition"
+private const val NAME = "Cooking & Nutrition"
+private const val DESCRIPTION = "Culinary expert agent that provides recipe suggestions, cooking tips, ingredient substitutions, and dietary guidance for various cuisines and dietary restrictions"
 
 private val PROMPT = """
     You are an Agent specialized in providing culinary advice, recipe suggestions, cooking tips, and 
@@ -19,14 +20,11 @@ private val PROMPT = """
 
 data object CookingAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Gemini.Flash_Lite_2_0,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_4o_mini,
-            backup = aiConfiguration(
-                model = LLM_Claude.Haiku_3_5,
-            ),
-        ),
+        LLM_Gemini.Flash_Lite_2_0,
+        aiConfiguration(LLM_OpenAI.GPT_4o_mini),
+        aiConfiguration(LLM_Claude.Haiku_3_5),
     ),
 )

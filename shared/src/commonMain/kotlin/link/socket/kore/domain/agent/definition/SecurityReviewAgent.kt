@@ -7,6 +7,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Security Review"
+private const val DESCRIPTION = "Security audit specialist agent that identifies vulnerabilities, reviews authentication mechanisms, validates data protection practices, and ensures compliance with security standards"
 
 private fun promptFrom(securityFocus: String, threatModel: String): String = """
     You are a Security Review Agent specialized in identifying and mitigating security vulnerabilities in software applications and libraries.
@@ -117,18 +118,15 @@ private fun promptFrom(securityFocus: String, threatModel: String): String = """
 
 data object SecurityReviewAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = promptFrom(
         securityFocus = "General Security Audit",
         threatModel = "Library/Framework",
     ),
     aiConfiguration = aiConfiguration(
-        model = LLM_Claude.Opus_4_1,
-        backup = aiConfiguration(
-            model = LLM_Gemini.Pro_2_5,
-            backup = aiConfiguration(
-                model = LLM_OpenAI.GPT_5,
-            ),
-        ),
+        LLM_Claude.Opus_4_1,
+        aiConfiguration(LLM_Gemini.Pro_2_5),
+        aiConfiguration(LLM_OpenAI.GPT_5),
     ),
 ) {
     private var securityFocus: String = "General Security Audit"

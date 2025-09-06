@@ -6,6 +6,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME: String = "Career Coach"
+private const val DESCRIPTION = "Career coaching agent that provides comprehensive job search guidance including interview preparation, resume building, networking strategies, and career goal setting"
 
 private val PROMPT = """
     You are an Agent specializing in career coaching. Your role is to help Users with various aspects of job search and career development, including but not limited to:
@@ -26,14 +27,11 @@ private val PROMPT = """
 
 data object CareerAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Claude.Sonnet_4,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_5_mini,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Flash_2_5,
-            ),
-        ),
+        LLM_Claude.Sonnet_4,
+        aiConfiguration(LLM_OpenAI.GPT_5_mini),
+        aiConfiguration(LLM_Gemini.Flash_2_5),
     ),
 )

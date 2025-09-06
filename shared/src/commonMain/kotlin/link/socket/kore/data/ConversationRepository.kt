@@ -50,7 +50,7 @@ class ConversationRepository(
     }
 
     suspend fun runConversation(
-        config: AI_Configuration<*, *>,
+        config: AI_Configuration,
         conversationId: ConversationId
     ) {
         var shouldRerun = false
@@ -62,11 +62,17 @@ class ConversationRepository(
 
             getValue(conversationId)?.let { conversation ->
                 with(conversation) {
-                    val completionRequest = getCompletionRequest(config.selectedLLM)
+                    val selectedLLM = config.selectedLLM
+                    if (selectedLLM == null) {
+                        logWith("$tag-runConversation").e("No LLM selected")
+                        return@let
+                    }
+                    val completionRequest = getCompletionRequest(selectedLLM)
                     println(completionRequest)
 
+                    val client = config.aiProvider.client
                     val ranTools = agent.execute(
-                        client = config.client,
+                        client = client,
                         completionRequest = completionRequest,
                     ) { chats ->
                         storeValue(conversationId, add(*chats.toTypedArray()))
@@ -92,7 +98,7 @@ class ConversationRepository(
      * @param input The user input to be added as a chat
      */
     suspend fun addUserChat(
-        config: AI_Configuration<*, *>,
+        config: AI_Configuration,
         conversationId: ConversationId,
         input: String,
     ) {

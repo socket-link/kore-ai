@@ -9,7 +9,7 @@ object AgentProvider {
 
     fun createAgent(
         scope: CoroutineScope,
-        config: AI_Configuration<*, *>,
+        config: AI_Configuration,
         definition: AgentDefinition,
         conversationRepository: ConversationRepository,
     ): KoreAgent = KoreAgent(

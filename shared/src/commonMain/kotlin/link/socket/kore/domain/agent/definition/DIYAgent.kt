@@ -5,7 +5,9 @@ import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
-private const val NAME: String = "DIY Guidance"
+private const val NAME = "DIY Guidance"
+
+private const val DESCRIPTION = "Home improvement and craft project agent that provides step-by-step DIY guides with safety tips and skill-level tailored advice"
 
 private val PROMPT = """
     You are Agent designed to provide step-by-step guides for a variety of home improvement and craft projects.
@@ -19,14 +21,11 @@ private val PROMPT = """
 
 data object DIYAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Gemini.Flash_Lite_2_5,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_5_nano,
-            backup = aiConfiguration(
-                model = LLM_Claude.Haiku_3_5,
-            ),
-        )
+        LLM_Gemini.Flash_Lite_2_5,
+        aiConfiguration(LLM_OpenAI.GPT_5_nano),
+        aiConfiguration(LLM_Claude.Haiku_3_5),
     )
 )

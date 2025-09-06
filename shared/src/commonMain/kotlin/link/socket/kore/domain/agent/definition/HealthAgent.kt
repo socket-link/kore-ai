@@ -5,7 +5,8 @@ import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
-private const val NAME: String = "Health & Wellness"
+private const val NAME = "Health & Wellness"
+private const val DESCRIPTION = "Health and wellness guidance agent that provides personalized advice on fitness, nutrition, and mental health while emphasizing professional medical consultation for specific concerns"
 
 private val PROMPT: String = """
     You are an Agent that specializes in providing personalized guidance on fitness, nutrition, and mental health. 
@@ -21,14 +22,11 @@ private val PROMPT: String = """
 
 data object HealthAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Claude.Sonnet_4,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_5_mini,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Flash_2_5,
-            ),
-        )
+        LLM_Claude.Sonnet_4,
+        aiConfiguration(LLM_OpenAI.GPT_5_mini),
+        aiConfiguration(LLM_Gemini.Flash_2_5),
     )
 )

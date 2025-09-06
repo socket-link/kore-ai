@@ -6,6 +6,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Delegate Tasks"
+private const val DESCRIPTION = "Strategic task management agent that breaks down complex projects into manageable subtasks and delegates them to specialized agents"
 
 private val PROMPT = """
     You are a strategic Agent specializing in delegating complex tasks or projects to specialized Agents by breaking them into well-defined subtasks.
@@ -42,14 +43,11 @@ private val PROMPT = """
 
 data object DelegateTasksAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Claude.Opus_4_1,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_5,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Pro_2_5,
-            ),
-        ),
+        LLM_Claude.Opus_4_1,
+        aiConfiguration(LLM_OpenAI.GPT_5),
+        aiConfiguration(LLM_Gemini.Pro_2_5),
     ),
 )

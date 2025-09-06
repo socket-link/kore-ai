@@ -6,6 +6,9 @@ import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
+private const val NAME = "API Design"
+private const val DESCRIPTION = "Specialized agent for reviewing and optimizing Kotlin API design, focusing on consistency, usability, and adherence to best practices"
+
 private fun promptFrom(reviewType: String, principle: String): String = """
     You are an API Design Agent specialized in reviewing and optimizing Kotlin APIs for libraries and frameworks.
     
@@ -87,20 +90,17 @@ private fun promptFrom(reviewType: String, principle: String): String = """
 """.trimIndent()
 
 data object APIDesignAgent : AgentDefinition.Bundled(
-    name = "API Design",
+    name = NAME,
+    description = DESCRIPTION,
     prompt = promptFrom(
         reviewType = "Public API Review",
         principle = "Kotlin Idioms",
     ),
     aiConfiguration = aiConfiguration(
-        model = LLM_Claude.Opus_4_1,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_4_1,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Pro_2_5,
-            ),
-        )
-    )
+        LLM_Claude.Opus_4_1,
+        aiConfiguration(LLM_OpenAI.GPT_4_1),
+        aiConfiguration(LLM_Gemini.Pro_2_5),
+    ),
 ) {
     private var reviewType: String = "Public API Review"
     private var designPrinciple: String = "Kotlin Idioms"
@@ -136,5 +136,6 @@ data object APIDesignAgent : AgentDefinition.Bundled(
     override val prompt: String
         get() = promptFrom(reviewType, designPrinciple)
 
-    override val neededInputs: List<AgentInput> = listOf(reviewTypeArg, principleArg)
+    override val neededInputs: List<AgentInput>
+        get() = listOf(reviewTypeArg, principleArg)
 }

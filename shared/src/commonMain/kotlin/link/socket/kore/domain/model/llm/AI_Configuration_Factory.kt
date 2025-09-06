@@ -1,41 +1,71 @@
 package link.socket.kore.domain.model.llm
 
-import com.aallam.openai.client.OpenAI as Client
-import link.socket.kore.domain.model.tool.ToolDefinition
-
 val DEFAULT_AI_CONFIGURATION = aiConfiguration(
-    model = LLM_Gemini.Flash_2_5,
-    backup = aiConfiguration(LLM_Claude.Sonnet_3_7),
+    LLM_Gemini.Flash_2_5,
+    aiConfiguration(LLM_Claude.Sonnet_3_7),
 )
 
-data class AI_ConfigurationWithFallback(
-    val mainConfigurationProvider: AI_Configuration<ToolDefinition, LLM<ToolDefinition>>,
-    val backupConfigurationProvider: AI_Configuration<ToolDefinition, LLM<ToolDefinition>>?,
-) : AI_Configuration<ToolDefinition, LLM<ToolDefinition>>() {
+class AI_ConfigurationWithFallback(
+    val configurations: List<AI_Configuration>,
+) : AI_Configuration() {
+
+    private val mainConfiguration = configurations.first()
+    private val backupConfigurationProvider = configurations.getOrNull(1)
+    private val secondBackupConfigurationProvider = configurations.getOrNull(2)
 
     private var usedBackupConfiguration = false
+    private var usedSecondBackupConfiguration = false
 
-    override val client: Client = try {
-        mainConfigurationProvider.client
-    } catch (e: Exception) {
-        e.printStackTrace()
+    override val aiProvider: AI_Provider<*, *>
+        get() = try {
+            val provider = mainConfiguration.aiProvider
+            // Try to invoke an exception
+            provider.client
+            provider
+        } catch (e: Exception) {
+            e.printStackTrace()
 
-        val client = backupConfigurationProvider?.client
-            ?: throw IllegalStateException(
-                "Failed to initialize client for ${backupConfigurationProvider?.selectedLLM?.name}",
-            )
-        usedBackupConfiguration = true
-        client
-    }
+            try {
+                val provider = backupConfigurationProvider?.aiProvider
+                    ?: throw IllegalStateException(
+                        "Failed to initialize client for ${backupConfigurationProvider?.selectedLLM?.name}",
+                    )
+                provider.client
+                usedBackupConfiguration = true
+                provider
+            } catch (e: Exception) {
+                e.printStackTrace()
 
-    override val selectedLLM: LLM<ToolDefinition> by lazy {
-        if (!usedBackupConfiguration) {
-            return@lazy mainConfigurationProvider.selectedLLM
-        } else {
+                val provider = secondBackupConfigurationProvider?.aiProvider
+                    ?: throw IllegalStateException(
+                        "Failed to initialize client for ${secondBackupConfigurationProvider?.selectedLLM?.name}",
+                    )
+                provider.client
+                usedSecondBackupConfiguration = true
+                provider
+            }
+        }
+
+    override val selectedLLM: LLM<*>?
+        get() = if (usedSecondBackupConfiguration) {
+            secondBackupConfigurationProvider?.selectedLLM
+                ?: throw IllegalStateException(
+                    "Failed to initialize LLM for ${secondBackupConfigurationProvider?.selectedLLM?.name}",
+                )
+        } else if (usedBackupConfiguration){
             backupConfigurationProvider?.selectedLLM
                 ?: throw IllegalStateException(
                     "Failed to initialize LLM for ${backupConfigurationProvider?.selectedLLM?.name}",
                 )
+        } else {
+            mainConfiguration.selectedLLM
+        }
+
+    fun getSuggestedModels(): List<Pair<AI_Provider<*, *>, LLM<*>>> {
+        return configurations.mapNotNull { configuration ->
+            configuration.selectedLLM?.let { llm ->
+                configuration.aiProvider to llm
+            }
         }
     }
 }
@@ -43,25 +73,23 @@ data class AI_ConfigurationWithFallback(
 /** Create a configuration for Google Gemini models. */
 fun aiConfiguration(
     model: LLM_Gemini,
-    backup: AI_Configuration<ToolDefinition, LLM<ToolDefinition>>? = null,
-): AI_Configuration<ToolDefinition, LLM<ToolDefinition>> = AI_ConfigurationWithFallback(
-    mainConfigurationProvider = StandardAI_Configuration(
-        client = AI_Provider._Google.client,
-        selectedLLM = model as LLM<ToolDefinition>
-    ),
-    backupConfigurationProvider = backup,
+    vararg backup: AI_Configuration,
+): AI_ConfigurationWithFallback = AI_ConfigurationWithFallback(
+    configurations = StandardAI_Configuration(
+        aiProvider = AI_Provider._Google,
+        selectedLLM = model,
+    ).let(::listOf) + backup.toList(),
 )
 
 /** Create a configuration for Anthropic Claude models. */
 fun aiConfiguration(
     model: LLM_Claude,
-    backup: AI_Configuration<ToolDefinition, LLM<ToolDefinition>>? = null,
+    vararg backup: AI_Configuration,
 ): AI_ConfigurationWithFallback = AI_ConfigurationWithFallback(
-    mainConfigurationProvider = StandardAI_Configuration(
-        client = AI_Provider._Anthropic.client,
-        selectedLLM = model as LLM<ToolDefinition>
-    ),
-    backupConfigurationProvider = backup,
+    configurations = StandardAI_Configuration(
+        aiProvider = AI_Provider._Anthropic,
+        selectedLLM = model,
+    ).let(::listOf) + backup.toList(),
 )
 
 /**
@@ -69,11 +97,10 @@ fun aiConfiguration(
  */
 fun aiConfiguration(
     model: LLM_OpenAI,
-    backup: AI_Configuration<ToolDefinition, LLM<ToolDefinition>>? = null,
+    vararg backup: AI_Configuration,
 ): AI_ConfigurationWithFallback = AI_ConfigurationWithFallback(
-    mainConfigurationProvider = StandardAI_Configuration(
-        client = AI_Provider._OpenAI.client,
-        selectedLLM = model as LLM<ToolDefinition>
-    ),
-    backupConfigurationProvider = backup,
+    configurations = StandardAI_Configuration(
+        aiProvider = AI_Provider._OpenAI,
+        selectedLLM = model,
+    ).let(::listOf) + backup.toList(),
 )

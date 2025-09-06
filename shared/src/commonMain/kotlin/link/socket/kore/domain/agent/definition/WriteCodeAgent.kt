@@ -7,6 +7,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Write Code"
+private const val DESCRIPTION = "Programming expert agent that generates executable code in specified technologies, plans solutions step-by-step, and saves code to local storage"
 
 private fun promptFrom(technologies: String?): String = """
     You are an Agent that is a programming expert, and you are proficient in the following technologies: $technologies.
@@ -24,15 +25,12 @@ private fun promptFrom(technologies: String?): String = """
 
 data object WriteCodeAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = promptFrom(technologies = "Kotlin"),
     aiConfiguration = aiConfiguration(
-        model = LLM_Claude.Opus_4_1,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_4_1,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Pro_2_5,
-            ),
-        ),
+        LLM_Claude.Opus_4_1,
+        aiConfiguration(LLM_OpenAI.GPT_4_1),
+        aiConfiguration(LLM_Gemini.Pro_2_5),
     ),
 ) {
     private var technologies: String = "Any language or framework"

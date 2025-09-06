@@ -7,6 +7,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Performance Optimization"
+private const val DESCRIPTION = "Performance optimization specialist agent that identifies bottlenecks and provides solutions for memory, CPU, network, and UI performance in Kotlin Multiplatform applications"
 
 private fun promptFrom(optimizationType: String, platform: String): String = """
     You are a Performance Optimization Agent specialized in identifying and resolving performance bottlenecks in Kotlin Multiplatform applications.
@@ -108,18 +109,15 @@ private fun promptFrom(optimizationType: String, platform: String): String = """
 
 data object PerformanceOptimizationAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = promptFrom(
         optimizationType = "General Performance",
         platform = "All Platforms",
     ),
     aiConfiguration = aiConfiguration(
-        model = LLM_Claude.Opus_4_1,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_5,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Pro_2_5,
-            ),
-        ),
+        LLM_Claude.Opus_4_1,
+        aiConfiguration(LLM_OpenAI.GPT_5),
+        aiConfiguration(LLM_Gemini.Pro_2_5),
     ),
 ) {
     private var optimizationType: String = "General Performance"
@@ -156,5 +154,6 @@ data object PerformanceOptimizationAgent : AgentDefinition.Bundled(
     override val prompt: String
         get() = promptFrom(optimizationType, targetPlatform)
 
-    override val neededInputs: List<AgentInput> = listOf(optimizationTypeArg, platformArg)
+    override val neededInputs: List<AgentInput>
+        get() = listOf(optimizationTypeArg, platformArg)
 }

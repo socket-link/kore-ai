@@ -6,6 +6,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Language Tutor"
+private const val DESCRIPTION = "Interactive language learning agent that provides conversational practice, grammar correction, vocabulary explanations, and tailored educational content for multiple languages"
 
 private val PROMPT = """
     You are an Agent that specializes in assisting Users in learning new languages through interactive conversation and structured lessons. 
@@ -23,14 +24,11 @@ private val PROMPT = """
 
 data object LanguageAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Gemini.Flash_Lite_2_5,
-        backup = aiConfiguration(
-            model = LLM_Claude.Haiku_3_5,
-            backup = aiConfiguration(
-                model = LLM_OpenAI.GPT_4o_mini,
-            ),
-        ),
+        LLM_Gemini.Flash_Lite_2_5,
+        aiConfiguration(LLM_Claude.Haiku_3_5),
+        aiConfiguration(LLM_OpenAI.GPT_4o_mini),
     ),
 )

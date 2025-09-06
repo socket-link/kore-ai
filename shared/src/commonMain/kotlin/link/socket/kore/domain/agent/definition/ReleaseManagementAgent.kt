@@ -7,6 +7,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Release Management"
+private const val DESCRIPTION = "Release management specialist agent that handles version control, changelog generation, release preparation, and deployment processes with comprehensive quality gates"
 
 private fun promptFrom(
     releaseType: String,
@@ -77,18 +78,15 @@ private fun promptFrom(
 
 data object ReleaseManagementAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = promptFrom(
         releaseType = "Minor Release",
         versionScheme = "Semantic Versioning",
     ),
     aiConfiguration = aiConfiguration(
-        model = LLM_Claude.Opus_4_1,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_4_1,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Pro_2_5,
-            ),
-        ),
+        LLM_Claude.Opus_4_1,
+        aiConfiguration(LLM_OpenAI.GPT_4_1),
+        aiConfiguration(LLM_Gemini.Pro_2_5),
     ),
 ) {
     private val releaseTypeArg = AgentInput.EnumArgs(
@@ -116,5 +114,6 @@ data object ReleaseManagementAgent : AgentDefinition.Bundled(
         )
     )
 
-    override val neededInputs: List<AgentInput> = listOf(releaseTypeArg, versionSchemeArg)
+    override val neededInputs: List<AgentInput>
+        get() = listOf(releaseTypeArg, versionSchemeArg)
 }

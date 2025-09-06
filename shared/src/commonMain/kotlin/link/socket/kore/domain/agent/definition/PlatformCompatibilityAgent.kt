@@ -7,6 +7,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Platform Compatibility"
+private const val DESCRIPTION = "Platform compatibility validation agent that ensures consistent behavior and API surface across Kotlin Multiplatform targets including Android, iOS, and Desktop"
 
 private fun promptFrom(platforms: String, checkType: String): String = """
     You are a Platform Compatibility Agent specialized in ensuring consistent behavior across Kotlin Multiplatform targets.
@@ -79,18 +80,15 @@ private fun promptFrom(platforms: String, checkType: String): String = """
 
 data object PlatformCompatibilityAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = promptFrom(
         platforms = "All Platforms",
         checkType = "API Compatibility",
     ),
     aiConfiguration = aiConfiguration(
-        model = LLM_Gemini.Pro_2_5,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_4_1,
-            backup = aiConfiguration(
-                model = LLM_Claude.Opus_4_1,
-            ),
-        ),
+        LLM_Gemini.Pro_2_5,
+        aiConfiguration(LLM_OpenAI.GPT_4_1),
+        aiConfiguration(LLM_Claude.Opus_4_1),
     ),
 ) {
     private var targetPlatforms: String = "All Platforms"
@@ -127,5 +125,6 @@ data object PlatformCompatibilityAgent : AgentDefinition.Bundled(
     override val prompt: String
         get() = promptFrom(targetPlatforms, checkType)
 
-    override val neededInputs: List<AgentInput> = listOf(platformsArg, checkTypeArg)
+    override val neededInputs: List<AgentInput>
+        get() = listOf(platformsArg, checkTypeArg)
 }

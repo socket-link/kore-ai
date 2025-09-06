@@ -15,7 +15,7 @@ import link.socket.kore.domain.model.tool.FunctionProvider
 
 @OptIn(BetaOpenAI::class)
 data class KoreAssistant(
-    override val config: AI_Configuration<*, *>,
+    override val config: AI_Configuration,
     override val scope: CoroutineScope,
     private val existingAssistantId: AssistantId?,
     private val modelId: ModelId,

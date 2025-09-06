@@ -12,7 +12,7 @@ import link.socket.kore.domain.model.tool.FunctionProvider
 
 data class KoreAgent(
     override val scope: CoroutineScope,
-    override val config: AI_Configuration<*, *>,
+    override val config: AI_Configuration,
     val definition: AgentDefinition,
     val conversationRepository: ConversationRepository,
 ) : LLMAgent {

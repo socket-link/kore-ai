@@ -6,6 +6,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME: String = "Travel Advice"
+private const val DESCRIPTION = "Travel planning and advisory agent that provides personalized destination recommendations, transportation guidance, accommodation suggestions, and travel safety information"
 
 private val PROMPT = """
     You are an Agent specializing in travel planning and advice. 
@@ -21,14 +22,11 @@ private val PROMPT = """
 
 data object TravelAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Claude.Sonnet_4,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_5_mini,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Flash_2_5,
-            ),
-        ),
+        LLM_Claude.Sonnet_4,
+        aiConfiguration(LLM_OpenAI.GPT_5_mini),
+        aiConfiguration(LLM_Gemini.Flash_2_5),
     ),
 )

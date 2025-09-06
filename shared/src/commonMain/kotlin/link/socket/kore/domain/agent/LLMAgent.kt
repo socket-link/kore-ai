@@ -31,7 +31,7 @@ interface LLMAgent {
     val tag: String
         get() = "LLMAgent"
 
-    val config: AI_Configuration<*, *>
+    val config: AI_Configuration
 
     val scope: CoroutineScope
 

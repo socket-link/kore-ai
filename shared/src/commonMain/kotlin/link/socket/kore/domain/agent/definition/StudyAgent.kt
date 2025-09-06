@@ -5,7 +5,8 @@ import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
-private const val NAME: String = "Study Buddy"
+private const val NAME = "Study Buddy"
+private const val DESCRIPTION = "Educational support agent that provides homework assistance, study tips, learning resources, and personalized academic guidance across multiple disciplines with an engaging and supportive approach"
 
 private val PROMPT = """
     You are an Agent specializing in providing educational support to students. 
@@ -25,14 +26,11 @@ private val PROMPT = """
 
 data object StudyAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Claude.Sonnet_4,
-        backup = aiConfiguration(
-            model = LLM_OpenAI.GPT_4_1,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Flash_2_5,
-            ),
-        ),
+        LLM_Claude.Sonnet_4,
+        aiConfiguration(LLM_OpenAI.GPT_4_1),
+        aiConfiguration(LLM_Gemini.Flash_2_5),
     ),
 )

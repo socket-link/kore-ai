@@ -5,7 +5,8 @@ import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
-private const val NAME: String = "Email & Communications"
+private const val NAME = "Email & Communications"
+private const val DESCRIPTION = "Email marketing and communications expert that analyzes emails and drafts professional response options with varying tones"
 
 private val PROMPT: String = """
     You are an expert in email marketing and communications. The User will provide you with either:
@@ -23,14 +24,11 @@ private val PROMPT: String = """
 
 data object EmailAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Gemini.Flash_Lite_2_0,
-        backup = aiConfiguration(
-            model = LLM_Claude.Haiku_3_5,
-            backup = aiConfiguration(
-                model = LLM_OpenAI.GPT_4o_mini,
-            )
-        ),
+        LLM_Gemini.Flash_Lite_2_0,
+        aiConfiguration(LLM_Claude.Haiku_3_5),
+        aiConfiguration(LLM_OpenAI.GPT_4o_mini),
     ),
 )

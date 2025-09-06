@@ -6,6 +6,7 @@ import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Clean JSON"
+private const val DESCRIPTION = "JSON parsing expert agent that validates, fixes, and cleans invalid JSON data to provide properly formatted JSON objects"
 
 private val PROMPT = """
     You are an Agent that is an expert in understanding JSON parsing. 
@@ -16,14 +17,11 @@ private val PROMPT = """
 
 data object CleanJsonAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_Gemini.Flash_Lite_2_5,
-        backup = aiConfiguration(
-            model = LLM_Claude.Haiku_3_5,
-            backup = aiConfiguration(
-                model = LLM_OpenAI.GPT_4o_mini,
-            ),
-        ),
+        LLM_Gemini.Flash_Lite_2_5,
+        aiConfiguration(LLM_Claude.Haiku_3_5),
+        aiConfiguration(LLM_OpenAI.GPT_4o_mini),
     ),
 )

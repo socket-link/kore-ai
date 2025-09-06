@@ -5,7 +5,8 @@ import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
 import link.socket.kore.domain.model.llm.aiConfiguration
 
-private const val NAME: String = "Compare Prompts"
+private const val NAME = "Compare Prompts"
+private const val DESCRIPTION = "Prompt evaluation agent that compares original and revised prompts by analyzing LLM responses for conciseness, relevance, specificity, and clarity"
 
 private val PROMPT: String = """
     You are an Agent specialized in evaluating LLM responses to identify improvements after prompt modifications. 
@@ -27,14 +28,11 @@ private val PROMPT: String = """
 
 data object ComparePromptsAgent : AgentDefinition.Bundled(
     name = NAME,
+    description = DESCRIPTION,
     prompt = PROMPT,
     aiConfiguration = aiConfiguration(
-        model = LLM_OpenAI.o3_mini,
-        backup = aiConfiguration(
-            model = LLM_Claude.Opus_4_1,
-            backup = aiConfiguration(
-                model = LLM_Gemini.Pro_2_5,
-            ),
-        ),
+        LLM_OpenAI.o3_mini,
+        aiConfiguration(LLM_Claude.Opus_4_1),
+        aiConfiguration(LLM_Gemini.Pro_2_5),
     ),
 )
