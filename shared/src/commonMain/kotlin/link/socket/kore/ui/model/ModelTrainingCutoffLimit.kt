@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import io.ktor.util.date.*
 
 @Composable
-fun ModelTrainingCutoff(cutoffDate: GMTDate) {
+fun ModelTrainingCutoffLimit(cutoffDate: GMTDate) {
     Column {
         Text(
             text = "Training Data",

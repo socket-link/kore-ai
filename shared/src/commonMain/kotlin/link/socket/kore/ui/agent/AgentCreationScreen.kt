@@ -2,6 +2,7 @@ package link.socket.kore.ui.agent
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
@@ -34,6 +35,7 @@ import link.socket.kore.domain.model.llm.AI_ConfigurationWithFallback
 import link.socket.kore.domain.model.llm.AI_Provider
 import link.socket.kore.domain.model.llm.LLM
 import link.socket.kore.ui.model.ModelFeaturesDisplay
+import link.socket.kore.ui.model.ModelLimitsDisplay
 import link.socket.kore.ui.model.ModelOverview
 import link.socket.kore.ui.model.ModelSelector
 import link.socket.kore.ui.widget.header.Header
@@ -124,10 +126,20 @@ fun AgentCreationScreen(
                             },
                         )
 
-                        ModelFeaturesDisplay(
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            features = model.features,
-                        )
+                        ) {
+                            ModelFeaturesDisplay(
+                                modifier = Modifier.weight(1f),
+                                features = model.features,
+                            )
+
+                            ModelLimitsDisplay(
+                                modifier = Modifier.weight(1f),
+                                limits = model.limits,
+                                trainingCutoffDate = model.features.trainingCutoffDate,
+                            )
+                        }
                     }
                 }
             } else {

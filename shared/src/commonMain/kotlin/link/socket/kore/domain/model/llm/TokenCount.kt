@@ -2,17 +2,6 @@
 
 package link.socket.kore.domain.model.llm
 
-sealed interface TokenRate {
-    data class Combined(
-        val tokensPerMinute: TokenCount,
-    ) : TokenRate
-
-    data class Separated(
-        val inputTokensPerMinute: TokenCount,
-        val outputTokensPerMinute: TokenCount,
-    ) : TokenRate
-}
-
 enum class TokenCount(val label: String) {
     _4k("4k"),
     _4096("4,096"),

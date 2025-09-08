@@ -29,12 +29,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.model.llm.ModelFeatures
+import link.socket.kore.domain.model.llm.RateLimits
+import link.socket.kore.domain.model.llm.Tier
 import link.socket.kore.domain.model.llm.TokenRate
 
 
 @Composable
-fun ModelRateLimits(rateLimits: ModelFeatures.Limits.RateLimits) {
+fun ModelRateLimits(rateLimits: RateLimits) {
     var selectedTier by remember { mutableStateOf(UserTier.TIER_1) }
     var dropdownExpanded by remember { mutableStateOf(false) }
 
@@ -124,7 +125,7 @@ fun ModelRateLimits(rateLimits: ModelFeatures.Limits.RateLimits) {
 }
 
 @Composable
-private fun RateLimitDetails(tierData: ModelFeatures.Limits.RateLimits.Tier) {
+private fun RateLimitDetails(tierData: Tier) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

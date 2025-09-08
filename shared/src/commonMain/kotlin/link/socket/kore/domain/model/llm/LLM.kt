@@ -9,4 +9,5 @@ sealed class LLM <TD : ToolDefinition>(
     open val displayName: String,
     open val description: String,
     open val features: ModelFeatures,
+    open val limits: ModelLimits,
 )

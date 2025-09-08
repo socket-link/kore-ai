@@ -3,8 +3,6 @@
 package link.socket.kore.domain.model.llm
 
 import io.ktor.util.date.*
-import link.socket.kore.domain.model.llm.ModelFeatures.Limits
-import link.socket.kore.domain.model.llm.ModelFeatures.Limits.TokenLimits
 import link.socket.kore.domain.model.llm.ModelFeatures.SupportedInputs.Companion.TEXT
 import link.socket.kore.domain.model.llm.ModelFeatures.SupportedInputs.Companion.TEXT_AND_IMAGE
 import link.socket.kore.domain.model.tool.ProvidedTool
@@ -15,13 +13,15 @@ sealed class LLM_OpenAI(
     override val displayName: String,
     override val description: String,
     override val features: ModelFeatures,
-) : LLM<Tool_OpenAI>(name, displayName, description, features) {
+    override val limits: ModelLimits,
+) : LLM<Tool_OpenAI>(name, displayName, description, features, limits) {
 
     data object GPT_5 : LLM_OpenAI(
         name = GPT_5_NAME,
         displayName = GPT_5_DISPLAY_NAME,
         description = GPT_5_DESCRIPTION,
         features = GPT_5_FEATURES,
+        limits = GPT_5_LIMITS,
     )
 
     data object GPT_5_mini : LLM_OpenAI(
@@ -29,6 +29,7 @@ sealed class LLM_OpenAI(
         displayName = GPT_5_mini_DISPLAY_NAME,
         description = GPT_5_mini_DESCRIPTION,
         features = GPT_5_mini_FEATURES,
+        limits = GPT_5_mini_LIMITS,
     )
 
     data object GPT_5_nano : LLM_OpenAI(
@@ -36,6 +37,7 @@ sealed class LLM_OpenAI(
         displayName = GPT_5_nano_DISPLAY_NAME,
         description = GPT_5_nano_DESCRIPTION,
         features = GPT_5_nano_FEATURES,
+        limits = GPT_5_nano_LIMITS,
     )
 
     data object GPT_4_1 : LLM_OpenAI(
@@ -43,6 +45,7 @@ sealed class LLM_OpenAI(
         displayName = GPT_4_1_DISPLAY_NAME,
         description = GPT_4_1_DESCRIPTION,
         features = GPT_4_1_FEATURES,
+        limits = GPT_4_1_LIMITS,
     )
 
     data object GPT_4_1_mini : LLM_OpenAI(
@@ -50,6 +53,7 @@ sealed class LLM_OpenAI(
         displayName = GPT_4_1_mini_DISPLAY_NAME,
         description = GPT_4_1_mini_DESCRIPTION,
         features = GPT_4_1_mini_FEATURES,
+        limits = GPT_4_1_mini_LIMITS,
     )
 
     data object GPT_4o : LLM_OpenAI(
@@ -57,6 +61,7 @@ sealed class LLM_OpenAI(
         displayName = GPT_4o_DISPLAY_NAME,
         description = GPT_4o_DESCRIPTION,
         features = GPT_4o_FEATURES,
+        limits = GPT_4o_LIMITS,
     )
 
     data object GPT_4o_mini : LLM_OpenAI(
@@ -64,6 +69,7 @@ sealed class LLM_OpenAI(
         displayName = GPT_4o_mini_DISPLAY_NAME,
         description = GPT_4o_mini_DESCRIPTION,
         features = GPT_4o_mini_FEATURES,
+        limits = GPT_4o_mini_LIMITS,
     )
 
     data object o4_mini : LLM_OpenAI(
@@ -71,6 +77,7 @@ sealed class LLM_OpenAI(
         displayName = o4_mini_DISPLAY_NAME,
         description = o4_mini_DESCRIPTION,
         features = o4_mini_FEATURES,
+        limits = o4_mini_LIMITS,
     )
 
     data object o3 : LLM_OpenAI(
@@ -78,6 +85,7 @@ sealed class LLM_OpenAI(
         displayName = o3_DISPLAY_NAME,
         description = o3_DESCRIPTION,
         features = o3_FEATURES,
+        limits = o3_LIMITS,
     )
 
     data object o3_mini : LLM_OpenAI(
@@ -85,6 +93,7 @@ sealed class LLM_OpenAI(
         displayName = o3_mini_DISPLAY_NAME,
         description = o3_mini_DESCRIPTION,
         features = o3_mini_FEATURES,
+        limits = o3_mini_LIMITS,
     )
 
     companion object Companion {
@@ -259,49 +268,49 @@ sealed class LLM_OpenAI(
 
         // ---- Limits ----
 
-        private val GPT_5_LIMITS = Limits(
+        private val GPT_5_LIMITS = ModelLimits(
             rate = GPT_5_RATE_LIMITS,
             token = GPT_5_TOKEN_LIMITS,
         )
 
-        private val GPT_5_mini_LIMITS = Limits(
+        private val GPT_5_mini_LIMITS = ModelLimits(
             rate = GPT_5_mini_nano_RATE_LIMITS,
             token = GPT_5_TOKEN_LIMITS,
         )
 
         private val GPT_5_nano_LIMITS = GPT_5_mini_LIMITS
 
-        private val GPT_4_1_LIMITS = Limits(
+        private val GPT_4_1_LIMITS = ModelLimits(
             rate = GPT_4_1_RATE_LIMITS,
             token = GPT_4_1_TOKEN_LIMITS,
         )
 
-        private val GPT_4_1_mini_LIMITS = Limits(
+        private val GPT_4_1_mini_LIMITS = ModelLimits(
             rate = GPT_4_1_mini_RATE_LIMITS,
             token = GPT_4_1_TOKEN_LIMITS,
         )
 
-        private val GPT_4o_LIMITS = Limits(
+        private val GPT_4o_LIMITS = ModelLimits(
             rate = GPT_4o_RATE_LIMITS,
             token = GPT_4o_TOKEN_LIMITS,
         )
 
-        private val GPT_4o_mini_LIMITS = Limits(
+        private val GPT_4o_mini_LIMITS = ModelLimits(
             rate = GPT_4o_mini_RATE_LIMITS,
             token = GPT_4o_mini_TOKEN_LIMITS,
         )
 
-        private val o4_mini_LIMITS = Limits(
+        private val o4_mini_LIMITS = ModelLimits(
             rate = o4_mini_RATE_LIMITS,
             token = o4_mini_TOKEN_LIMITS,
         )
 
-        private val o3_LIMITS = Limits(
+        private val o3_LIMITS = ModelLimits(
             rate = o3_RATE_LIMITS,
             token = o3_TOKEN_LIMITS,
         )
 
-        private val o3_mini_LIMITS = Limits(
+        private val o3_mini_LIMITS = ModelLimits(
             rate = o3_mini_RATE_LIMITS,
             token = o3_mini_TOKEN_LIMITS,
         )
@@ -390,7 +399,6 @@ sealed class LLM_OpenAI(
 
         private val GPT_5_FEATURES = ModelFeatures(
             availableTools = GPT_5_TOOLS,
-            limits = GPT_5_LIMITS,
             reasoningLevel = ModelFeatures.RelativeReasoning.HIGH,
             speed = ModelFeatures.RelativeSpeed.SLOW,
             supportedInputs = GPT_5_SUPPORTED_INPUTS,
@@ -399,7 +407,6 @@ sealed class LLM_OpenAI(
 
         private val GPT_5_mini_FEATURES = ModelFeatures(
             availableTools = GPT_5_mini_TOOLS,
-            limits = GPT_5_mini_LIMITS,
             reasoningLevel = ModelFeatures.RelativeReasoning.NORMAL,
             speed = ModelFeatures.RelativeSpeed.NORMAL,
             supportedInputs = GPT_5_mini_SUPPORTED_INPUTS,
@@ -408,7 +415,6 @@ sealed class LLM_OpenAI(
 
         private val GPT_5_nano_FEATURES = ModelFeatures(
             availableTools = GPT_5_nano_TOOLS,
-            limits = GPT_5_nano_LIMITS,
             reasoningLevel = ModelFeatures.RelativeReasoning.NORMAL,
             speed = ModelFeatures.RelativeSpeed.FAST,
             supportedInputs = GPT_5_nano_SUPPORTED_INPUTS,
@@ -417,7 +423,6 @@ sealed class LLM_OpenAI(
 
         private val GPT_4_1_FEATURES = ModelFeatures(
             availableTools = GPT_4_1_TOOLS,
-            limits = GPT_4_1_LIMITS,
             reasoningLevel = ModelFeatures.RelativeReasoning.HIGH,
             speed = ModelFeatures.RelativeSpeed.NORMAL,
             supportedInputs = GPT_4_1_SUPPORTED_INPUTS,
@@ -426,7 +431,6 @@ sealed class LLM_OpenAI(
 
         private val GPT_4_1_mini_FEATURES = ModelFeatures(
             availableTools = GPT_4_1_mini_TOOLS,
-            limits = GPT_4_1_mini_LIMITS,
             reasoningLevel = ModelFeatures.RelativeReasoning.NORMAL,
             speed = ModelFeatures.RelativeSpeed.FAST,
             supportedInputs = GPT_4_1_mini_SUPPORTED_INPUTS,
@@ -435,7 +439,6 @@ sealed class LLM_OpenAI(
 
         private val GPT_4o_FEATURES = ModelFeatures(
             availableTools = GPT_4o_TOOLS,
-            limits = GPT_4o_LIMITS,
             reasoningLevel = ModelFeatures.RelativeReasoning.NORMAL,
             speed = ModelFeatures.RelativeSpeed.NORMAL,
             supportedInputs = GPT_4o_SUPPORTED_INPUTS,
@@ -444,7 +447,6 @@ sealed class LLM_OpenAI(
 
         private val GPT_4o_mini_FEATURES = ModelFeatures(
             availableTools = GPT_4o_mini_TOOLS,
-            limits = GPT_4o_mini_LIMITS,
             reasoningLevel = ModelFeatures.RelativeReasoning.LOW,
             speed = ModelFeatures.RelativeSpeed.FAST,
             supportedInputs = GPT_4o_mini_SUPPORTED_INPUTS,
@@ -453,7 +455,6 @@ sealed class LLM_OpenAI(
 
         private val o4_mini_FEATURES = ModelFeatures(
             availableTools = o4_mini_TOOLS,
-            limits = o4_mini_LIMITS,
             reasoningLevel = ModelFeatures.RelativeReasoning.HIGH,
             speed = ModelFeatures.RelativeSpeed.NORMAL,
             supportedInputs = o4_mini_SUPPORTED_INPUTS,
@@ -462,7 +463,6 @@ sealed class LLM_OpenAI(
 
         private val o3_FEATURES = ModelFeatures(
             availableTools = o3_TOOLS,
-            limits = o3_LIMITS,
             reasoningLevel = ModelFeatures.RelativeReasoning.HIGH,
             speed = ModelFeatures.RelativeSpeed.SLOW,
             supportedInputs = o3_SUPPORTED_INPUTS,
@@ -471,7 +471,6 @@ sealed class LLM_OpenAI(
 
         private val o3_mini_FEATURES = ModelFeatures(
             availableTools = o3_mini_TOOLS,
-            limits = o3_mini_LIMITS,
             reasoningLevel = ModelFeatures.RelativeReasoning.HIGH,
             speed = ModelFeatures.RelativeSpeed.NORMAL,
             supportedInputs = o3_mini_SUPPORTED_INPUTS,

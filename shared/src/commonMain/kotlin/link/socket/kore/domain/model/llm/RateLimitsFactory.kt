@@ -1,8 +1,5 @@
 package link.socket.kore.domain.model.llm
 
-import link.socket.kore.domain.model.llm.ModelFeatures.Limits.RateLimits
-import link.socket.kore.domain.model.llm.ModelFeatures.Limits.RateLimits.Tier
-
 /**
  * The RequestLimit parameters are passed as pairs of [RequestsPerMinute, RequestsPerDay].
  */
@@ -29,7 +26,7 @@ data class RateLimitsFactory(
     ): RateLimits = RateLimits(
         tierFree = tierFreeRequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tierFreeTPM)
-            Tier(
+            Tier.FreeTier(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Combined(
@@ -39,7 +36,7 @@ data class RateLimitsFactory(
         },
         tier1 = tier1RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier1TPM)
-            Tier(
+            Tier.Tier1(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Combined(
@@ -49,7 +46,7 @@ data class RateLimitsFactory(
         },
         tier2 = tier2RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier2TPM)
-            Tier(
+            Tier.Tier2(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Combined(
@@ -59,7 +56,7 @@ data class RateLimitsFactory(
         },
         tier3 = tier1RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier3TPM)
-            Tier(
+            Tier.Tier3(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Combined(
@@ -69,7 +66,7 @@ data class RateLimitsFactory(
         },
         tier4 = tier4RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier4TPM)
-            Tier(
+            Tier.Tier4(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Combined(
@@ -79,7 +76,7 @@ data class RateLimitsFactory(
         },
         tier5 = tier5RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier5TPM)
-            Tier(
+            Tier.Tier5(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Combined(
@@ -106,7 +103,7 @@ data class RateLimitsFactory(
     ): RateLimits = RateLimits(
         tierFree = tierFreeRequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tierFreeTPMs)
-            Tier(
+            Tier.FreeTier(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Separated(
@@ -117,7 +114,7 @@ data class RateLimitsFactory(
         },
         tier1 = tier1RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier1TPMs)
-            Tier(
+            Tier.Tier1(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Separated(
@@ -128,7 +125,7 @@ data class RateLimitsFactory(
         },
         tier2 = tier2RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier2TPMs)
-            Tier(
+            Tier.Tier2(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Separated(
@@ -139,7 +136,7 @@ data class RateLimitsFactory(
         },
         tier3 = tier3RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier3TPMs)
-            Tier(
+            Tier.Tier3(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Separated(
@@ -150,7 +147,7 @@ data class RateLimitsFactory(
         },
         tier4 = tier4RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier4TPMs)
-            Tier(
+            Tier.Tier4(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Separated(
@@ -161,7 +158,7 @@ data class RateLimitsFactory(
         },
         tier5 = tier5RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier5TPMs)
-            Tier(
+            Tier.Tier5(
                 requestsPerMinute = rpm,
                 requestsPerDay = rpd,
                 tokenRate = TokenRate.Separated(

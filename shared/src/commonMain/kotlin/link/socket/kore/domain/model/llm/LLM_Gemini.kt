@@ -3,8 +3,6 @@
 package link.socket.kore.domain.model.llm
 
 import io.ktor.util.date.*
-import link.socket.kore.domain.model.llm.ModelFeatures.Limits
-import link.socket.kore.domain.model.llm.ModelFeatures.Limits.TokenLimits
 import link.socket.kore.domain.model.llm.ModelFeatures.RelativeReasoning
 import link.socket.kore.domain.model.llm.ModelFeatures.RelativeSpeed
 import link.socket.kore.domain.model.llm.ModelFeatures.SupportedInputs
@@ -16,13 +14,15 @@ sealed class LLM_Gemini(
     override val displayName: String,
     override val description: String,
     override val features: ModelFeatures,
-) : LLM<Tool_Gemini>(name, displayName, description, features) {
+    override val limits: ModelLimits,
+) : LLM<Tool_Gemini>(name, displayName, description, features, limits) {
 
     data object Pro_2_5 : LLM_Gemini(
         name = _2_5_Pro_NAME,
         displayName = _2_5_Pro_DISPLAY_NAME,
         description = _2_5_Pro_DESCRIPTION,
         features = _2_5_Pro_FEATURES,
+        limits = _2_5_Pro_LIMITS,
     )
 
     data object Flash_2_5 : LLM_Gemini(
@@ -30,6 +30,7 @@ sealed class LLM_Gemini(
         displayName = _2_5_Flash_DISPLAY_NAME,
         description = _2_5_Flash_DESCRIPTION,
         features = _2_5_Flash_FEATURES,
+        limits = _2_5_Flash_LIMITS,
     )
 
     data object Flash_Lite_2_5 : LLM_Gemini(
@@ -37,6 +38,7 @@ sealed class LLM_Gemini(
         displayName = _2_5_Flash_Lite_DISPLAY_NAME,
         description = _2_5_Flash_Lite_DESCRIPTION,
         features = _2_5_Flash_Lite_FEATURES,
+        limits = _2_5_Flash_Lite_LIMITS,
     )
 
     data object Flash_2_0 : LLM_Gemini(
@@ -44,6 +46,7 @@ sealed class LLM_Gemini(
         displayName = _2_0_Flash_DISPLAY_NAME,
         description = _2_0_Flash_DESCRIPTION,
         features = _2_0_Flash_FEATURES,
+        limits = _2_0_Flash_LIMITS,
     )
 
     data object Flash_Lite_2_0 : LLM_Gemini(
@@ -51,6 +54,7 @@ sealed class LLM_Gemini(
         displayName = _2_0_Flash_Lite_DISPLAY_NAME,
         description = _2_0_Flash_Lite_DESCRIPTION,
         features = _2_0_Flash_Lite_FEATURES,
+        limits = _2_0_Flash_Lite_LIMITS,
     )
 
     companion object Companion {
@@ -214,27 +218,27 @@ sealed class LLM_Gemini(
 
         // ---- Limits ----
 
-        private val _2_5_Pro_LIMITS = Limits(
+        private val _2_5_Pro_LIMITS = ModelLimits(
             rate = _2_5_Pro_RATE_LIMITS,
             token = _2_5_Pro_TOKEN_LIMITS,
         )
 
-        private val _2_5_Flash_LIMITS = Limits(
+        private val _2_5_Flash_LIMITS = ModelLimits(
             rate = _2_5_Flash_RATE_LIMITS,
             token = _2_5_Flash_TOKEN_LIMITS,
         )
 
-        private val _2_5_Flash_Lite_LIMITS = Limits(
+        private val _2_5_Flash_Lite_LIMITS = ModelLimits(
             rate = _2_5_Flash_Lite_RATE_LIMITS,
             token = _2_5_Flash_Lite_TOKEN_LIMITS,
         )
 
-        private val _2_0_Flash_LIMITS = Limits(
+        private val _2_0_Flash_LIMITS = ModelLimits(
             rate = _2_0_Flash_RATE_LIMITS,
             token = _2_0_Flash_TOKEN_LIMITS,
         )
 
-        private val _2_0_Flash_Lite_LIMITS = Limits(
+        private val _2_0_Flash_Lite_LIMITS = ModelLimits(
             rate = _2_0_Flash_Lite_RATE_LIMITS,
             token = _2_0_Flash_Lite_TOKEN_LIMITS,
         )
@@ -283,7 +287,6 @@ sealed class LLM_Gemini(
 
         private val _2_5_Pro_FEATURES = ModelFeatures(
             availableTools = _2_5_Pro_TOOLS,
-            limits = _2_5_Pro_LIMITS,
             reasoningLevel = RelativeReasoning.HIGH,
             speed = RelativeSpeed.SLOW,
             supportedInputs = _2_5_Pro_SUPPORTED_INPUTS,
@@ -292,7 +295,6 @@ sealed class LLM_Gemini(
 
         private val _2_5_Flash_FEATURES = ModelFeatures(
             availableTools = _2_5_Flash_TOOLS,
-            limits = _2_5_Flash_LIMITS,
             reasoningLevel = RelativeReasoning.NORMAL,
             speed = RelativeSpeed.NORMAL,
             supportedInputs = _2_5_Flash_SUPPORTED_INPUTS,
@@ -301,7 +303,6 @@ sealed class LLM_Gemini(
 
         private val _2_5_Flash_Lite_FEATURES = ModelFeatures(
             availableTools = _2_5_Flash_Lite_TOOLS,
-            limits = _2_5_Flash_Lite_LIMITS,
             reasoningLevel = RelativeReasoning.NORMAL,
             speed = RelativeSpeed.FAST,
             supportedInputs = _2_5_Flash_Lite_SUPPORTED_INPUTS,
@@ -310,7 +311,6 @@ sealed class LLM_Gemini(
 
         private val _2_0_Flash_FEATURES = ModelFeatures(
             availableTools = _2_0_Flash_TOOLS,
-            limits = _2_0_Flash_LIMITS,
             reasoningLevel = RelativeReasoning.NORMAL,
             speed = RelativeSpeed.FAST,
             supportedInputs = _2_0_Flash_SUPPORTED_INPUTS,
@@ -319,7 +319,6 @@ sealed class LLM_Gemini(
 
         private val _2_0_Flash_Lite_FEATURES = ModelFeatures(
             availableTools =_2_0_Flash_Lite_TOOLS,
-            limits = _2_0_Flash_Lite_LIMITS,
             reasoningLevel = RelativeReasoning.LOW,
             speed = RelativeSpeed.FAST,
             supportedInputs = _2_0_Flash_Lite_SUPPORTED_INPUTS,

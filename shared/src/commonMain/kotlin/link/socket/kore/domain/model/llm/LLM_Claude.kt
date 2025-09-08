@@ -3,8 +3,6 @@
 package link.socket.kore.domain.model.llm
 
 import io.ktor.util.date.*
-import link.socket.kore.domain.model.llm.ModelFeatures.Limits
-import link.socket.kore.domain.model.llm.ModelFeatures.Limits.TokenLimits
 import link.socket.kore.domain.model.llm.ModelFeatures.RelativeReasoning
 import link.socket.kore.domain.model.llm.ModelFeatures.RelativeSpeed
 import link.socket.kore.domain.model.llm.ModelFeatures.SupportedInputs
@@ -18,13 +16,15 @@ sealed class LLM_Claude(
     override val displayName: String,
     override val description: String,
     override val features: ModelFeatures,
-) : LLM<Tool_Claude>(name, displayName, description, features) {
+    override val limits: ModelLimits,
+) : LLM<Tool_Claude>(name, displayName, description, features, limits) {
 
     data object Opus_4_1 : LLM_Claude(
         name = Opus_4_1_NAME,
         displayName = Opus_4_1_DISPLAY_NAME,
         description = Opus_4_1_DESCRIPTION,
         features = Opus_4_1_FEATURES,
+        limits = Opus_4_1_LIMITS,
     )
 
     data object Opus_4 : LLM_Claude(
@@ -32,6 +32,7 @@ sealed class LLM_Claude(
         displayName = Opus_4_DISPLAY_NAME,
         description = Opus_4_DESCRIPTION,
         features = Opus_4_FEATURES,
+        limits = Opus_4_LIMITS,
     )
 
     data object Sonnet_4 : LLM_Claude(
@@ -41,9 +42,9 @@ sealed class LLM_Claude(
         features = featuresForSonnet(
             availableTools = Sonnet_4_TOOLS,
             supportedInputs = Sonnet_4_SUPPORTED_INPUTS,
-            limits = Sonnet_4_LIMITS,
             cutoffDate = Sonnet_4_CUTOFF,
         ),
+        limits = Sonnet_4_LIMITS,
     )
 
     data object Sonnet_3_7 : LLM_Claude(
@@ -53,9 +54,9 @@ sealed class LLM_Claude(
         features = featuresForSonnet(
             availableTools = Sonnet_3_7_TOOLS,
             supportedInputs = Sonnet_3_7_SUPPORTED_INPUTS,
-            limits = Sonnet_3_7_LIMITS,
             cutoffDate = Sonnet_3_7_CUTOFF,
         ),
+        limits = Sonnet_3_7_LIMITS,
     )
 
     data object Haiku_3_5 : LLM_Claude(
@@ -65,9 +66,9 @@ sealed class LLM_Claude(
         features = featuresForHaiku(
             availableTools = Haiku_3_5_TOOLS,
             supportedInputs = Haiku_3_5_SUPPORTED_INPUTS,
-            limits = Haiku_3_5_LIMITS,
             cutoffDate = Haiku_3_5_CUTOFF,
         ),
+        limits = Haiku_3_5_LIMITS,
     )
 
     data object Haiku_3 : LLM_Claude(
@@ -77,9 +78,9 @@ sealed class LLM_Claude(
         features = featuresForHaiku(
             availableTools = Haiku_3_TOOLS,
             supportedInputs = Haiku_3_SUPPORTED_INPUTS,
-            limits = Haiku_3_LIMITS,
             cutoffDate = Haiku_3_CUTOFF,
         ),
+        limits = Haiku_3_LIMITS,
     )
 
     companion object Companion {
@@ -178,32 +179,32 @@ sealed class LLM_Claude(
 
         // ---- Limits ----
 
-        private val Opus_4_1_LIMITS = Limits(
+        private val Opus_4_1_LIMITS = ModelLimits(
             rate = Opus_4_1_RATE_LIMITS,
             token = Opus_4_1_TOKEN_LIMITS,
         )
 
-        private val Opus_4_LIMITS = Limits(
+        private val Opus_4_LIMITS = ModelLimits(
             rate = Opus_4_RATE_LIMITS,
             token = Opus_4_TOKEN_LIMITS,
         )
 
-        private val Sonnet_4_LIMITS = Limits(
+        private val Sonnet_4_LIMITS = ModelLimits(
             rate = Sonnet_4_RATE_LIMITS,
             token = Sonnet_4_TOKEN_LIMITS,
         )
 
-        private val Sonnet_3_7_LIMITS = Limits(
+        private val Sonnet_3_7_LIMITS = ModelLimits(
             rate = Sonnet_3_7_RATE_LIMITS,
             token = Sonnet_3_7_TOKEN_LIMITS,
         )
 
-        private val Haiku_3_5_LIMITS = Limits(
+        private val Haiku_3_5_LIMITS = ModelLimits(
             rate = Haiku_3_5_RATE_LIMITS,
             token = Haiku_3_5_TOKEN_LIMITS,
         )
 
-        private val Haiku_3_LIMITS = Limits(
+        private val Haiku_3_LIMITS = ModelLimits(
             rate = Haiku_3_RATE_LIMITS,
             token = Haiku_3_TOKEN_LIMITS,
         )
@@ -264,7 +265,6 @@ sealed class LLM_Claude(
 
         private val Opus_4_1_FEATURES = ModelFeatures(
             availableTools = Opus_4_1_TOOLS,
-            limits = Opus_4_1_LIMITS,
             reasoningLevel = RelativeReasoning.HIGH,
             speed = RelativeSpeed.SLOW,
             supportedInputs = Opus_4_1_SUPPORTED_INPUTS,
@@ -273,7 +273,6 @@ sealed class LLM_Claude(
 
         private val Opus_4_FEATURES = ModelFeatures(
             availableTools = Opus_4_TOOLS,
-            limits = Opus_4_LIMITS,
             reasoningLevel = RelativeReasoning.HIGH,
             speed = RelativeSpeed.SLOW,
             supportedInputs = Opus_4_SUPPORTED_INPUTS,
@@ -283,11 +282,9 @@ sealed class LLM_Claude(
         private fun featuresForSonnet(
             availableTools: List<ProvidedTool<Tool_Claude>>,
             supportedInputs: SupportedInputs,
-            limits: Limits,
             cutoffDate: GMTDate,
         ): ModelFeatures = ModelFeatures(
             availableTools = availableTools,
-            limits = limits,
             reasoningLevel = RelativeReasoning.NORMAL,
             speed = RelativeSpeed.NORMAL,
             supportedInputs = supportedInputs,
@@ -297,11 +294,9 @@ sealed class LLM_Claude(
         private fun featuresForHaiku(
             availableTools: List<ProvidedTool<Tool_Claude>>,
             supportedInputs: SupportedInputs,
-            limits: Limits,
             cutoffDate: GMTDate,
         ): ModelFeatures = ModelFeatures(
             availableTools = availableTools,
-            limits = limits,
             reasoningLevel = RelativeReasoning.HIGH,
             speed = RelativeSpeed.FAST,
             supportedInputs = supportedInputs,

@@ -2,8 +2,6 @@ package link.socket.kore.ui.model
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -66,19 +64,6 @@ fun ModelFeaturesDisplay(
 
             // Supported Inputs
             ModelInputTypes(features.supportedInputs)
-
-            // Limits Overview
-            features.limits?.let { limits ->
-                ModelTokenLimits(limits)
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Rate Limits per Tier
-                ModelRateLimits(limits.rate)
-            }
-            
-            // Training Cutoff
-            ModelTrainingCutoff(features.trainingCutoffDate)
         }
     }
 }
