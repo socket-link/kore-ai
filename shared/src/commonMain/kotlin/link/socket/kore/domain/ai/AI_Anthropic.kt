@@ -1,13 +1,13 @@
-package link.socket.kore.domain.model.ai
+package link.socket.kore.domain.ai
 
 import com.aallam.openai.client.OpenAI as Client
 import link.kore.shared.config.KotlinConfig
-import link.socket.kore.domain.model.ai.AI.Companion.createClient
-import link.socket.kore.domain.model.ai.configuration.AI_Configuration
-import link.socket.kore.domain.model.ai.configuration.AI_ConfigurationWithFallback
-import link.socket.kore.domain.model.ai.configuration.AI_ConfigurationStandard
-import link.socket.kore.domain.model.llm.LLM_Claude
-import link.socket.kore.domain.model.tool.Tool_Claude
+import link.socket.kore.domain.ai.AI.Companion.createClient
+import link.socket.kore.domain.ai.configuration.AI_Configuration
+import link.socket.kore.domain.ai.configuration.AI_ConfigurationWithFallback
+import link.socket.kore.domain.ai.configuration.AI_ConfigurationStandard
+import link.socket.kore.domain.llm.LLM_Claude
+import link.socket.kore.domain.tool.Tool_Claude
 
 private const val ANTHROPIC_API_ENDPOINT = "https://api.anthropic.com/v1/"
 

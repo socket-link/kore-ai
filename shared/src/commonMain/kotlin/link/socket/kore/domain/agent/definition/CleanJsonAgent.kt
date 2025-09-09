@@ -1,9 +1,9 @@
 package link.socket.kore.domain.agent.definition
 
-import link.socket.kore.domain.model.ai.aiConfiguration
-import link.socket.kore.domain.model.llm.LLM_Claude
-import link.socket.kore.domain.model.llm.LLM_Gemini
-import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.aiConfiguration
+import link.socket.kore.domain.llm.LLM_Claude
+import link.socket.kore.domain.llm.LLM_Gemini
+import link.socket.kore.domain.llm.LLM_OpenAI
 
 private const val NAME = "Clean JSON"
 private const val DESCRIPTION = "JSON parsing expert agent that validates, fixes, and cleans invalid JSON data to provide properly formatted JSON objects"

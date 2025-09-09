@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.model.tool.ProvidedTool
+import link.socket.kore.domain.tool.ProvidedTool
 
 @Composable
 fun ModelTools(tools: List<ProvidedTool<*>>) {

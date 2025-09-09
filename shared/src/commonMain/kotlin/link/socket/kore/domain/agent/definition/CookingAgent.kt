@@ -1,9 +1,9 @@
 package link.socket.kore.domain.agent.definition
 
-import link.socket.kore.domain.model.ai.aiConfiguration
-import link.socket.kore.domain.model.llm.LLM_Claude
-import link.socket.kore.domain.model.llm.LLM_Gemini
-import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.aiConfiguration
+import link.socket.kore.domain.llm.LLM_Claude
+import link.socket.kore.domain.llm.LLM_Gemini
+import link.socket.kore.domain.llm.LLM_OpenAI
 
 private const val NAME = "Cooking & Nutrition"
 private const val DESCRIPTION = "Culinary expert agent that provides recipe suggestions, cooking tips, ingredient substitutions, and dietary guidance for various cuisines and dietary restrictions"

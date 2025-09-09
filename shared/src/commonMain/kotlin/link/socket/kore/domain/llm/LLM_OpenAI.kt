@@ -1,18 +1,18 @@
 @file:Suppress("ClassName", "ObjectPropertyName", "ObjectPrivatePropertyName", "ConstPropertyName")
 
-package link.socket.kore.domain.model.llm
+package link.socket.kore.domain.llm
 
 import io.ktor.util.date.GMTDate
 import io.ktor.util.date.Month
 import link.socket.kore.domain.model.ModelFeatures
 import link.socket.kore.domain.model.ModelFeatures.SupportedInputs.Companion.TEXT
 import link.socket.kore.domain.model.ModelFeatures.SupportedInputs.Companion.TEXT_AND_IMAGE
-import link.socket.kore.domain.model.limits.ModelLimits
-import link.socket.kore.domain.model.limits.RateLimitsFactory
-import link.socket.kore.domain.model.limits.TokenCount
-import link.socket.kore.domain.model.limits.TokenLimits
-import link.socket.kore.domain.model.tool.ProvidedTool
-import link.socket.kore.domain.model.tool.Tool_OpenAI
+import link.socket.kore.domain.limits.ModelLimits
+import link.socket.kore.domain.limits.RateLimitsFactory
+import link.socket.kore.domain.limits.TokenCount
+import link.socket.kore.domain.limits.TokenLimits
+import link.socket.kore.domain.tool.ProvidedTool
+import link.socket.kore.domain.tool.Tool_OpenAI
 
 sealed class LLM_OpenAI(
     override val name: String,

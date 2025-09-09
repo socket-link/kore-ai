@@ -1,7 +1,7 @@
 package link.socket.kore.domain.model
 
 import io.ktor.util.date.GMTDate
-import link.socket.kore.domain.model.tool.ProvidedTool
+import link.socket.kore.domain.tool.ProvidedTool
 
 data class ModelFeatures(
     val availableTools: List<ProvidedTool<*>>,

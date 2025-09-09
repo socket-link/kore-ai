@@ -26,8 +26,8 @@ import link.socket.kore.domain.agent.definition.AgentDefinition
 import link.socket.kore.domain.app.Application
 import link.socket.kore.domain.conversation.Conversation
 import link.socket.kore.domain.conversation.ConversationId
-import link.socket.kore.domain.model.ai.configuration.AI_Configuration
-import link.socket.kore.domain.model.ai.DEFAULT_AI_CONFIGURATION
+import link.socket.kore.domain.ai.configuration.AI_Configuration
+import link.socket.kore.domain.ai.DEFAULT_AI_CONFIGURATION
 import link.socket.kore.ui.agent.AgentCreationScreen
 import link.socket.kore.ui.conversation.ConversationScreen
 import link.socket.kore.ui.home.HomeScreen

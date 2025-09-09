@@ -1,12 +1,12 @@
-package link.socket.kore.domain.model.ai
+package link.socket.kore.domain.ai
 
 import com.aallam.openai.client.OpenAI as Client
 import link.kore.shared.config.KotlinConfig
-import link.socket.kore.domain.model.ai.configuration.AI_Configuration
-import link.socket.kore.domain.model.ai.configuration.AI_ConfigurationWithFallback
-import link.socket.kore.domain.model.ai.configuration.AI_ConfigurationStandard
-import link.socket.kore.domain.model.llm.LLM_Gemini
-import link.socket.kore.domain.model.tool.Tool_Gemini
+import link.socket.kore.domain.ai.configuration.AI_Configuration
+import link.socket.kore.domain.ai.configuration.AI_ConfigurationWithFallback
+import link.socket.kore.domain.ai.configuration.AI_ConfigurationStandard
+import link.socket.kore.domain.llm.LLM_Gemini
+import link.socket.kore.domain.tool.Tool_Gemini
 
 private const val GOOGLE_API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/"
 

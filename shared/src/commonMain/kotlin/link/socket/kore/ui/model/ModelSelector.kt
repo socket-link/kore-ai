@@ -20,8 +20,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.model.ai.AI
-import link.socket.kore.domain.model.llm.LLM
+import link.socket.kore.domain.ai.AI
+import link.socket.kore.domain.llm.LLM
 
 @Composable
 fun ModelSelector(

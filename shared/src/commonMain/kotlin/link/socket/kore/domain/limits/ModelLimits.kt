@@ -1,4 +1,4 @@
-package link.socket.kore.domain.model.limits
+package link.socket.kore.domain.limits
 
 data class ModelLimits(
     val rate: RateLimits,

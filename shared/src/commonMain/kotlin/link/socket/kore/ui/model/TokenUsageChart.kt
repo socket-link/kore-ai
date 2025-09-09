@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlin.math.max
-import link.socket.kore.domain.model.limits.TokenCount
+import link.socket.kore.domain.limits.TokenCount
 
 @Composable
 fun TokenUsageChart(

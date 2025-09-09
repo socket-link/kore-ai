@@ -18,8 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.model.ai.AI
-import link.socket.kore.domain.model.llm.LLM
+import link.socket.kore.domain.ai.AI
+import link.socket.kore.domain.llm.LLM
 import link.socket.kore.ui.theme.themeColors
 
 @Composable

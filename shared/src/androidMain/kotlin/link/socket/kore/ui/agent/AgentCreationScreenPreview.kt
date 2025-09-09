@@ -5,8 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import link.socket.kore.domain.agent.definition.WriteCodeAgent
-import link.socket.kore.domain.model.ai.AI
-import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.AI
+import link.socket.kore.domain.llm.LLM_OpenAI
 import link.socket.kore.ui.model.ModelSelector
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 800)

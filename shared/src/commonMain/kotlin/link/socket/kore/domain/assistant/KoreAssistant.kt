@@ -10,8 +10,8 @@ import com.aallam.openai.api.model.ModelId
 import kotlinx.coroutines.CoroutineScope
 import link.socket.kore.domain.agent.LLMAgent
 import link.socket.kore.domain.chat.Chat
-import link.socket.kore.domain.model.ai.configuration.AI_Configuration
-import link.socket.kore.domain.model.tool.FunctionProvider
+import link.socket.kore.domain.ai.configuration.AI_Configuration
+import link.socket.kore.domain.tool.FunctionProvider
 
 @OptIn(BetaOpenAI::class)
 data class KoreAssistant(

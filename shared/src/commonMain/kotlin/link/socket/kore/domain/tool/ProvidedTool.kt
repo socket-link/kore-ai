@@ -1,6 +1,6 @@
 @file:Suppress("ClassName")
 
-package link.socket.kore.domain.model.tool
+package link.socket.kore.domain.tool
 
 sealed class ProvidedTool <T : ToolDefinition> (open val definition: T) {
     data class Bash <T : ToolDefinition> (override val definition: T) : ProvidedTool<T>(definition)

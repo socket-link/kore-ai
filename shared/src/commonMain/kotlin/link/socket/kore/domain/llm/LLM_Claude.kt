@@ -1,6 +1,6 @@
 @file:Suppress("ClassName", "ObjectPropertyName", "ObjectPrivatePropertyName")
 
-package link.socket.kore.domain.model.llm
+package link.socket.kore.domain.llm
 
 import io.ktor.util.date.GMTDate
 import io.ktor.util.date.Month
@@ -10,12 +10,12 @@ import link.socket.kore.domain.model.ModelFeatures.RelativeSpeed
 import link.socket.kore.domain.model.ModelFeatures.SupportedInputs
 import link.socket.kore.domain.model.ModelFeatures.SupportedInputs.Companion.TEXT_AND_IMAGE
 import link.socket.kore.domain.model.ModelFeatures.SupportedInputs.Companion.TEXT_IMAGE_AND_PDF
-import link.socket.kore.domain.model.limits.ModelLimits
-import link.socket.kore.domain.model.limits.RateLimitsFactory
-import link.socket.kore.domain.model.limits.TokenCount
-import link.socket.kore.domain.model.limits.TokenLimits
-import link.socket.kore.domain.model.tool.ProvidedTool
-import link.socket.kore.domain.model.tool.Tool_Claude
+import link.socket.kore.domain.limits.ModelLimits
+import link.socket.kore.domain.limits.RateLimitsFactory
+import link.socket.kore.domain.limits.TokenCount
+import link.socket.kore.domain.limits.TokenLimits
+import link.socket.kore.domain.tool.ProvidedTool
+import link.socket.kore.domain.tool.Tool_Claude
 
 sealed class LLM_Claude(
     override val name: String,

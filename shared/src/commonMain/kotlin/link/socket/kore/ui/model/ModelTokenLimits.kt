@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.model.limits.TokenLimits
+import link.socket.kore.domain.limits.TokenLimits
 
 @Composable
 fun ModelTokenLimits(limits: TokenLimits) {

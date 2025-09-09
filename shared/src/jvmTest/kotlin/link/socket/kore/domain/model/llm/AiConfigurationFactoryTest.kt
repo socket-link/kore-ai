@@ -1,10 +1,11 @@
 package link.socket.kore.domain.model.llm
 
-import link.socket.kore.domain.model.ai.AI
+import link.socket.kore.domain.ai.AI
 import link.socket.kore.domain.model.ai.configuration.aiConfiguration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
+import link.socket.kore.domain.llm.LLM_Gemini
 
 class AiConfigurationFactoryTest {
 

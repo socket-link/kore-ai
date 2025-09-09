@@ -1,6 +1,6 @@
 package link.socket.kore.domain.capability
 
-import link.socket.kore.domain.model.tool.FunctionProvider
+import link.socket.kore.domain.tool.FunctionProvider
 
 interface Capability {
 

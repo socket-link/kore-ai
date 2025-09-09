@@ -7,8 +7,8 @@ import link.socket.kore.data.ConversationRepository
 import link.socket.kore.domain.agent.definition.AgentDefinition
 import link.socket.kore.domain.capability.AgentCapability
 import link.socket.kore.domain.capability.IOCapability
-import link.socket.kore.domain.model.ai.configuration.AI_Configuration
-import link.socket.kore.domain.model.tool.FunctionProvider
+import link.socket.kore.domain.ai.configuration.AI_Configuration
+import link.socket.kore.domain.tool.FunctionProvider
 
 data class KoreAgent(
     override val scope: CoroutineScope,

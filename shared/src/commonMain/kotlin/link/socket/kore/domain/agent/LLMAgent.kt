@@ -15,12 +15,12 @@ import kotlinx.coroutines.awaitAll
 import link.socket.kore.domain.chat.Chat
 import link.socket.kore.domain.conversation.ConversationHistory
 import link.socket.kore.domain.conversation.ConversationId
-import link.socket.kore.domain.model.ai.configuration.AI_Configuration
-import link.socket.kore.domain.model.llm.LLM
-import link.socket.kore.domain.model.llm.LLM_Gemini
-import link.socket.kore.domain.model.llm.toModelId
-import link.socket.kore.domain.model.tool.FunctionDefinition
-import link.socket.kore.domain.model.tool.FunctionProvider
+import link.socket.kore.domain.ai.configuration.AI_Configuration
+import link.socket.kore.domain.llm.LLM
+import link.socket.kore.domain.llm.LLM_Gemini
+import link.socket.kore.domain.llm.toModelId
+import link.socket.kore.domain.tool.FunctionDefinition
+import link.socket.kore.domain.tool.FunctionProvider
 import link.socket.kore.util.logWith
 
 /**

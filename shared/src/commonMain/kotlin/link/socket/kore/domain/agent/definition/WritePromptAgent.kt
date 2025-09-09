@@ -1,9 +1,9 @@
 package link.socket.kore.domain.agent.definition
 
-import link.socket.kore.domain.model.ai.aiConfiguration
-import link.socket.kore.domain.model.llm.LLM_Claude
-import link.socket.kore.domain.model.llm.LLM_Gemini
-import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.aiConfiguration
+import link.socket.kore.domain.llm.LLM_Claude
+import link.socket.kore.domain.llm.LLM_Gemini
+import link.socket.kore.domain.llm.LLM_OpenAI
 
 private const val NAME: String = "Refine Prompt"
 private const val DESCRIPTION = "Prompt engineering specialist agent that refines and optimizes prompts for clarity, specificity, and effectiveness following current best practices"

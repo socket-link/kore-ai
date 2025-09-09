@@ -1,4 +1,4 @@
-package link.socket.kore.domain.model.tool
+package link.socket.kore.domain.tool
 
 sealed class ToolDefinition(
     open val type: String,

@@ -1,4 +1,4 @@
-package link.socket.kore.domain.model.tool
+package link.socket.kore.domain.tool
 
 import com.aallam.openai.api.chat.Tool
 import com.aallam.openai.api.core.Parameters

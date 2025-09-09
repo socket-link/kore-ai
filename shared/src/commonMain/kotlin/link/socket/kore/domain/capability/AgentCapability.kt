@@ -11,9 +11,9 @@ import link.socket.kore.domain.agent.KoreAgent
 import link.socket.kore.domain.agent.definition.agentArgsList
 import link.socket.kore.domain.agent.definition.getAgentDefinition
 import link.socket.kore.domain.conversation.ConversationId
-import link.socket.kore.domain.model.ai.configuration.AI_Configuration
-import link.socket.kore.domain.model.tool.FunctionProvider
-import link.socket.kore.domain.model.tool.ParameterDefinition
+import link.socket.kore.domain.ai.configuration.AI_Configuration
+import link.socket.kore.domain.tool.FunctionProvider
+import link.socket.kore.domain.tool.ParameterDefinition
 import link.socket.kore.util.logWith
 
 /**

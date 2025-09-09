@@ -31,9 +31,9 @@ import link.socket.kore.domain.agent.definition.codeAgents
 import link.socket.kore.domain.agent.definition.generalAgents
 import link.socket.kore.domain.agent.definition.promptAgents
 import link.socket.kore.domain.agent.definition.reasoningAgents
-import link.socket.kore.domain.model.ai.configuration.AI_ConfigurationWithFallback
-import link.socket.kore.domain.model.ai.AI
-import link.socket.kore.domain.model.llm.LLM
+import link.socket.kore.domain.ai.configuration.AI_ConfigurationWithFallback
+import link.socket.kore.domain.ai.AI
+import link.socket.kore.domain.llm.LLM
 import link.socket.kore.ui.model.ModelFeaturesDisplay
 import link.socket.kore.ui.model.ModelLimitsDisplay
 import link.socket.kore.ui.model.ModelOverview

@@ -1,19 +1,19 @@
 @file:Suppress("ClassName", "ObjectPropertyName", "ObjectPrivatePropertyName", "ConstPropertyName")
 
-package link.socket.kore.domain.model.llm
+package link.socket.kore.domain.llm
 
 import io.ktor.util.date.GMTDate
 import io.ktor.util.date.Month
+import link.socket.kore.domain.limits.ModelLimits
+import link.socket.kore.domain.limits.RateLimitsFactory
+import link.socket.kore.domain.limits.TokenCount
+import link.socket.kore.domain.limits.TokenLimits
 import link.socket.kore.domain.model.ModelFeatures
 import link.socket.kore.domain.model.ModelFeatures.RelativeReasoning
 import link.socket.kore.domain.model.ModelFeatures.RelativeSpeed
 import link.socket.kore.domain.model.ModelFeatures.SupportedInputs
-import link.socket.kore.domain.model.limits.ModelLimits
-import link.socket.kore.domain.model.limits.RateLimitsFactory
-import link.socket.kore.domain.model.limits.TokenCount
-import link.socket.kore.domain.model.limits.TokenLimits
-import link.socket.kore.domain.model.tool.ProvidedTool
-import link.socket.kore.domain.model.tool.Tool_Gemini
+import link.socket.kore.domain.tool.ProvidedTool
+import link.socket.kore.domain.tool.Tool_Gemini
 
 sealed class LLM_Gemini(
     override val name: String,

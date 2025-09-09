@@ -29,9 +29,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.model.limits.RateLimits
-import link.socket.kore.domain.model.limits.Tier
-import link.socket.kore.domain.model.limits.TokenRate
+import link.socket.kore.domain.limits.RateLimits
+import link.socket.kore.domain.limits.Tier
+import link.socket.kore.domain.limits.TokenRate
 
 
 @Composable

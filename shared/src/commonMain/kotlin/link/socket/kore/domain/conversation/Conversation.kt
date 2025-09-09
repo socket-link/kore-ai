@@ -4,7 +4,7 @@ import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatRole
 import link.socket.kore.domain.agent.KoreAgent
 import link.socket.kore.domain.chat.Chat
-import link.socket.kore.domain.model.llm.LLM
+import link.socket.kore.domain.llm.LLM
 
 typealias ConversationId = String
 

@@ -1,6 +1,6 @@
 @file:Suppress("ClassName")
 
-package link.socket.kore.domain.model.ai
+package link.socket.kore.domain.ai
 
 import com.aallam.openai.api.http.Timeout
 import com.aallam.openai.api.logging.LogLevel
@@ -9,10 +9,10 @@ import com.aallam.openai.client.LoggingConfig
 import com.aallam.openai.client.OpenAI as Client
 import com.aallam.openai.client.OpenAIHost
 import kotlin.time.Duration.Companion.hours
-import link.socket.kore.domain.model.llm.LLM
-import link.socket.kore.domain.model.llm.LLM_Claude
-import link.socket.kore.domain.model.llm.LLM_Gemini
-import link.socket.kore.domain.model.tool.ToolDefinition
+import link.socket.kore.domain.llm.LLM
+import link.socket.kore.domain.llm.LLM_Claude
+import link.socket.kore.domain.llm.LLM_Gemini
+import link.socket.kore.domain.tool.ToolDefinition
 
 typealias ProviderId = String
 

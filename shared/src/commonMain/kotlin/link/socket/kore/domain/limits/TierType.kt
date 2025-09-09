@@ -1,4 +1,4 @@
-package link.socket.kore.domain.model.limits
+package link.socket.kore.domain.limits
 
 enum class TierType {
     FREE, TIER_1, TIER_2, TIER_3, TIER_4, TIER_5;

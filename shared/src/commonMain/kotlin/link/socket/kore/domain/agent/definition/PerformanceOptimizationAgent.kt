@@ -1,10 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
-import link.socket.kore.domain.model.ai.aiConfiguration
-import link.socket.kore.domain.model.llm.LLM_Claude
-import link.socket.kore.domain.model.llm.LLM_Gemini
-import link.socket.kore.domain.model.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.aiConfiguration
+import link.socket.kore.domain.llm.LLM_Claude
+import link.socket.kore.domain.llm.LLM_Gemini
+import link.socket.kore.domain.llm.LLM_OpenAI
 
 private const val NAME = "Performance Optimization"
 private const val DESCRIPTION = "Performance optimization specialist agent that identifies bottlenecks and provides solutions for memory, CPU, network, and UI performance in Kotlin Multiplatform applications"

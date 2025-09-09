@@ -1,7 +1,7 @@
-package link.socket.kore.domain.model.ai.configuration
+package link.socket.kore.domain.ai.configuration
 
-import link.socket.kore.domain.model.ai.AI
-import link.socket.kore.domain.model.llm.LLM
+import link.socket.kore.domain.ai.AI
+import link.socket.kore.domain.llm.LLM
 
 data class AI_ConfigurationWithFallback(
     val configurations: List<AI_Configuration>,

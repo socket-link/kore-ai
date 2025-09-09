@@ -1,6 +1,6 @@
 @file:Suppress("ClassName")
 
-package link.socket.kore.domain.model.tool
+package link.socket.kore.domain.tool
 
 sealed class Tool_Gemini(
     override val type: String,
