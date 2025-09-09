@@ -1,6 +1,6 @@
-package link.socket.kore.domain.model.llm
+package link.socket.kore.domain.model
 
-import io.ktor.util.date.*
+import io.ktor.util.date.GMTDate
 import link.socket.kore.domain.model.tool.ProvidedTool
 
 data class ModelFeatures(

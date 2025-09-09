@@ -1,13 +1,11 @@
-package link.socket.kore.domain.model.llm
+package link.socket.kore.domain.model.ai.configuration
 
-val DEFAULT_AI_CONFIGURATION = aiConfiguration(
-    LLM_Gemini.Flash_2_5,
-    aiConfiguration(LLM_Claude.Sonnet_3_7),
-)
+import link.socket.kore.domain.model.ai.AI
+import link.socket.kore.domain.model.llm.LLM
 
-class AI_ConfigurationWithFallback(
+data class AI_ConfigurationWithFallback(
     val configurations: List<AI_Configuration>,
-) : AI_Configuration() {
+) : AI_Configuration {
 
     private val mainConfiguration = configurations.first()
     private val backupConfigurationProvider = configurations.getOrNull(1)
@@ -16,7 +14,7 @@ class AI_ConfigurationWithFallback(
     private var usedBackupConfiguration = false
     private var usedSecondBackupConfiguration = false
 
-    override val aiProvider: AI_Provider<*, *>
+    override val aiProvider: AI<*, *>
         get() = try {
             val provider = mainConfiguration.aiProvider
             // Try to invoke an exception
@@ -61,7 +59,8 @@ class AI_ConfigurationWithFallback(
             mainConfiguration.selectedLLM
         }
 
-    fun getSuggestedModels(): List<Pair<AI_Provider<*, *>, LLM<*>>> {
+    // TODO: Move return type into data class
+    fun getSuggestedModels(): List<Pair<AI<*, *>, LLM<*>>> {
         return configurations.mapNotNull { configuration ->
             configuration.selectedLLM?.let { llm ->
                 configuration.aiProvider to llm
@@ -69,38 +68,3 @@ class AI_ConfigurationWithFallback(
         }
     }
 }
-
-/** Create a configuration for Google Gemini models. */
-fun aiConfiguration(
-    model: LLM_Gemini,
-    vararg backup: AI_Configuration,
-): AI_ConfigurationWithFallback = AI_ConfigurationWithFallback(
-    configurations = StandardAI_Configuration(
-        aiProvider = AI_Provider._Google,
-        selectedLLM = model,
-    ).let(::listOf) + backup.toList(),
-)
-
-/** Create a configuration for Anthropic Claude models. */
-fun aiConfiguration(
-    model: LLM_Claude,
-    vararg backup: AI_Configuration,
-): AI_ConfigurationWithFallback = AI_ConfigurationWithFallback(
-    configurations = StandardAI_Configuration(
-        aiProvider = AI_Provider._Anthropic,
-        selectedLLM = model,
-    ).let(::listOf) + backup.toList(),
-)
-
-/**
- * Create a configuration for OpenAI models.
- */
-fun aiConfiguration(
-    model: LLM_OpenAI,
-    vararg backup: AI_Configuration,
-): AI_ConfigurationWithFallback = AI_ConfigurationWithFallback(
-    configurations = StandardAI_Configuration(
-        aiProvider = AI_Provider._OpenAI,
-        selectedLLM = model,
-    ).let(::listOf) + backup.toList(),
-)

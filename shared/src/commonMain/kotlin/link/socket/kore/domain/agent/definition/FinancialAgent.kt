@@ -1,9 +1,9 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.ai.aiConfiguration
 import link.socket.kore.domain.model.llm.LLM_Claude
 import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
-import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Financial Advisor"
 private const val DESCRIPTION = "Financial data processing agent that specializes in transaction analysis, categorized balance sheet creation, and comprehensive financial reporting with privacy-focused data handling"

@@ -1,6 +1,6 @@
 @file:Suppress("EnumEntryName")
 
-package link.socket.kore.domain.model.llm
+package link.socket.kore.domain.model.limits
 
 enum class TokenCount(val label: String) {
     _4k("4k"),

@@ -2,10 +2,16 @@
 
 package link.socket.kore.domain.model.llm
 
-import io.ktor.util.date.*
-import link.socket.kore.domain.model.llm.ModelFeatures.RelativeReasoning
-import link.socket.kore.domain.model.llm.ModelFeatures.RelativeSpeed
-import link.socket.kore.domain.model.llm.ModelFeatures.SupportedInputs
+import io.ktor.util.date.GMTDate
+import io.ktor.util.date.Month
+import link.socket.kore.domain.model.ModelFeatures
+import link.socket.kore.domain.model.ModelFeatures.RelativeReasoning
+import link.socket.kore.domain.model.ModelFeatures.RelativeSpeed
+import link.socket.kore.domain.model.ModelFeatures.SupportedInputs
+import link.socket.kore.domain.model.limits.ModelLimits
+import link.socket.kore.domain.model.limits.RateLimitsFactory
+import link.socket.kore.domain.model.limits.TokenCount
+import link.socket.kore.domain.model.limits.TokenLimits
 import link.socket.kore.domain.model.tool.ProvidedTool
 import link.socket.kore.domain.model.tool.Tool_Gemini
 
@@ -283,6 +289,7 @@ sealed class LLM_Gemini(
         private val _2_0_Flash_SUPPORTED_INPUTS = _2_5_Flash_SUPPORTED_INPUTS
         private val _2_0_Flash_Lite_SUPPORTED_INPUTS = _2_0_Flash_SUPPORTED_INPUTS
 
+
         // ---- Model Features ----
 
         private val _2_5_Pro_FEATURES = ModelFeatures(
@@ -318,7 +325,7 @@ sealed class LLM_Gemini(
         )
 
         private val _2_0_Flash_Lite_FEATURES = ModelFeatures(
-            availableTools =_2_0_Flash_Lite_TOOLS,
+            availableTools = _2_0_Flash_Lite_TOOLS,
             reasoningLevel = RelativeReasoning.LOW,
             speed = RelativeSpeed.FAST,
             supportedInputs = _2_0_Flash_Lite_SUPPORTED_INPUTS,

@@ -17,7 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.model.llm.ModelFeatures
+import link.socket.kore.domain.model.ModelFeatures
 
 enum class UserTier(val displayName: String) {
     FREE("Free"),

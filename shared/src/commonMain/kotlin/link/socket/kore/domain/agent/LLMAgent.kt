@@ -15,7 +15,7 @@ import kotlinx.coroutines.awaitAll
 import link.socket.kore.domain.chat.Chat
 import link.socket.kore.domain.conversation.ConversationHistory
 import link.socket.kore.domain.conversation.ConversationId
-import link.socket.kore.domain.model.llm.AI_Configuration
+import link.socket.kore.domain.model.ai.configuration.AI_Configuration
 import link.socket.kore.domain.model.llm.LLM
 import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.toModelId

@@ -31,8 +31,8 @@ import link.socket.kore.domain.agent.definition.codeAgents
 import link.socket.kore.domain.agent.definition.generalAgents
 import link.socket.kore.domain.agent.definition.promptAgents
 import link.socket.kore.domain.agent.definition.reasoningAgents
-import link.socket.kore.domain.model.llm.AI_ConfigurationWithFallback
-import link.socket.kore.domain.model.llm.AI_Provider
+import link.socket.kore.domain.model.ai.configuration.AI_ConfigurationWithFallback
+import link.socket.kore.domain.model.ai.AI
 import link.socket.kore.domain.model.llm.LLM
 import link.socket.kore.ui.model.ModelFeaturesDisplay
 import link.socket.kore.ui.model.ModelLimitsDisplay
@@ -49,7 +49,7 @@ fun AgentCreationScreen(
     modifier: Modifier = Modifier,
 ) {
     var selectedProvider by remember {
-        mutableStateOf<AI_Provider<*, *>?>(null)
+        mutableStateOf<AI<*, *>?>(null)
     }
 
     var selectedModel by remember {
@@ -57,7 +57,7 @@ fun AgentCreationScreen(
     }
 
     val selectableProviders = remember {
-        AI_Provider.ALL_PROVIDERS
+        AI.ALL_PROVIDERS
     }
 
     val selectableModels = remember(selectedProvider) {

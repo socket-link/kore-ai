@@ -5,7 +5,7 @@ import link.socket.kore.domain.agent.KoreAgent
 import link.socket.kore.domain.chat.Chat
 import link.socket.kore.domain.conversation.Conversation
 import link.socket.kore.domain.conversation.ConversationId
-import link.socket.kore.domain.model.llm.AI_Configuration
+import link.socket.kore.domain.model.ai.configuration.AI_Configuration
 import link.socket.kore.util.logWith
 import link.socket.kore.util.randomUUID
 

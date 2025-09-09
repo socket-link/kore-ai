@@ -20,17 +20,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.model.llm.AI_Provider
+import link.socket.kore.domain.model.ai.AI
 import link.socket.kore.domain.model.llm.LLM
 
 @Composable
 fun ModelSelector(
-    selectedProvider: AI_Provider<*, *>?,
+    selectedProvider: AI<*, *>?,
     selectedModel: LLM<*>?,
-    selectableProviders: List<AI_Provider<*, *>>,
+    selectableProviders: List<AI<*, *>>,
     selectableModels: List<LLM<*>>?,
-    suggestedModels: List<Pair<AI_Provider<*, *>, LLM<*>>>?,
-    onProviderSelected: (AI_Provider<*, *>) -> Unit,
+    suggestedModels: List<Pair<AI<*, *>, LLM<*>>>?,
+    onProviderSelected: (AI<*, *>) -> Unit,
     onModelSelected: (LLM<*>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -71,9 +71,9 @@ fun ModelSelector(
 
 @Composable
 private fun ProviderDropdownSelector(
-    selectedProvider: AI_Provider<*, *>?,
-    selectableProviders: List<AI_Provider<*, *>>,
-    onProviderSelected: (AI_Provider<*, *>) -> Unit,
+    selectedProvider: AI<*, *>?,
+    selectableProviders: List<AI<*, *>>,
+    onProviderSelected: (AI<*, *>) -> Unit,
 ) {
     var providerMenuExpanded by remember { mutableStateOf(false) }
 

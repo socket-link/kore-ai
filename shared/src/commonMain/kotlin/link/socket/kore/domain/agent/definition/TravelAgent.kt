@@ -1,9 +1,9 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.ai.aiConfiguration
 import link.socket.kore.domain.model.llm.LLM_Claude
 import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
-import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME: String = "Travel Advice"
 private const val DESCRIPTION = "Travel planning and advisory agent that provides personalized destination recommendations, transportation guidance, accommodation suggestions, and travel safety information"

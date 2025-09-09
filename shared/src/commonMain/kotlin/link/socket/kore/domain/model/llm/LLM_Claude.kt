@@ -4,11 +4,16 @@ package link.socket.kore.domain.model.llm
 
 import io.ktor.util.date.GMTDate
 import io.ktor.util.date.Month
-import link.socket.kore.domain.model.llm.ModelFeatures.RelativeReasoning
-import link.socket.kore.domain.model.llm.ModelFeatures.RelativeSpeed
-import link.socket.kore.domain.model.llm.ModelFeatures.SupportedInputs
-import link.socket.kore.domain.model.llm.ModelFeatures.SupportedInputs.Companion.TEXT_AND_IMAGE
-import link.socket.kore.domain.model.llm.ModelFeatures.SupportedInputs.Companion.TEXT_IMAGE_AND_PDF
+import link.socket.kore.domain.model.ModelFeatures
+import link.socket.kore.domain.model.ModelFeatures.RelativeReasoning
+import link.socket.kore.domain.model.ModelFeatures.RelativeSpeed
+import link.socket.kore.domain.model.ModelFeatures.SupportedInputs
+import link.socket.kore.domain.model.ModelFeatures.SupportedInputs.Companion.TEXT_AND_IMAGE
+import link.socket.kore.domain.model.ModelFeatures.SupportedInputs.Companion.TEXT_IMAGE_AND_PDF
+import link.socket.kore.domain.model.limits.ModelLimits
+import link.socket.kore.domain.model.limits.RateLimitsFactory
+import link.socket.kore.domain.model.limits.TokenCount
+import link.socket.kore.domain.model.limits.TokenLimits
 import link.socket.kore.domain.model.tool.ProvidedTool
 import link.socket.kore.domain.model.tool.Tool_Claude
 
@@ -266,6 +271,7 @@ sealed class LLM_Claude(
         private val Sonnet_3_7_SUPPORTED_INPUTS = TEXT_IMAGE_AND_PDF
         private val Haiku_3_5_SUPPORTED_INPUTS = TEXT_IMAGE_AND_PDF
         private val Haiku_3_SUPPORTED_INPUTS = TEXT_AND_IMAGE
+
 
         // ---- Model Features ----
 

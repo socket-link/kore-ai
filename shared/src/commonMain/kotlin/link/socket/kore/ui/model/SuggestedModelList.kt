@@ -18,14 +18,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.model.llm.AI_Provider
+import link.socket.kore.domain.model.ai.AI
 import link.socket.kore.domain.model.llm.LLM
 import link.socket.kore.ui.theme.themeColors
 
 @Composable
 fun SuggestedModelList(
     selectedModelId: String,
-    suggestedModels: List<Pair<AI_Provider<*, *>, LLM<*>>>?,
+    suggestedModels: List<Pair<AI<*, *>, LLM<*>>>?,
     onModelSelected: (LLM<*>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -67,7 +67,7 @@ fun SuggestedModelList(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun SuggestedModelCard(
-    provider: AI_Provider<*, *>,
+    provider: AI<*, *>,
     model: LLM<*>,
     isSelected: Boolean,
     onClick: () -> Unit,

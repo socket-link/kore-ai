@@ -9,9 +9,9 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import link.socket.kore.domain.model.llm.ModelFeatures
-import link.socket.kore.domain.model.llm.ModelFeatures.RelativeReasoning
-import link.socket.kore.domain.model.llm.ModelFeatures.RelativeSpeed
+import link.socket.kore.domain.model.ModelFeatures
+import link.socket.kore.domain.model.ModelFeatures.RelativeReasoning
+import link.socket.kore.domain.model.ModelFeatures.RelativeSpeed
 
 @Composable
 fun ModelOverview(

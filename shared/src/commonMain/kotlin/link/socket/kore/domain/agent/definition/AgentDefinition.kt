@@ -2,7 +2,7 @@ package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
 import link.socket.kore.domain.chat.system.Instructions
-import link.socket.kore.domain.model.llm.AI_Configuration
+import link.socket.kore.domain.model.ai.configuration.AI_Configuration
 
 sealed interface AgentDefinition {
     val name: String

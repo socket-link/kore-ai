@@ -1,9 +1,9 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.ai.aiConfiguration
 import link.socket.kore.domain.model.llm.LLM_Claude
 import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
-import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Health & Wellness"
 private const val DESCRIPTION = "Health and wellness guidance agent that provides personalized advice on fitness, nutrition, and mental health while emphasizing professional medical consultation for specific concerns"

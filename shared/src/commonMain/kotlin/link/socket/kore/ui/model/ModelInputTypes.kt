@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.model.llm.ModelFeatures
+import link.socket.kore.domain.model.ModelFeatures
 
 @Composable
 fun ModelInputTypes(supportedInputs: ModelFeatures.SupportedInputs) {

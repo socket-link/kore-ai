@@ -1,10 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
+import link.socket.kore.domain.model.ai.aiConfiguration
 import link.socket.kore.domain.model.llm.LLM_Claude
 import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
-import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "API Design"
 private const val DESCRIPTION = "Specialized agent for reviewing and optimizing Kotlin API design, focusing on consistency, usability, and adherence to best practices"

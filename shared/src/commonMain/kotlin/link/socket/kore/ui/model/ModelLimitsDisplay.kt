@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.ktor.util.date.*
-import link.socket.kore.domain.model.llm.ModelLimits
+import link.socket.kore.domain.model.limits.ModelLimits
 
 @Composable
 fun ModelLimitsDisplay(

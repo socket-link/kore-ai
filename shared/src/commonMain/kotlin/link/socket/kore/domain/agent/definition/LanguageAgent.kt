@@ -1,9 +1,9 @@
 package link.socket.kore.domain.agent.definition
 
+import link.socket.kore.domain.model.ai.aiConfiguration
 import link.socket.kore.domain.model.llm.LLM_Claude
 import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
-import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Language Tutor"
 private const val DESCRIPTION = "Interactive language learning agent that provides conversational practice, grammar correction, vocabulary explanations, and tailored educational content for multiple languages"

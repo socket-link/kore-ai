@@ -1,10 +1,10 @@
 package link.socket.kore.domain.agent.definition
 
 import link.socket.kore.domain.agent.AgentInput
+import link.socket.kore.domain.model.ai.aiConfiguration
 import link.socket.kore.domain.model.llm.LLM_Claude
 import link.socket.kore.domain.model.llm.LLM_Gemini
 import link.socket.kore.domain.model.llm.LLM_OpenAI
-import link.socket.kore.domain.model.llm.aiConfiguration
 
 private const val NAME = "Platform Compatibility"
 private const val DESCRIPTION = "Platform compatibility validation agent that ensures consistent behavior and API surface across Kotlin Multiplatform targets including Android, iOS, and Desktop"

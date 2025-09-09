@@ -1,4 +1,4 @@
-package link.socket.kore.domain.model.llm
+package link.socket.kore.domain.model.limits
 
 /**
  * The RequestLimit parameters are passed as pairs of [RequestsPerMinute, RequestsPerDay].

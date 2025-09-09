@@ -1,4 +1,4 @@
-package link.socket.kore.domain.model.llm
+package link.socket.kore.domain.model.limits
 
 sealed class Tier(
     open val type: TierType,
