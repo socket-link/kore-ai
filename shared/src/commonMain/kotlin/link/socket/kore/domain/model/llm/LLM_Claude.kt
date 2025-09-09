@@ -2,7 +2,8 @@
 
 package link.socket.kore.domain.model.llm
 
-import io.ktor.util.date.*
+import io.ktor.util.date.GMTDate
+import io.ktor.util.date.Month
 import link.socket.kore.domain.model.llm.ModelFeatures.RelativeReasoning
 import link.socket.kore.domain.model.llm.ModelFeatures.RelativeSpeed
 import link.socket.kore.domain.model.llm.ModelFeatures.SupportedInputs
@@ -113,12 +114,14 @@ sealed class LLM_Claude(
 
         // ---- Rate Limits ----
 
+        private const val TIER_FREE_RPM = 5
         private const val TIER_1_RPM = 50
         private const val TIER_2_RPM = 1000
         private const val TIER_3_RPM = 2000
         private const val TIER_4_RPM = 4000
 
         private val rateLimitsFactory = RateLimitsFactory(
+            tierFreeRequestLimits = Pair(TIER_FREE_RPM, null),
             tier1RequestLimits = Pair(TIER_1_RPM, null),
             tier2RequestLimits = Pair(TIER_2_RPM, null),
             tier3RequestLimits = Pair(TIER_3_RPM, null),
@@ -126,6 +129,7 @@ sealed class LLM_Claude(
         )
 
         private val Opus_4_1_RATE_LIMITS = rateLimitsFactory.createSeparatedRateLimits(
+            tierFreeTPMs = TokenCount._10k to TokenCount._4k,
             tier1TPMs = TokenCount._30k to TokenCount._8k,
             tier2TPMs = TokenCount._450k to TokenCount._90k,
             tier3TPMs = TokenCount._800k to TokenCount._160k,
@@ -135,6 +139,7 @@ sealed class LLM_Claude(
         private val Sonnet_4_RATE_LIMITS = Opus_4_RATE_LIMITS
 
         private val Sonnet_3_7_RATE_LIMITS = rateLimitsFactory.createSeparatedRateLimits(
+            tierFreeTPMs = TokenCount._10k to TokenCount._4k,
             tier1TPMs = TokenCount._20k to TokenCount._8k,
             tier2TPMs = TokenCount._40k to TokenCount._16k,
             tier3TPMs = TokenCount._80k to TokenCount._32k,
@@ -142,6 +147,7 @@ sealed class LLM_Claude(
         )
 
         private val Haiku_3_5_RATE_LIMITS = rateLimitsFactory.createSeparatedRateLimits(
+            tierFreeTPMs = TokenCount._25k to TokenCount._5k,
             tier1TPMs = TokenCount._50k to TokenCount._10k,
             tier2TPMs = TokenCount._100k to TokenCount._20k,
             tier3TPMs = TokenCount._200k to TokenCount._40k,

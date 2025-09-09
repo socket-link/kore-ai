@@ -56,7 +56,7 @@ An **Agent** is a specialized AI Chatbot with domain-specific knowledge for well
 - [Android Studio](https://developer.android.com/studio)
 - [Kotlin Multiplatform Mobile plugin](https://plugins.jetbrains.com/plugin/14936-kotlin-multiplatform-mobile)
 
-### Environment Verification
+## ⚡️ Quick Start
 
 Use [KDoctor](https://github.com/Kotlin/kdoctor) to verify your setup:
 
@@ -68,16 +68,25 @@ brew install kdoctor
 kdoctor
 ```
 
-## ⚡️ Quick Start
-
 1. Open the project in Android Studio
 2. Switch from **Android** to **Project** view
 3. Explore the main modules:
-   - `shared`: Common logic and Compose Multiplatform code
-   - `desktopApp`: Desktop application target
-   - `androidApp`: Android application target  
-   - `iosApp`: Xcode project for iOS
-4. Run using the appropriate platform configuration
+    - `shared`: Common logic and Compose Multiplatform code
+    - `desktopApp`: Desktop application target
+    - `androidApp`: Android application target
+    - `iosApp`: Xcode project for iOS
+
+### Environment Variables
+- Add your AI providers' API keys to `local.properties`: 
+```
+anthropic_api_key=$YOUR_KEY
+google_api_key=$YOUR_KEY
+openai_api_key=$YOUR_KEY
+```
+- You can generate API keys for these providers at the following links:
+- [Anthropic API Keys](https://console.anthropic.com/settings/keys)
+- [Google API Keys](https://aistudio.google.com/app/apikey)
+- [OpenAI API Keys](https://platform.openai.com/account/api-keys)
 
 ## 🚀 Running Applications
 

@@ -4,6 +4,7 @@ package link.socket.kore.domain.model.llm
 
 enum class TokenCount(val label: String) {
     _4k("4k"),
+    _5k("5k"),
     _4096("4,096"),
     _8k("8k"),
     _8192("8,192"),

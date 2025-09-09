@@ -116,6 +116,7 @@ private fun TokenBar(
 private fun getTokenNumericValue(tokenCount: TokenCount): Long {
     return when (tokenCount) {
         TokenCount._4k -> 4_000L
+        TokenCount._5k -> 5_000L
         TokenCount._4096 -> 4_096L
         TokenCount._8k -> 8_000L
         TokenCount._8192 -> 8_192L
