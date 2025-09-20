@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import link.socket.kore.domain.agent.definition.WriteCodeAgent
+import link.socket.kore.domain.agent.bundled.WriteCodeAgent
 import link.socket.kore.domain.ai.AI
 import link.socket.kore.domain.llm.LLM_OpenAI
 import link.socket.kore.ui.model.ModelSelector

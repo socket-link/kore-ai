@@ -15,19 +15,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import link.socket.kore.domain.agent.AgentProvider
+import link.socket.kore.data.ConversationRepository
 import link.socket.kore.domain.agent.KoreAgent
-import link.socket.kore.domain.agent.definition.AgentDefinition
-import link.socket.kore.domain.app.Application
-import link.socket.kore.domain.conversation.Conversation
-import link.socket.kore.domain.conversation.ConversationId
-import link.socket.kore.domain.ai.configuration.AI_Configuration
+import link.socket.kore.domain.agent.KoreAgentFactory
+import link.socket.kore.domain.agent.bundled.AgentDefinition
 import link.socket.kore.domain.ai.DEFAULT_AI_CONFIGURATION
+import link.socket.kore.domain.chat.Conversation
+import link.socket.kore.domain.chat.ConversationId
+import link.socket.kore.domain.config.AI_Configuration
 import link.socket.kore.ui.agent.AgentCreationScreen
 import link.socket.kore.ui.conversation.ConversationScreen
 import link.socket.kore.ui.home.HomeScreen
@@ -41,16 +38,6 @@ enum class Screen {
     CONVERSATION,
 }
 
-fun Application.createAgent(
-    config: AI_Configuration,
-    agentDefinition: AgentDefinition,
-): KoreAgent = AgentProvider.createAgent(
-    config = config,
-    scope = CoroutineScope(Dispatchers.IO),
-    definition = agentDefinition,
-    conversationRepository = conversationRepository,
-)
-
 @Composable
 fun App(
     modifier: Modifier = Modifier,
@@ -60,12 +47,17 @@ fun App(
     }
 
     val scope = rememberCoroutineScope()
+    val conversationRepository = remember { ConversationRepository(scope) }
 
-    val application = remember(scope) { Application(scope) }
+    val agentFactory = remember {
+        KoreAgentFactory(
+            conversationRepository = conversationRepository,
+            coroutineScope = scope,
+        )
+    }
 
     val allConversations: State<Map<ConversationId, Conversation>> =
-        application
-            .conversationRepository
+        conversationRepository
             .observeValues()
             .collectAsState()
 
@@ -81,8 +73,7 @@ fun App(
 
         val selectedConversationValue: State<Conversation?> =
             selectedConversationId?.let { id ->
-                application
-                    .conversationRepository
+                conversationRepository
                     .observeValue(id)
                     .collectAsState(null)
             } ?: mutableStateOf(null)
@@ -108,7 +99,7 @@ fun App(
 
             if (selectedConversationId != null) {
                 scope.launch {
-                    val conversation = application.conversationRepository.getValue(selectedConversationId!!)
+                    val conversation = conversationRepository.getValue(selectedConversationId!!)
                     val lastIndex = conversation?.getChats()?.lastIndex ?: 0
 
                     delay(500)
@@ -123,12 +114,12 @@ fun App(
         }
 
         val onNewConversation: (KoreAgent) -> Unit = { agent ->
-            val newId = application.conversationRepository.createConversation(agent)
+            val newId = conversationRepository.createConversation(agent)
             onConversationSelected(newId)
 
             scope.launch {
                 onExecutingConversation()
-                application.conversationRepository.runConversation(
+                conversationRepository.runConversation(
                     config = selectedConfig.value,
                     conversationId = selectedConversationId!!,
                 )
@@ -165,9 +156,10 @@ fun App(
                             partiallySelectedAgent = agent
                         },
                         onCreateAgent = { agentDefinition ->
-                            val agent = application.createAgent(
+                            val agent = agentFactory.buildAgent(
                                 config = selectedConfig.value,
-                                agentDefinition = agentDefinition,
+                                definition = agentDefinition,
+                                scope = scope,
                             )
                             onNewConversation(agent)
                         },
@@ -188,7 +180,7 @@ fun App(
                                 selectedConversationId?.let { id ->
                                     scope.launch {
                                         onExecutingConversation()
-                                        application.conversationRepository.addUserChat(
+                                        conversationRepository.addUserChat(
                                             config = selectedConfig.value,
                                             conversationId = id,
                                             input = input,

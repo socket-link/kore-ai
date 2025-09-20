@@ -13,9 +13,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import link.socket.kore.domain.chat.Chat
-import link.socket.kore.domain.conversation.ConversationHistory
-import link.socket.kore.domain.conversation.ConversationId
-import link.socket.kore.domain.ai.configuration.AI_Configuration
+import link.socket.kore.domain.chat.ConversationHistory
+import link.socket.kore.domain.chat.ConversationId
+import link.socket.kore.domain.config.AI_Configuration
 import link.socket.kore.domain.llm.LLM
 import link.socket.kore.domain.llm.LLM_Gemini
 import link.socket.kore.domain.llm.toModelId
@@ -110,6 +110,7 @@ interface LLMAgent {
             onNewChats(listOf(completionChat))
         }
 
+
         return if (response.finishReason == FinishReason.ToolCalls) {
             val toolChats = response.message.executePendingToolCalls()
             onNewChats(toolChats)
@@ -129,6 +130,7 @@ interface LLMAgent {
     suspend fun ChatMessage.executePendingToolCalls(): List<Chat> {
         val jobs =
             toolCalls?.map { call ->
+                // TODO: Invert, to remove scope
                 scope.async {
                     when (call) {
                         is ToolCall.Function ->

@@ -3,9 +3,9 @@ package link.socket.kore.domain.ai
 import com.aallam.openai.client.OpenAI as Client
 import link.kore.shared.config.KotlinConfig
 import link.socket.kore.domain.ai.AI.Companion.createClient
-import link.socket.kore.domain.ai.configuration.AI_Configuration
-import link.socket.kore.domain.ai.configuration.AI_ConfigurationWithFallback
-import link.socket.kore.domain.ai.configuration.AI_ConfigurationStandard
+import link.socket.kore.domain.config.AI_Configuration
+import link.socket.kore.domain.config.AI_ConfigurationWithFallbacks
+import link.socket.kore.domain.config.AI_ConfigurationStandard
 import link.socket.kore.domain.llm.LLM_Claude
 import link.socket.kore.domain.tool.Tool_Claude
 
@@ -34,7 +34,7 @@ data object AI_Anthropic : AI<Tool_Claude, LLM_Claude> {
 fun aiConfiguration(
     model: LLM_Claude,
     vararg backups: AI_Configuration,
-): AI_ConfigurationWithFallback = AI_ConfigurationWithFallback(
+): AI_ConfigurationWithFallbacks = AI_ConfigurationWithFallbacks(
     configurations = AI_ConfigurationStandard(
         aiProvider = AI_Anthropic,
         selectedLLM = model,

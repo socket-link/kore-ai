@@ -3,18 +3,17 @@
 package link.socket.kore.domain.agent
 
 import kotlinx.coroutines.CoroutineScope
-import link.socket.kore.data.ConversationRepository
-import link.socket.kore.domain.agent.definition.AgentDefinition
+import link.socket.kore.domain.agent.bundled.AgentDefinition
 import link.socket.kore.domain.capability.AgentCapability
 import link.socket.kore.domain.capability.IOCapability
-import link.socket.kore.domain.ai.configuration.AI_Configuration
+import link.socket.kore.domain.config.AI_Configuration
 import link.socket.kore.domain.tool.FunctionProvider
 
 data class KoreAgent(
-    override val scope: CoroutineScope,
     override val config: AI_Configuration,
+    override val scope: CoroutineScope,
     val definition: AgentDefinition,
-    val conversationRepository: ConversationRepository,
+    val agentFactory: KoreAgentFactory,
 ) : LLMAgent {
 
     val name: String = definition.name
@@ -34,8 +33,8 @@ data class KoreAgent(
                 AgentCapability.PromptAgent(
                     agentTag = tag,
                     config = config,
-                    conversationRepository = conversationRepository,
                     scope = scope,
+                    agentFactory = agentFactory,
                 ).impl,
                 IOCapability.ReadFolderContents(tag).impl,
                 IOCapability.CreateFile(tag).impl,

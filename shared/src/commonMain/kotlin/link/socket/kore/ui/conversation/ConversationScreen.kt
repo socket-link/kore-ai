@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.launch
 import link.socket.kore.io.exportToFile
-import link.socket.kore.domain.conversation.Conversation
+import link.socket.kore.domain.chat.Conversation
 import link.socket.kore.ui.chat.ChatHistory
 import link.socket.kore.ui.theme.themeColors
 import link.socket.kore.ui.widget.SmallSnackbarHost

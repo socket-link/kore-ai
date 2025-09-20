@@ -26,7 +26,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import link.socket.kore.domain.agent.AgentInput
-import link.socket.kore.domain.agent.definition.AgentDefinition
+import link.socket.kore.domain.agent.bundled.AgentDefinition
 import link.socket.kore.ui.theme.themeTypography
 
 /**

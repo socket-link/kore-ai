@@ -26,12 +26,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.agent.definition.AgentDefinition
-import link.socket.kore.domain.agent.definition.codeAgents
-import link.socket.kore.domain.agent.definition.generalAgents
-import link.socket.kore.domain.agent.definition.promptAgents
-import link.socket.kore.domain.agent.definition.reasoningAgents
-import link.socket.kore.domain.ai.configuration.AI_ConfigurationWithFallback
+import link.socket.kore.domain.agent.bundled.AgentDefinition
+import link.socket.kore.domain.agent.bundled.codeAgents
+import link.socket.kore.domain.agent.bundled.generalAgents
+import link.socket.kore.domain.agent.bundled.promptAgents
+import link.socket.kore.domain.agent.bundled.reasoningAgents
+import link.socket.kore.domain.config.AI_ConfigurationWithFallbacks
 import link.socket.kore.domain.ai.AI
 import link.socket.kore.domain.llm.LLM
 import link.socket.kore.ui.model.ModelFeaturesDisplay
@@ -112,7 +112,7 @@ fun AgentCreationScreen(
 
             val suggestedModels = remember(selectedAgentDefinition) {
                 // TODO: Improve syntax
-                (selectedAgentDefinition?.aiConfiguration as? AI_ConfigurationWithFallback)?.getSuggestedModels()
+                (selectedAgentDefinition?.aiConfiguration as? AI_ConfigurationWithFallbacks)?.getSuggestedModels()
             }
 
             if (selectedModel != null) {

@@ -11,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.agent.definition.AgentDefinition
+import link.socket.kore.domain.agent.bundled.AgentDefinition
 import link.socket.kore.ui.model.ModelTools
 import link.socket.kore.ui.theme.themeTypography
 
