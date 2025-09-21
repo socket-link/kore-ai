@@ -26,12 +26,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.aallam.openai.api.core.Role
 import com.mikepenz.markdown.compose.Markdown
-import com.mikepenz.markdown.model.markdownColor
+import com.mikepenz.markdown.model.DefaultMarkdownColors
+import com.mikepenz.markdown.model.DefaultMarkdownTypography
 import link.socket.kore.domain.chat.Chat
 import link.socket.kore.ui.theme.iconAlpha
 import link.socket.kore.ui.theme.iconButtonSize
@@ -143,13 +145,44 @@ fun ChatMessage(
                         Markdown(
                             modifier = Modifier.fillMaxWidth(),
                             content = messageContent,
-                            colors = markdownColor(
+                            colors = DefaultMarkdownColors(
                                 text = textColor,
-                                codeText = codeTextColor,
-                                linkText = linkTextColor,
                                 codeBackground = codeBackgroundColor,
                                 inlineCodeBackground = inlineCodeBackgroundColor,
                                 dividerColor = dividerColor,
+                                tableBackground = Color.Transparent,
+                            ),
+                            typography = DefaultMarkdownTypography(
+                                h1 = themeTypography().h1,
+                                h2 = themeTypography().h2,
+                                h3 = themeTypography().h3,
+                                h4 = themeTypography().h4,
+                                h5 = themeTypography().h5,
+                                h6 = themeTypography().h6,
+                                text = themeTypography().body1,
+                                code = themeTypography().body1.copy(
+                                    color = codeTextColor,
+                                ),
+                                inlineCode = themeTypography().subtitle2,
+                                quote = themeTypography().subtitle1,
+                                paragraph = themeTypography().body1,
+                                ordered = themeTypography().caption,
+                                bullet = themeTypography().caption,
+                                list = themeTypography().body1,
+                                textLink = with(
+                                    themeTypography()
+                                        .button
+                                        .copy(color = linkTextColor)
+                                        .toSpanStyle()
+                                ) {
+                                    TextLinkStyles(
+                                        style = this,
+                                        focusedStyle = this,
+                                        hoveredStyle = this,
+                                        pressedStyle = this,
+                                    )
+                                },
+                                table = themeTypography().body2,
                             ),
                         )
                     }

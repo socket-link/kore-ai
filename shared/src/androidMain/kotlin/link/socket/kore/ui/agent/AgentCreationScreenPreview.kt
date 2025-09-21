@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import link.socket.kore.domain.agent.bundled.WriteCodeAgent
-import link.socket.kore.domain.ai.AI
+import link.socket.kore.domain.ai.AI_OpenAI
 import link.socket.kore.domain.llm.LLM_OpenAI
 import link.socket.kore.ui.model.ModelSelector
 
@@ -17,7 +17,7 @@ fun PreviewAgentCreationScreen() {
         selectedAgentDefinition = WriteCodeAgent,
         setSelectedAgentDefinitionChanged = {},
         onCreateAgent = {},
-        onBackClicked = {}
+        onBackClicked = {},
     )
 }
 
@@ -26,7 +26,7 @@ fun PreviewAgentCreationScreen() {
 fun PreviewAgentColumn() {
     AgentColumn(
         modifier = Modifier.fillMaxSize(),
-        onAgentSelected = {}
+        onAgentSelected = {},
     )
 }
 
@@ -34,7 +34,7 @@ fun PreviewAgentColumn() {
 @Composable
 fun PreviewProviderModelSelector() {
     ModelSelector(
-        selectedProvider = AI._OpenAI,
+        selectedProvider = AI_OpenAI,
         selectedModel = LLM_OpenAI.DEFAULT,
         selectableProviders = emptyList(),
         selectableModels = emptyList(),

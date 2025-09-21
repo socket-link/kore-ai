@@ -29,6 +29,7 @@ sealed interface AI<
     val name: String
     val defaultModel: L
     val availableModels: List<L>
+    val apiToken: String
 
     val client: Client
 

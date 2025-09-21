@@ -1,16 +1,19 @@
+
 import java.io.FileInputStream
-import java.util.*
+import java.util.Properties
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization")
+    kotlin("plugin.serialization") version "2.1.20"
     id("com.android.library")
     id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("maven-publish")
     id("signing")
-    id("org.jetbrains.dokka") version "1.9.20"
+    id("org.jetbrains.dokka") version "2.0.0"
     id("org.jlleitschuh.gradle.ktlint")
 }
 
@@ -77,8 +80,17 @@ tasks.withType<DokkaTask>().configureEach {
 }
 
 kotlin {
-    androidTarget()
-    jvm()
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
+    }
+
+    jvm {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
+    }
 
     val xcf = XCFramework()
     val iosTargets = listOf(iosX64(), iosArm64(), iosSimulatorArm64())
@@ -93,18 +105,21 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.aallam.openai:openai-client:3.8.2")
-                implementation("io.ktor:ktor-client-core:2.3.12")
-                implementation("com.squareup.okio:okio:3.9.0")
-                implementation("com.mikepenz:multiplatform-markdown-renderer:0.12.0")
-                implementation("co.touchlab:kermit:2.0.4")
+                implementation(kotlin("reflect"))
+
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
                 implementation(compose.materialIconsExtended)
-                implementation(kotlin("reflect"))
+
+                implementation("ai.koog:koog-agents:0.4.2")
+                implementation("com.aallam.openai:openai-client:4.0.1")
+                implementation("io.ktor:ktor-client-core:3.3.0")
+                implementation("com.squareup.okio:okio:3.16.0")
+                implementation("com.mikepenz:multiplatform-markdown-renderer:0.37.0")
+                implementation("co.touchlab:kermit:2.0.8")
             }
         }
         val commonTest by getting {
@@ -114,19 +129,21 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                api("androidx.activity:activity-compose:1.9.1")
-                api("androidx.appcompat:appcompat:1.7.0")
-                api("androidx.core:core-ktx:1.13.1")
                 implementation(compose.uiTooling)
+
+                api("androidx.activity:activity-compose:1.11.0")
+                api("androidx.appcompat:appcompat:1.7.1")
+                api("androidx.core:core-ktx:1.17.0")
                 implementation("com.lordcodes.turtle:turtle:0.10.0")
-                implementation("io.ktor:ktor-client-okhttp:2.3.6")
+                implementation("io.ktor:ktor-client-okhttp:3.3.0")
             }
         }
         val jvmMain by getting {
             dependencies {
                 implementation(compose.desktop.common)
+
                 implementation("com.lordcodes.turtle:turtle:0.10.0")
-                implementation("io.ktor:ktor-client-okhttp:2.3.6")
+                implementation("io.ktor:ktor-client-okhttp:3.3.0")
             }
         }
         val jvmTest by getting {
@@ -144,7 +161,7 @@ kotlin {
             iosSimulatorArm64Main.dependsOn(this)
 
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:2.3.6")
+                implementation("io.ktor:ktor-client-darwin:3.3.0")
             }
         }
     }
@@ -172,11 +189,11 @@ android {
         minSdk = (findProperty("android.minSdk") as String).toInt()
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     kotlin {
-        jvmToolchain(17)
+        jvmToolchain(21)
     }
 }
 

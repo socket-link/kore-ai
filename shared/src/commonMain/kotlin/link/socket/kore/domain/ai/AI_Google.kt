@@ -3,16 +3,18 @@ package link.socket.kore.domain.ai
 import com.aallam.openai.client.OpenAI as Client
 import link.kore.shared.config.KotlinConfig
 import link.socket.kore.domain.config.AI_Configuration
-import link.socket.kore.domain.config.AI_ConfigurationWithFallbacks
 import link.socket.kore.domain.config.AI_ConfigurationStandard
+import link.socket.kore.domain.config.AI_ConfigurationWithFallbacks
 import link.socket.kore.domain.llm.LLM_Gemini
 import link.socket.kore.domain.tool.Tool_Gemini
 
 private const val GOOGLE_API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
 data object AI_Google : AI<Tool_Gemini, LLM_Gemini> {
+
     override val id: ProviderId = "google"
     override val name: String = "Google"
+    override val apiToken: String = KotlinConfig.google_api_key
 
     override val defaultModel: LLM_Gemini by lazy {
         LLM_Gemini.DEFAULT
@@ -24,7 +26,7 @@ data object AI_Google : AI<Tool_Gemini, LLM_Gemini> {
 
     override val client: Client by lazy {
         AI.createClient(
-            token = KotlinConfig.google_api_key,
+            token = apiToken,
             url = GOOGLE_API_ENDPOINT,
         )
     }

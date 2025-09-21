@@ -6,9 +6,9 @@ include(":desktopApp")
 
 pluginManagement {
     repositories {
-        gradlePluginPortal()
-        mavenCentral()
         google()
+        mavenCentral()
+        gradlePluginPortal()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
 
@@ -26,12 +26,9 @@ pluginManagement {
         id("com.android.application").version(agpVersion)
         id("com.android.library").version(agpVersion)
         id("org.jetbrains.compose").version(composeVersion)
+        kotlin("plugin.compose").version(kotlinVersion)
         id("io.ktor.plugin").version(ktorVersion)
     }
-}
-
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version("0.4.0")
 }
 
 dependencyResolutionManagement {

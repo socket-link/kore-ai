@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import link.socket.kore.data.ConversationRepository
 import link.socket.kore.domain.agent.KoreAgent
 import link.socket.kore.domain.agent.KoreAgentFactory
@@ -25,6 +26,7 @@ import link.socket.kore.domain.ai.DEFAULT_AI_CONFIGURATION
 import link.socket.kore.domain.chat.Conversation
 import link.socket.kore.domain.chat.ConversationId
 import link.socket.kore.domain.config.AI_Configuration
+import link.socket.kore.domain.koog.KoogAgentFactory
 import link.socket.kore.ui.agent.AgentCreationScreen
 import link.socket.kore.ui.conversation.ConversationScreen
 import link.socket.kore.ui.home.HomeScreen
@@ -54,6 +56,10 @@ fun App(
             conversationRepository = conversationRepository,
             coroutineScope = scope,
         )
+    }
+
+    val koogAgentFactory = remember {
+        KoogAgentFactory()
     }
 
     val allConversations: State<Map<ConversationId, Conversation>> =
@@ -124,6 +130,13 @@ fun App(
                     conversationId = selectedConversationId!!,
                 )
                 onConversationFinishedExecuting()
+            }
+
+            runBlocking {
+                val koogAgent = koogAgentFactory.createKoogAgent(
+                    aiConfiguration = selectedConfig.value,
+                    agent = agent,
+                )
             }
         }
 

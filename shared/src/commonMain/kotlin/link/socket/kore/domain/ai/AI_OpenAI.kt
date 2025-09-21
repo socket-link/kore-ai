@@ -4,14 +4,16 @@ import com.aallam.openai.client.OpenAI as Client
 import link.kore.shared.config.KotlinConfig
 import link.socket.kore.domain.ai.AI.Companion.createClient
 import link.socket.kore.domain.config.AI_Configuration
-import link.socket.kore.domain.config.AI_ConfigurationWithFallbacks
 import link.socket.kore.domain.config.AI_ConfigurationStandard
+import link.socket.kore.domain.config.AI_ConfigurationWithFallbacks
 import link.socket.kore.domain.llm.LLM_OpenAI
 import link.socket.kore.domain.tool.Tool_OpenAI
 
 data object AI_OpenAI : AI<Tool_OpenAI, LLM_OpenAI> {
+
     override val id: ProviderId = "openai"
     override val name: String = "OpenAI"
+    override val apiToken: String = KotlinConfig.openai_api_key
 
     override val defaultModel: LLM_OpenAI by lazy {
         LLM_OpenAI.DEFAULT
@@ -23,7 +25,7 @@ data object AI_OpenAI : AI<Tool_OpenAI, LLM_OpenAI> {
 
     override val client: Client by lazy {
         createClient(
-            token = KotlinConfig.openai_api_key,
+            token = apiToken,
         )
     }
 }

@@ -4,16 +4,18 @@ import com.aallam.openai.client.OpenAI as Client
 import link.kore.shared.config.KotlinConfig
 import link.socket.kore.domain.ai.AI.Companion.createClient
 import link.socket.kore.domain.config.AI_Configuration
-import link.socket.kore.domain.config.AI_ConfigurationWithFallbacks
 import link.socket.kore.domain.config.AI_ConfigurationStandard
+import link.socket.kore.domain.config.AI_ConfigurationWithFallbacks
 import link.socket.kore.domain.llm.LLM_Claude
 import link.socket.kore.domain.tool.Tool_Claude
 
 private const val ANTHROPIC_API_ENDPOINT = "https://api.anthropic.com/v1/"
 
 data object AI_Anthropic : AI<Tool_Claude, LLM_Claude> {
+
     override val id: ProviderId = "anthropic"
     override val name: String = "Anthropic"
+    override val apiToken: String = KotlinConfig.anthropic_api_key
 
     override val defaultModel: LLM_Claude by lazy {
         LLM_Claude.DEFAULT
@@ -25,7 +27,7 @@ data object AI_Anthropic : AI<Tool_Claude, LLM_Claude> {
 
     override val client: Client by lazy {
         createClient(
-            token = KotlinConfig.anthropic_api_key,
+            token = apiToken,
             url = ANTHROPIC_API_ENDPOINT,
         )
     }
