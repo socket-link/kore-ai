@@ -114,12 +114,12 @@ kotlin {
                 implementation(compose.components.resources)
                 implementation(compose.materialIconsExtended)
 
-                implementation("ai.koog:koog-agents:0.4.2")
+                implementation("ai.koog:koog-agents:0.4.1")
                 implementation("com.aallam.openai:openai-client:4.0.1")
-                implementation("io.ktor:ktor-client-core:3.3.0")
-                implementation("com.squareup.okio:okio:3.16.0")
-                implementation("com.mikepenz:multiplatform-markdown-renderer:0.37.0")
-                implementation("co.touchlab:kermit:2.0.8")
+                implementation("io.ktor:ktor-client-core:3.2.2")
+                implementation("com.squareup.okio:okio:3.11.0")
+                implementation("com.mikepenz:multiplatform-markdown-renderer:0.33.0")
+                implementation("co.touchlab:kermit:2.0.6")
             }
         }
         val commonTest by getting {
@@ -135,7 +135,7 @@ kotlin {
                 api("androidx.appcompat:appcompat:1.7.1")
                 api("androidx.core:core-ktx:1.17.0")
                 implementation("com.lordcodes.turtle:turtle:0.10.0")
-                implementation("io.ktor:ktor-client-okhttp:3.3.0")
+                implementation("io.ktor:ktor-client-okhttp:3.2.2")
             }
         }
         val jvmMain by getting {
@@ -143,7 +143,7 @@ kotlin {
                 implementation(compose.desktop.common)
 
                 implementation("com.lordcodes.turtle:turtle:0.10.0")
-                implementation("io.ktor:ktor-client-okhttp:3.3.0")
+                implementation("io.ktor:ktor-client-okhttp:3.2.2")
             }
         }
         val jvmTest by getting {
@@ -161,7 +161,7 @@ kotlin {
             iosSimulatorArm64Main.dependsOn(this)
 
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:3.3.0")
+                implementation("io.ktor:ktor-client-darwin:3.2.2")
             }
         }
     }
