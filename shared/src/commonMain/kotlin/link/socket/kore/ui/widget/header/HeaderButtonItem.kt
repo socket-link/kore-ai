@@ -10,9 +10,9 @@ import link.socket.kore.ui.theme.themeTypography
 
 @Composable
 fun HeaderButtonItem(
-    modifier: Modifier = Modifier,
     text: String,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     TextButton(
         modifier = modifier

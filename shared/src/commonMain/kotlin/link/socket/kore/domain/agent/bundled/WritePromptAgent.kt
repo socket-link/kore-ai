@@ -1,9 +1,8 @@
 package link.socket.kore.domain.agent.bundled
 
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME: String = "Refine Prompt"
 private const val DESCRIPTION = "Prompt engineering specialist agent that refines and optimizes prompts for clarity, specificity, and effectiveness following current best practices"
@@ -33,9 +32,11 @@ data object WritePromptAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    aiConfiguration = aiConfiguration(
-        LLM_OpenAI.o3_mini,
-        aiConfiguration(LLM_Claude.Opus_4_1),
-        aiConfiguration(LLM_Gemini.Pro_2_5),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_OpenAI.o3_mini,
+            aiConfiguration(AIModel_Claude.Opus_4_1),
+            aiConfiguration(AIModel_Gemini.Pro_2_5),
+        )
+    },
 )

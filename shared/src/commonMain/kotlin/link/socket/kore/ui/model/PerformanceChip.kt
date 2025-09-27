@@ -47,7 +47,9 @@ fun PerformanceChip(
             style = MaterialTheme.typography.caption,
             color = textColor,
         )
+
         Spacer(modifier = Modifier.height(4.dp))
+
         Box(
             modifier = Modifier
                 .background(
@@ -61,7 +63,7 @@ fun PerformanceChip(
                     ),
                     RoundedCornerShape(16.dp),
                 )
-                .padding(horizontal = 12.dp, vertical = 6.dp)
+                .padding(horizontal = 12.dp, vertical = 6.dp),
         ) {
             Text(
                 text = value,

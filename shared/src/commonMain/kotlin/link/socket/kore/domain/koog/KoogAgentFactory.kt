@@ -6,27 +6,27 @@ import ai.koog.prompt.executor.llms.all.simpleAnthropicExecutor
 import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
 import ai.koog.prompt.executor.llms.all.simpleOpenAIExecutor
 import link.socket.kore.domain.agent.KoreAgent
-import link.socket.kore.domain.ai.AI_Anthropic
-import link.socket.kore.domain.ai.AI_Google
-import link.socket.kore.domain.ai.AI_OpenAI
-import link.socket.kore.domain.config.AI_Configuration
-import link.socket.kore.domain.llm.toKoogLLMModel
+import link.socket.kore.domain.ai.provider.AIProvider_Google
+import link.socket.kore.domain.ai.configuration.AIConfiguration
+import link.socket.kore.domain.ai.provider.AIProvider_Anthropic
+import link.socket.kore.domain.ai.provider.AIProvider_OpenAI
+import link.socket.kore.domain.util.toKoogLLMModel
 
 class KoogAgentFactory() {
 
     fun createKoogAgent(
-        aiConfiguration: AI_Configuration,
+        aiConfiguration: AIConfiguration,
         agent: KoreAgent,
     ): AIAgent<String, *> {
-        val executor = when (val ai = aiConfiguration.aiProvider) {
-            is AI_Anthropic -> simpleAnthropicExecutor(ai.apiToken)
-            is AI_Google -> simpleGoogleAIExecutor(ai.apiToken)
-            is AI_OpenAI -> simpleOpenAIExecutor(ai.apiToken)
+        val executor = when (val ai = aiConfiguration.provider) {
+            is AIProvider_Anthropic -> simpleAnthropicExecutor(ai.apiToken)
+            is AIProvider_Google -> simpleGoogleAIExecutor(ai.apiToken)
+            is AIProvider_OpenAI -> simpleOpenAIExecutor(ai.apiToken)
         }
         return AIAgent(
             executor = executor,
             systemPrompt = agent.prompt,
-            llmModel = aiConfiguration.selectedLLM?.toKoogLLMModel() ?: GoogleModels.Gemini2_5Flash,
+            llmModel = aiConfiguration.model?.toKoogLLMModel() ?: GoogleModels.Gemini2_5Flash,
             temperature = 0.7,
         )
     }

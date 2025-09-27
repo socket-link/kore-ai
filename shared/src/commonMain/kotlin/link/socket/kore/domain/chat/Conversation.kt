@@ -3,7 +3,7 @@ package link.socket.kore.domain.chat
 import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatRole
 import link.socket.kore.domain.agent.KoreAgent
-import link.socket.kore.domain.llm.LLM
+import link.socket.kore.domain.ai.model.AIModel
 
 typealias ConversationId = String
 
@@ -62,9 +62,9 @@ data class Conversation(
      * @return The ChatCompletionRequest for the conversation.
      */
     fun getCompletionRequest(
-        llm: LLM<*>,
+        model: AIModel,
     ): ChatCompletionRequest = agent.createCompletionRequest(
-        llm = llm,
+        model = model,
         conversationHistory = conversationHistory,
     )
 

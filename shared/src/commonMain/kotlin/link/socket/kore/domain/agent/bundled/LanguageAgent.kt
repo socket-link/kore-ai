@@ -1,9 +1,8 @@
 package link.socket.kore.domain.agent.bundled
 
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME = "Language Tutor"
 private const val DESCRIPTION = "Interactive language learning agent that provides conversational practice, grammar correction, vocabulary explanations, and tailored educational content for multiple languages"
@@ -26,9 +25,11 @@ data object LanguageAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    aiConfiguration = aiConfiguration(
-        LLM_Gemini.Flash_Lite_2_5,
-        aiConfiguration(LLM_Claude.Haiku_3_5),
-        aiConfiguration(LLM_OpenAI.GPT_4o_mini),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_Gemini.Flash_Lite_2_5,
+            aiConfiguration(AIModel_Claude.Haiku_3_5),
+            aiConfiguration(AIModel_OpenAI.GPT_4o_mini),
+        )
+    },
 )

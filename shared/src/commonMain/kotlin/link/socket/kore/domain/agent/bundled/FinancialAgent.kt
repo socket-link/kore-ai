@@ -1,9 +1,8 @@
 package link.socket.kore.domain.agent.bundled
 
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME = "Financial Advisor"
 private const val DESCRIPTION = "Financial data processing agent that specializes in transaction analysis, categorized balance sheet creation, and comprehensive financial reporting with privacy-focused data handling"
@@ -30,9 +29,11 @@ data object FinancialAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    aiConfiguration = aiConfiguration(
-        LLM_Claude.Opus_4_1,
-        aiConfiguration(LLM_Gemini.Pro_2_5),
-        aiConfiguration(LLM_OpenAI.GPT_5),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_Claude.Opus_4_1,
+            aiConfiguration(AIModel_Gemini.Pro_2_5),
+            aiConfiguration(AIModel_OpenAI.GPT_5),
+        )
+    },
 )

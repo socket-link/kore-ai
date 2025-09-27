@@ -1,9 +1,8 @@
 package link.socket.kore.domain.agent.bundled
 
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME = "Study Buddy"
 private const val DESCRIPTION = "Educational support agent that provides homework assistance, study tips, learning resources, and personalized academic guidance across multiple disciplines with an engaging and supportive approach"
@@ -28,9 +27,11 @@ data object StudyAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    aiConfiguration = aiConfiguration(
-        LLM_Claude.Sonnet_4,
-        aiConfiguration(LLM_OpenAI.GPT_4_1),
-        aiConfiguration(LLM_Gemini.Flash_2_5),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_Claude.Sonnet_4,
+            aiConfiguration(AIModel_OpenAI.GPT_4_1),
+            aiConfiguration(AIModel_Gemini.Flash_2_5),
+        )
+    },
 )

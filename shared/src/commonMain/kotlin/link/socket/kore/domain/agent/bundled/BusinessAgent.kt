@@ -1,9 +1,8 @@
 package link.socket.kore.domain.agent.bundled
 
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME = "Business Advisor"
 private const val DESCRIPTION = "Business coaching agent that helps entrepreneurs transform ideas into viable companies through market analysis, funding strategies, and operational guidance"
@@ -26,9 +25,11 @@ data object BusinessAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    aiConfiguration = aiConfiguration(
-        LLM_OpenAI.GPT_5,
-        aiConfiguration(LLM_Claude.Opus_4_1),
-        aiConfiguration(LLM_Gemini.Pro_2_5),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_OpenAI.GPT_5,
+            aiConfiguration(AIModel_Claude.Opus_4_1),
+            aiConfiguration(AIModel_Gemini.Pro_2_5),
+        )
+    },
 )

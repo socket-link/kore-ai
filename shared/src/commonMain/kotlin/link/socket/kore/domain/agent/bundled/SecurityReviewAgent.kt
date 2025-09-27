@@ -1,10 +1,9 @@
 package link.socket.kore.domain.agent.bundled
 
 import link.socket.kore.domain.agent.AgentInput
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME = "Security Review"
 private const val DESCRIPTION = "Security audit specialist agent that identifies vulnerabilities, reviews authentication mechanisms, validates data protection practices, and ensures compliance with security standards"
@@ -123,11 +122,13 @@ data object SecurityReviewAgent : AgentDefinition.Bundled(
         securityFocus = "General Security Audit",
         threatModel = "Library/Framework",
     ),
-    aiConfiguration = aiConfiguration(
-        LLM_Claude.Opus_4_1,
-        aiConfiguration(LLM_Gemini.Pro_2_5),
-        aiConfiguration(LLM_OpenAI.GPT_5),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_Claude.Opus_4_1,
+            aiConfiguration(AIModel_Gemini.Pro_2_5),
+            aiConfiguration(AIModel_OpenAI.GPT_5),
+        )
+    },
 ) {
     private var securityFocus: String = "General Security Audit"
     private var threatModel: String = "Library/Framework"
@@ -163,6 +164,6 @@ data object SecurityReviewAgent : AgentDefinition.Bundled(
     override val prompt: String
         get() = promptFrom(securityFocus, threatModel)
 
-    override val neededInputs: List<AgentInput>
+    override val requiredInputs: List<AgentInput>
         get() = listOf(securityFocusArg, threatModelArg)
 }

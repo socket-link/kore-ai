@@ -6,11 +6,11 @@ import link.socket.kore.data.ConversationRepository
 import link.socket.kore.domain.agent.bundled.AgentDefinition
 import link.socket.kore.domain.agent.bundled.getAgentDefinition
 import link.socket.kore.domain.chat.ConversationId
-import link.socket.kore.domain.config.AI_Configuration
+import link.socket.kore.domain.ai.configuration.AIConfiguration
 import link.socket.kore.util.logWith
 
 data class PromptSubAgentParams(
-    val config: AI_Configuration,
+    val config: AIConfiguration,
     val parentConversationId: ConversationId,
     val scope: CoroutineScope,
     val agentName: String?,
@@ -26,7 +26,7 @@ class KoreAgentFactory(
         get() = { params ->
             with(params) {
                 // TODO: Improve repetitive logging for function calls, use better format
-                logWith(tag).i("\nllm=${config.selectedLLM?.name}\nparentConversationId=$parentConversationId\nArgs:\nagentName=$agentName\nprompt=$prompt\n$initialUserChat")
+                logWith(tag).i("\nllm=${config.model?.name}\nparentConversationId=$parentConversationId\nArgs:\nagentName=$agentName\nprompt=$prompt\n$initialUserChat")
 
                 val agent = KoreAgent(
                     config = config,
@@ -72,7 +72,7 @@ class KoreAgentFactory(
         }
 
     fun buildAgent(
-        config: AI_Configuration,
+        config: AIConfiguration,
         definition: AgentDefinition,
         scope: CoroutineScope,
     ): KoreAgent {

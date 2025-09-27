@@ -1,10 +1,9 @@
 package link.socket.kore.domain.agent.bundled
 
 import link.socket.kore.domain.agent.AgentInput
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME = "Write Code"
 private const val DESCRIPTION = "Programming expert agent that generates executable code in specified technologies, plans solutions step-by-step, and saves code to local storage"
@@ -27,11 +26,13 @@ data object WriteCodeAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = promptFrom(technologies = "Kotlin"),
-    aiConfiguration = aiConfiguration(
-        LLM_Claude.Opus_4_1,
-        aiConfiguration(LLM_OpenAI.GPT_4_1),
-        aiConfiguration(LLM_Gemini.Pro_2_5),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_Claude.Opus_4_1,
+            aiConfiguration(AIModel_OpenAI.GPT_4_1),
+            aiConfiguration(AIModel_Gemini.Pro_2_5),
+        )
+    },
 ) {
     private var technologies: String = "Any language or framework"
 
@@ -45,6 +46,6 @@ data object WriteCodeAgent : AgentDefinition.Bundled(
     override val prompt: String
         get() = promptFrom(technologies)
 
-    override val neededInputs: List<AgentInput>
+    override val requiredInputs: List<AgentInput>
         get() = listOf(technologiesArg)
 }

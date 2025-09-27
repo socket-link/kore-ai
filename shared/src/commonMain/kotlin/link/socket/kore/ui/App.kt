@@ -9,23 +9,18 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import link.socket.kore.data.ConversationRepository
 import link.socket.kore.domain.agent.KoreAgent
 import link.socket.kore.domain.agent.KoreAgentFactory
-import link.socket.kore.domain.agent.bundled.AgentDefinition
-import link.socket.kore.domain.ai.DEFAULT_AI_CONFIGURATION
+import link.socket.kore.domain.ai.configuration.AIConfigurationFactory
 import link.socket.kore.domain.chat.Conversation
 import link.socket.kore.domain.chat.ConversationId
-import link.socket.kore.domain.config.AI_Configuration
 import link.socket.kore.domain.koog.KoogAgentFactory
 import link.socket.kore.ui.agent.AgentCreationScreen
 import link.socket.kore.ui.conversation.ConversationScreen
@@ -34,32 +29,21 @@ import link.socket.kore.ui.theme.themeColors
 import link.socket.kore.ui.theme.themeShapes
 import link.socket.kore.ui.theme.themeTypography
 
-enum class Screen {
-    HOME,
-    AGENT_CREATION,
-    CONVERSATION,
-}
-
 @Composable
 fun App(
     modifier: Modifier = Modifier,
 ) {
-    val selectedConfig = remember< MutableState<AI_Configuration>> {
-        mutableStateOf(DEFAULT_AI_CONFIGURATION)
-    }
-
     val scope = rememberCoroutineScope()
     val conversationRepository = remember { ConversationRepository(scope) }
+    val aiConfigurationFactory = remember { AIConfigurationFactory() }
+    val koogAgentFactory = remember { KoogAgentFactory() }
 
-    val agentFactory = remember {
-        KoreAgentFactory(
-            conversationRepository = conversationRepository,
-            coroutineScope = scope,
-        )
+    val selectedConfig = remember {
+        mutableStateOf(aiConfigurationFactory.getDefaultConfiguration())
     }
 
-    val koogAgentFactory = remember {
-        KoogAgentFactory()
+    val agentFactory = remember {
+        KoreAgentFactory(conversationRepository, scope)
     }
 
     val allConversations: State<Map<ConversationId, Conversation>> =
@@ -72,21 +56,20 @@ fun App(
         typography = themeTypography(),
         shapes = themeShapes(),
     ) {
-        var selectedScreen by remember { mutableStateOf(Screen.HOME) }
-        var selectedConversationId by remember { mutableStateOf<ConversationId?>(null) }
-
+        val selectedScreen: MutableState<Screen> = remember { mutableStateOf(Screen.HOME) }
+        val selectedConversationId: MutableState<ConversationId?> = remember { mutableStateOf(null) }
         val conversationListState = rememberLazyListState()
 
         val selectedConversationValue: State<Conversation?> =
-            selectedConversationId?.let { id ->
+            selectedConversationId.value?.let { id ->
                 conversationRepository
                     .observeValue(id)
                     .collectAsState(null)
             } ?: mutableStateOf(null)
 
-        val selectedConversation = remember(selectedConversationId, selectedConversationValue) {
+        val selectedConversation: State<Conversation?> = remember(selectedConversationId, selectedConversationValue) {
             derivedStateOf {
-                if (selectedConversationId != null) {
+                if (selectedConversationId.value != null) {
                     selectedConversationValue.value
                 } else {
                     null
@@ -94,18 +77,19 @@ fun App(
             }
         }
 
-        var isLoading by remember { mutableStateOf(false) }
+        val isLoading: MutableState<Boolean> = remember { mutableStateOf(false) }
 
         val onExecutingConversation = {
-            isLoading = true
+            isLoading.value = true
         }
 
-        val onConversationFinishedExecuting = {
-            isLoading = false
+        val onConversationFinishedExecuting: () -> Unit = {
+            isLoading.value = false
 
-            if (selectedConversationId != null) {
+            val conversationId = selectedConversationId.value
+            if (conversationId != null) {
                 scope.launch {
-                    val conversation = conversationRepository.getValue(selectedConversationId!!)
+                    val conversation = conversationRepository.getValue(conversationId)
                     val lastIndex = conversation?.getChats()?.lastIndex ?: 0
 
                     delay(500)
@@ -115,8 +99,8 @@ fun App(
         }
 
         val onConversationSelected: (ConversationId) -> Unit = { conversationId ->
-            selectedConversationId = conversationId
-            selectedScreen = Screen.CONVERSATION
+            selectedConversationId.value = conversationId
+            selectedScreen.value = Screen.CONVERSATION
         }
 
         val onNewConversation: (KoreAgent) -> Unit = { agent ->
@@ -125,31 +109,33 @@ fun App(
 
             scope.launch {
                 onExecutingConversation()
+
                 conversationRepository.runConversation(
                     config = selectedConfig.value,
-                    conversationId = selectedConversationId!!,
+                    conversationId = selectedConversationId.value!!,
                 )
-                onConversationFinishedExecuting()
-            }
 
-            runBlocking {
                 val koogAgent = koogAgentFactory.createKoogAgent(
                     aiConfiguration = selectedConfig.value,
                     agent = agent,
                 )
+
+                koogAgent.run("")
+
+                onConversationFinishedExecuting()
             }
         }
 
         Box(
             modifier = modifier,
         ) {
-            when (selectedScreen) {
+            when (selectedScreen.value) {
                 Screen.HOME -> {
                     HomeScreen(
                         modifier = Modifier.fillMaxSize(),
                         agentConversationsList = allConversations.value.values.toList(),
                         onCreateConversationSelected = {
-                            selectedScreen = Screen.AGENT_CREATION
+                            selectedScreen.value = Screen.AGENT_CREATION
                         },
                         onConversationSelected = { conversation ->
                             onConversationSelected(conversation.id)
@@ -158,39 +144,30 @@ fun App(
                 }
 
                 Screen.AGENT_CREATION -> {
-                    var partiallySelectedAgent by remember {
-                        mutableStateOf<AgentDefinition?>(null)
-                    }
-
                     AgentCreationScreen(
                         modifier = Modifier.fillMaxSize(),
-                        selectedAgentDefinition = partiallySelectedAgent,
-                        setSelectedAgentDefinitionChanged = { agent ->
-                            partiallySelectedAgent = agent
-                        },
-                        onCreateAgent = { agentDefinition ->
-                            val agent = agentFactory.buildAgent(
-                                config = selectedConfig.value,
-                                definition = agentDefinition,
-                                scope = scope,
-                            )
+                        selectedConfig = selectedConfig.value,
+                        aiConfigurationFactory = aiConfigurationFactory,
+                        agentFactory = agentFactory,
+                        onAgentCreated = { agent ->
+                            selectedScreen.value = Screen.CONVERSATION
                             onNewConversation(agent)
                         },
                         onBackClicked = {
-                            selectedScreen = Screen.HOME
+                            selectedScreen.value = Screen.HOME
                         },
                     )
                 }
 
                 Screen.CONVERSATION -> {
-                    selectedConversation.value?.let {
+                    selectedConversation.value?.let { conversation ->
                         ConversationScreen(
                             modifier = Modifier.fillMaxSize(),
                             listState = conversationListState,
-                            conversation = it,
-                            isLoading = isLoading,
+                            conversation = conversation,
+                            isLoading = isLoading.value,
                             onChatSent = { input ->
-                                selectedConversationId?.let { id ->
+                                selectedConversationId.value?.let { id ->
                                     scope.launch {
                                         onExecutingConversation()
                                         conversationRepository.addUserChat(
@@ -203,8 +180,8 @@ fun App(
                                 }
                             },
                             onBackClicked = {
-                                selectedConversationId = null
-                                selectedScreen = Screen.HOME
+                                selectedConversationId.value = null
+                                selectedScreen.value = Screen.HOME
                             },
                         )
                     }

@@ -14,19 +14,12 @@ import link.socket.kore.domain.chat.Conversation
 import link.socket.kore.ui.theme.conversationCardHeight
 import link.socket.kore.ui.theme.themeTypography
 
-/**
- * A Composable function that displays a card representing a conversation.
- *
- * @param modifier A [Modifier] for this composable.
- * @param conversation The [Conversation] object containing the conversation details.
- * @param onClick A lambda function to be invoked when the card is clicked.
- */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ConversationCard(
-    modifier: Modifier = Modifier,
     conversation: Conversation,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Surface(
         modifier = modifier
@@ -64,14 +57,8 @@ fun ConversationCard(
     }
 }
 
-/**
- * Extension function for the [Conversation] class to get a preview of the last chat message.
- *
- * @return A [String] containing the content of the last chat message, or "..." if there are no messages.
- */
 private fun Conversation.getChatPreview(): String =
-    getChats()
-        .lastOrNull()
+    getChats().lastOrNull()
         ?.chatMessage
         ?.content
         ?: "..."

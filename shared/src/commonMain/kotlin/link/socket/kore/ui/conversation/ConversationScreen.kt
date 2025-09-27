@@ -10,49 +10,33 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.launch
-import link.socket.kore.io.exportToFile
 import link.socket.kore.domain.chat.Conversation
-import link.socket.kore.ui.chat.ChatHistory
+import link.socket.kore.io.exportToFile
 import link.socket.kore.ui.theme.themeColors
 import link.socket.kore.ui.widget.SmallSnackbarHost
 
-/**
- * Composable function that represents the conversation screen.
- *
- * @param modifier Modifier to be applied to the root layout.
- * @param listState State of the lazy list used to display chat messages.
- * @param conversation The conversation data model containing chat messages and agent information.
- * @param isLoading Boolean flag indicating whether the chat is currently loading.
- * @param onChatSent Callback function to be invoked when a chat message is sent.
- * @param onBackClicked Callback function to be invoked when the back button is clicked.
- */
 @Composable
 fun ConversationScreen(
-    modifier: Modifier = Modifier,
     listState: LazyListState,
     conversation: Conversation,
     isLoading: Boolean,
     onChatSent: (String) -> Unit,
     onBackClicked: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
-    var textFieldValue by remember { mutableStateOf(TextFieldValue()) }
 
-    /**
-     * Displays a snackbar with the given message.
-     *
-     * @param message The message to be displayed in the snackbar.
-     */
+    val textFieldValue: MutableState<TextFieldValue> = remember { mutableStateOf(TextFieldValue()) }
+
     val displaySnackbar: (String) -> Unit = { message ->
         scope.launch {
             scaffoldState.snackbarHostState.showSnackbar(
@@ -83,9 +67,9 @@ fun ConversationScreen(
                 ConversationTextEntry(
                     modifier = Modifier
                         .align(Alignment.BottomCenter),
-                    textFieldValue = textFieldValue,
-                    onSendClicked = { onChatSent(textFieldValue.text) },
-                    onTextChanged = { textFieldValue = it },
+                    textFieldValue = textFieldValue.value,
+                    onSendClicked = { onChatSent(textFieldValue.value.text) },
+                    onTextChanged = { text -> textFieldValue.value = text },
                 )
             },
             snackbarHost = { snackbarState ->
@@ -111,7 +95,7 @@ fun ConversationScreen(
                     conversation.getChats()
                 }
 
-                ChatHistory(
+                ChatHistorySection(
                     modifier = Modifier
                         .fillMaxSize(),
                     listState = listState,

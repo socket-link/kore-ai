@@ -1,10 +1,9 @@
 package link.socket.kore.domain.agent.bundled
 
 import link.socket.kore.domain.agent.AgentInput
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME = "Release Management"
 private const val DESCRIPTION = "Release management specialist agent that handles version control, changelog generation, release preparation, and deployment processes with comprehensive quality gates"
@@ -83,11 +82,13 @@ data object ReleaseManagementAgent : AgentDefinition.Bundled(
         releaseType = "Minor Release",
         versionScheme = "Semantic Versioning",
     ),
-    aiConfiguration = aiConfiguration(
-        LLM_Claude.Opus_4_1,
-        aiConfiguration(LLM_OpenAI.GPT_4_1),
-        aiConfiguration(LLM_Gemini.Pro_2_5),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_Claude.Opus_4_1,
+            aiConfiguration(AIModel_OpenAI.GPT_4_1),
+            aiConfiguration(AIModel_Gemini.Pro_2_5),
+        )
+    },
 ) {
     private val releaseTypeArg = AgentInput.EnumArgs(
         key = "releaseType",
@@ -114,6 +115,6 @@ data object ReleaseManagementAgent : AgentDefinition.Bundled(
         )
     )
 
-    override val neededInputs: List<AgentInput>
+    override val requiredInputs: List<AgentInput>
         get() = listOf(releaseTypeArg, versionSchemeArg)
 }

@@ -1,10 +1,9 @@
 package link.socket.kore.domain.agent.bundled
 
 import link.socket.kore.domain.agent.AgentInput
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME = "API Design"
 private const val DESCRIPTION = "Specialized agent for reviewing and optimizing Kotlin API design, focusing on consistency, usability, and adherence to best practices"
@@ -96,11 +95,13 @@ data object APIDesignAgent : AgentDefinition.Bundled(
         reviewType = "Public API Review",
         principle = "Kotlin Idioms",
     ),
-    aiConfiguration = aiConfiguration(
-        LLM_Claude.Opus_4_1,
-        aiConfiguration(LLM_OpenAI.GPT_4_1),
-        aiConfiguration(LLM_Gemini.Pro_2_5),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_Claude.Opus_4_1,
+            aiConfiguration(AIModel_OpenAI.GPT_4_1),
+            aiConfiguration(AIModel_Gemini.Pro_2_5),
+        )
+    },
 ) {
     private var reviewType: String = "Public API Review"
     private var designPrinciple: String = "Kotlin Idioms"
@@ -136,6 +137,6 @@ data object APIDesignAgent : AgentDefinition.Bundled(
     override val prompt: String
         get() = promptFrom(reviewType, designPrinciple)
 
-    override val neededInputs: List<AgentInput>
+    override val requiredInputs: List<AgentInput>
         get() = listOf(reviewTypeArg, principleArg)
 }

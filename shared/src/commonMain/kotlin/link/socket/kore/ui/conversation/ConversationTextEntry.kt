@@ -22,7 +22,6 @@ import androidx.compose.material.icons.twotone.ArrowUpward
 import androidx.compose.material.icons.twotone.KeyboardDoubleArrowDown
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,24 +36,15 @@ import androidx.compose.ui.unit.dp
 import link.socket.kore.ui.theme.iconAlpha
 import link.socket.kore.ui.theme.iconButtonSize
 
-/**
- * A composable function that represents the text entry field in a conversation UI.
- *
- * @param modifier Modifier to be applied to the root layout.
- * @param textFieldValue The current value of the text field.
- * @param onTextChanged Callback to be invoked when the text field value changes.
- * @param onSendClicked Callback to be invoked when the send button is clicked.
- */
 @Composable
 fun ConversationTextEntry(
-    modifier: Modifier = Modifier,
     textFieldValue: TextFieldValue,
     onTextChanged: (TextFieldValue) -> Unit,
     onSendClicked: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
 
-    // Function to handle the completion of text input
     val onTextInputCompleted: () -> Unit = {
         onSendClicked()
         onTextChanged(textFieldValue.copy(""))
@@ -62,7 +52,7 @@ fun ConversationTextEntry(
     }
 
     Column {
-        val isKeyboardOpen by keyboardAsState() // State to track if the keyboard is open
+        val isKeyboardOpen: State<Boolean> = keyboardAsState()
 
         Surface(
             modifier = modifier
@@ -71,7 +61,7 @@ fun ConversationTextEntry(
             elevation = 24.dp,
         ) {
             Row(
-                modifier = modifier
+                modifier = Modifier
                     .padding(
                         start = 16.dp,
                         top = 8.dp,
@@ -81,11 +71,10 @@ fun ConversationTextEntry(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                // Icon button to handle keyboard visibility and attachments
                 IconButton(
                     modifier = Modifier.requiredSize(iconButtonSize),
                     onClick = {
-                        if (isKeyboardOpen) {
+                        if (isKeyboardOpen.value) {
                             focusManager.clearFocus()
                         } else {
                             // TODO: Handle attachments
@@ -93,13 +82,13 @@ fun ConversationTextEntry(
                     },
                 ) {
                     Image(
-                        imageVector = if (isKeyboardOpen) {
+                        imageVector = if (isKeyboardOpen.value) {
                             Icons.TwoTone.KeyboardDoubleArrowDown
                         } else {
                             Icons.TwoTone.AddCircleOutline
                         },
                         alpha = iconAlpha,
-                        contentDescription = if (isKeyboardOpen) {
+                        contentDescription = if (isKeyboardOpen.value) {
                             "Closes keyboard"
                         } else {
                             "Expands attachment buttons"
@@ -107,7 +96,6 @@ fun ConversationTextEntry(
                     )
                 }
 
-                // Text field for message input
                 TextField(
                     modifier = Modifier
                         .padding(
@@ -134,10 +122,11 @@ fun ConversationTextEntry(
                     ),
                     value = textFieldValue,
                     onValueChange = onTextChanged,
-                    label = { Text("Your message...") },
+                    label = {
+                        Text("Your message...")
+                    },
                 )
 
-                // Icon button to send the message
                 IconButton(
                     modifier = Modifier.requiredSize(iconButtonSize),
                     onClick = onTextInputCompleted,

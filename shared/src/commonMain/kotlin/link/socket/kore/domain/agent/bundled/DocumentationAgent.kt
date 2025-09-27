@@ -1,10 +1,9 @@
 package link.socket.kore.domain.agent.bundled
 
 import link.socket.kore.domain.agent.AgentInput
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME = "Documentation"
 private const val DESCRIPTION = "Technical documentation specialist agent that creates comprehensive API documentation, user guides, and README files with proper formatting and audience-appropriate content"
@@ -57,11 +56,13 @@ data object DocumentationAgent : AgentDefinition.Bundled(
         docType = "API Documentation",
         audience = "Developers",
     ),
-    aiConfiguration = aiConfiguration(
-        LLM_Gemini.Flash_2_5,
-        aiConfiguration(LLM_Claude.Sonnet_4),
-        aiConfiguration(LLM_OpenAI.GPT_4_1),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_Gemini.Flash_2_5,
+            aiConfiguration(AIModel_Claude.Sonnet_4),
+            aiConfiguration(AIModel_OpenAI.GPT_4_1),
+        )
+    },
 ) {
     private var docType: String = "API Documentation"
     private var targetAudience: String = "Developers"
@@ -96,6 +97,6 @@ data object DocumentationAgent : AgentDefinition.Bundled(
     override val prompt: String
         get() = promptFrom(docType, targetAudience)
 
-    override val neededInputs: List<AgentInput>
+    override val requiredInputs: List<AgentInput>
         get() = listOf(docTypeArg, audienceArg)
 }

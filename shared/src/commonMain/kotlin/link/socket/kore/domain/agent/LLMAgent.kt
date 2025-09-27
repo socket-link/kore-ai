@@ -12,15 +12,15 @@ import com.aallam.openai.client.OpenAI as Client
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import link.socket.kore.domain.ai.configuration.AIConfiguration
+import link.socket.kore.domain.ai.model.AIModel
+import link.socket.kore.domain.ai.model.AIModel_Gemini
 import link.socket.kore.domain.chat.Chat
 import link.socket.kore.domain.chat.ConversationHistory
 import link.socket.kore.domain.chat.ConversationId
-import link.socket.kore.domain.config.AI_Configuration
-import link.socket.kore.domain.llm.LLM
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.toModelId
 import link.socket.kore.domain.tool.FunctionDefinition
 import link.socket.kore.domain.tool.FunctionProvider
+import link.socket.kore.domain.util.toClientModelId
 import link.socket.kore.util.logWith
 
 /**
@@ -31,7 +31,7 @@ interface LLMAgent {
     val tag: String
         get() = "LLMAgent"
 
-    val config: AI_Configuration
+    val config: AIConfiguration
 
     val scope: CoroutineScope
 
@@ -190,15 +190,15 @@ interface LLMAgent {
      * @return ChatCompletionRequest ready to be sent to the OpenAI API
      */
     fun createCompletionRequest(
-        llm: LLM<*>,
+        model: AIModel,
         conversationHistory: ConversationHistory,
     ): ChatCompletionRequest {
         val filteredMessages = conversationHistory.getChats()
             .filter { it.chatMessage.content?.isNotBlank() == true }
             .map { it.chatMessage }
 
-        val messages = when (llm) {
-            is LLM_Gemini -> {
+        val messages = when (model) {
+            is AIModel_Gemini -> {
                 filteredMessages.map { message ->
                     if (message.role == Role.System) {
                         message.copy(
@@ -213,7 +213,7 @@ interface LLMAgent {
         }
 
         return ChatCompletionRequest(
-            model = llm.toModelId(),
+            model = model.toClientModelId(),
             messages = messages,
             tools = tools.ifEmpty { null },
             topP = 0.2,

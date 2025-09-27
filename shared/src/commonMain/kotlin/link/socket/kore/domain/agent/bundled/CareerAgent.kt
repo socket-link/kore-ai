@@ -1,9 +1,8 @@
 package link.socket.kore.domain.agent.bundled
 
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME: String = "Career Coach"
 private const val DESCRIPTION = "Career coaching agent that provides comprehensive job search guidance including interview preparation, resume building, networking strategies, and career goal setting"
@@ -29,9 +28,11 @@ data object CareerAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    aiConfiguration = aiConfiguration(
-        LLM_Claude.Sonnet_4,
-        aiConfiguration(LLM_OpenAI.GPT_5_mini),
-        aiConfiguration(LLM_Gemini.Flash_2_5),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_Claude.Sonnet_4,
+            aiConfiguration(AIModel_OpenAI.GPT_5_mini),
+            aiConfiguration(AIModel_Gemini.Flash_2_5),
+        )
+    },
 )

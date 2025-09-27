@@ -11,34 +11,25 @@ import androidx.compose.ui.platform.AccessibilityManager
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import kotlinx.coroutines.delay
 
-/**
- * A composable function that displays a small Snackbar.
- *
- * @param modifier The modifier to be applied to the Snackbar.
- * @param snackbarHostState The state of the Snackbar host, which controls the display of Snackbars.
- */
 @Composable
 fun SmallSnackbarHost(
-    modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState,
+    modifier: Modifier = Modifier,
 ) {
     val currentSnackbarData = snackbarHostState.currentSnackbarData
     val accessibilityManager = LocalAccessibilityManager.current
 
-    // Launch a coroutine to handle the Snackbar's display duration and dismissal
     LaunchedEffect(currentSnackbarData) {
         if (currentSnackbarData != null) {
-            val duration =
-                currentSnackbarData.duration.toMillis(
-                    currentSnackbarData.actionLabel != null,
-                    accessibilityManager,
-                )
+            val duration = currentSnackbarData.duration.toMillis(
+                hasAction = currentSnackbarData.actionLabel != null,
+                accessibilityManager = accessibilityManager,
+            )
             delay(duration)
             currentSnackbarData.dismiss()
         }
     }
 
-    // Display the Snackbar if there is current Snackbar data
     currentSnackbarData?.let { data ->
         Snackbar(
             modifier = modifier.wrapContentWidth(),
@@ -47,14 +38,7 @@ fun SmallSnackbarHost(
     }
 }
 
-/**
- * Extension function to convert SnackbarDuration to milliseconds, considering accessibility settings.
- *
- * @param hasAction Boolean indicating if the Snackbar has an action button.
- * @param accessibilityManager The AccessibilityManager to use for calculating recommended timeout.
- * @return The duration in milliseconds.
- */
-internal fun SnackbarDuration.toMillis(
+private fun SnackbarDuration.toMillis(
     hasAction: Boolean,
     accessibilityManager: AccessibilityManager?,
 ): Long {
@@ -63,11 +47,13 @@ internal fun SnackbarDuration.toMillis(
         SnackbarDuration.Long -> 10000L
         SnackbarDuration.Short -> 4000L
     }
+
     if (accessibilityManager == null) {
         return original
     }
+
     return accessibilityManager.calculateRecommendedTimeoutMillis(
-        original,
+        originalTimeoutMillis = original,
         containsIcons = true,
         containsText = true,
         containsControls = hasAction,

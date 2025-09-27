@@ -9,7 +9,7 @@ import kotlinx.serialization.json.put
 import link.socket.kore.domain.agent.KoreAgentFactory
 import link.socket.kore.domain.agent.PromptSubAgentParams
 import link.socket.kore.domain.agent.bundled.agentArgsList
-import link.socket.kore.domain.config.AI_Configuration
+import link.socket.kore.domain.ai.configuration.AIConfiguration
 import link.socket.kore.domain.tool.FunctionProvider
 import link.socket.kore.domain.tool.ParameterDefinition
 import link.socket.kore.util.logWith
@@ -53,7 +53,7 @@ sealed class AgentCapability(open val agentTag: String) : Capability {
     data class PromptAgent(
         override val agentTag: String,
         val scope: CoroutineScope,
-        val config: AI_Configuration,
+        val config: AIConfiguration,
         val agentFactory: KoreAgentFactory,
     ) : AgentCapability(agentTag) {
 

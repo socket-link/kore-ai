@@ -10,12 +10,12 @@ import com.aallam.openai.api.model.ModelId
 import kotlinx.coroutines.CoroutineScope
 import link.socket.kore.domain.agent.LLMAgent
 import link.socket.kore.domain.chat.Chat
-import link.socket.kore.domain.config.AI_Configuration
+import link.socket.kore.domain.ai.configuration.AIConfiguration
 import link.socket.kore.domain.tool.FunctionProvider
 
 @OptIn(BetaOpenAI::class)
 data class KoreAssistant(
-    override val config: AI_Configuration,
+    override val config: AIConfiguration,
     override val scope: CoroutineScope,
     private val existingAssistantId: AssistantId?,
     private val modelId: ModelId,

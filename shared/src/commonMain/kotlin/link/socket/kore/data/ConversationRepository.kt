@@ -2,10 +2,10 @@ package link.socket.kore.data
 
 import kotlinx.coroutines.CoroutineScope
 import link.socket.kore.domain.agent.KoreAgent
+import link.socket.kore.domain.ai.configuration.AIConfiguration
 import link.socket.kore.domain.chat.Chat
 import link.socket.kore.domain.chat.Conversation
 import link.socket.kore.domain.chat.ConversationId
-import link.socket.kore.domain.config.AI_Configuration
 import link.socket.kore.util.logWith
 import link.socket.kore.util.randomUUID
 
@@ -50,7 +50,7 @@ class ConversationRepository(
     }
 
     suspend fun runConversation(
-        config: AI_Configuration,
+        config: AIConfiguration,
         conversationId: ConversationId
     ) {
         var shouldRerun = false
@@ -62,7 +62,7 @@ class ConversationRepository(
 
             getValue(conversationId)?.let { conversation ->
                 with(conversation) {
-                    val selectedLLM = config.selectedLLM
+                    val selectedLLM = config.model
                     if (selectedLLM == null) {
                         logWith("$tag-runConversation").e("No LLM selected")
                         return@let
@@ -70,7 +70,7 @@ class ConversationRepository(
                     val completionRequest = getCompletionRequest(selectedLLM)
                     println(completionRequest)
 
-                    val client = config.aiProvider.client
+                    val client = config.provider.client
                     val ranTools = agent.execute(
                         client = client,
                         completionRequest = completionRequest,
@@ -98,7 +98,7 @@ class ConversationRepository(
      * @param input The user input to be added as a chat
      */
     suspend fun addUserChat(
-        config: AI_Configuration,
+        config: AIConfiguration,
         conversationId: ConversationId,
         input: String,
     ) {

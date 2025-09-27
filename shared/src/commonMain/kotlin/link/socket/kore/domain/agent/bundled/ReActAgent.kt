@@ -1,9 +1,8 @@
 package link.socket.kore.domain.agent.bundled
 
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME: String = "ReAct Agent"
 private const val DESCRIPTION = "Methodical problem-solving agent that applies the ReAct pattern for step-by-step logical reasoning through clarification, identification, generation, decision-making, implementation, and reflection phases"
@@ -40,9 +39,11 @@ data object ReActAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    aiConfiguration = aiConfiguration(
-        LLM_OpenAI.o3,
-        aiConfiguration(LLM_Claude.Opus_4_1),
-        aiConfiguration(LLM_Gemini.Pro_2_5),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_OpenAI.o3,
+            aiConfiguration(AIModel_Claude.Opus_4_1),
+            aiConfiguration(AIModel_Gemini.Pro_2_5),
+        )
+    },
 )

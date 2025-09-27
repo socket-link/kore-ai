@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.twotone.ArrowBack
+import androidx.compose.material.icons.automirrored.twotone.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,10 +22,10 @@ import link.socket.kore.ui.theme.themeTypography
 
 @Composable
 fun Header(
-    modifier: Modifier = Modifier,
     title: String,
     displayBackIcon: Boolean,
     onBackClicked: () -> Unit,
+    modifier: Modifier = Modifier,
     onActionIconClicked: () -> Unit = {},
     actionIcon: (@Composable () -> Unit)? = null,
 ) {
@@ -43,7 +43,7 @@ fun Header(
                 onClick = onBackClicked,
             ) {
                 Image(
-                    imageVector = Icons.TwoTone.ArrowBack,
+                    imageVector = Icons.AutoMirrored.TwoTone.ArrowBack,
                     contentDescription = "Back",
                 )
             }

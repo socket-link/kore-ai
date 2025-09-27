@@ -6,11 +6,11 @@ import kotlinx.coroutines.CoroutineScope
 import link.socket.kore.domain.agent.bundled.AgentDefinition
 import link.socket.kore.domain.capability.AgentCapability
 import link.socket.kore.domain.capability.IOCapability
-import link.socket.kore.domain.config.AI_Configuration
+import link.socket.kore.domain.ai.configuration.AIConfiguration
 import link.socket.kore.domain.tool.FunctionProvider
 
 data class KoreAgent(
-    override val config: AI_Configuration,
+    override val config: AIConfiguration,
     override val scope: CoroutineScope,
     val definition: AgentDefinition,
     val agentFactory: KoreAgentFactory,

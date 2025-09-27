@@ -1,10 +1,9 @@
 package link.socket.kore.domain.agent.bundled
 
 import link.socket.kore.domain.agent.AgentInput
-import link.socket.kore.domain.ai.aiConfiguration
-import link.socket.kore.domain.llm.LLM_Claude
-import link.socket.kore.domain.llm.LLM_Gemini
-import link.socket.kore.domain.llm.LLM_OpenAI
+import link.socket.kore.domain.ai.model.AIModel_Claude
+import link.socket.kore.domain.ai.model.AIModel_Gemini
+import link.socket.kore.domain.ai.model.AIModel_OpenAI
 
 private const val NAME = "QA Testing"
 private const val DESCRIPTION = "Quality assurance testing agent that creates comprehensive test suites including unit, integration, UI, and platform-specific tests for Kotlin Multiplatform projects"
@@ -68,11 +67,13 @@ data object QATestingAgent : AgentDefinition.Bundled(
         testType = "Unit Tests",
         platform = "Common",
     ),
-    aiConfiguration = aiConfiguration(
-        LLM_OpenAI.GPT_5_mini,
-        aiConfiguration(LLM_Gemini.Flash_2_5),
-        aiConfiguration(LLM_Claude.Sonnet_4),
-    ),
+    defaultAIConfigurationBuilder = {
+        aiConfiguration(
+            AIModel_OpenAI.GPT_5_mini,
+            aiConfiguration(AIModel_Gemini.Flash_2_5),
+            aiConfiguration(AIModel_Claude.Sonnet_4),
+        )
+    },
 ) {
     private var testType: String = "Unit Tests"
     private var platform: String = "Common"
@@ -107,6 +108,6 @@ data object QATestingAgent : AgentDefinition.Bundled(
     override val prompt: String
         get() = promptFrom(testType, platform)
 
-    override val neededInputs: List<AgentInput>
+    override val requiredInputs: List<AgentInput>
         get() = listOf(testTypeArg, platformArg)
 }
