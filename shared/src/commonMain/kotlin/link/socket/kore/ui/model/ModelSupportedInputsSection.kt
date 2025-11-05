@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -24,24 +24,17 @@ fun ModelSupportedInputsSection(
     supportedInputs: AIModelFeatures.SupportedInputs,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
-        Text(
-            modifier = Modifier.padding(bottom = 8.dp),
-            text = "Supported Inputs",
-            style = MaterialTheme.typography.subtitle2,
-            fontWeight = FontWeight.Bold,
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            InputTypeChip("Text", supportedInputs.text)
-            InputTypeChip("Image", supportedInputs.image)
-            InputTypeChip("PDF", supportedInputs.pdf)
-            InputTypeChip("Audio", supportedInputs.audio)
-            InputTypeChip("Video", supportedInputs.video)
-        }
+    Row(
+        modifier = modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement
+            .spacedBy(10.dp)
+    ) {
+        InputTypeChip("Text", supportedInputs.text, Modifier.weight(1f))
+        InputTypeChip("Image", supportedInputs.image, Modifier.weight(1f))
+        InputTypeChip("PDF", supportedInputs.pdf, Modifier.weight(1f))
+        InputTypeChip("Audio", supportedInputs.audio, Modifier.weight(1f))
+        InputTypeChip("Video", supportedInputs.video, Modifier.weight(1f))
     }
 }
 
@@ -55,41 +48,49 @@ private fun InputTypeChip(
         modifier = modifier
             .background(
                 color = if (isSupported) {
-                    Color(0xFF4CAF50).copy(alpha = 0.1f)
+                    Color(0xFF4CAF50)
+                        .copy(alpha = 0.12f)
                 } else {
-                    MaterialTheme.colors.onSurface.copy(alpha = 0.05f)
+                    MaterialTheme
+                        .colors.onSurface.copy(alpha = 0.06f)
                 },
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
             )
             .border(
                 border = BorderStroke(
-                    width = 1.dp,
+                    width = if (isSupported) 2.dp else 1.dp,
                     color = if (isSupported) {
-                        Color(0xFF4CAF50).copy(alpha = 0.3f)
+                        Color(0xFF4CAF50)
+                            .copy(alpha = 0.6f)
                     } else {
-                        MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+                        MaterialTheme
+                            .colors.onSurface.copy(alpha = 0.15f)
                     },
                 ),
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
             )
             .padding(
-                horizontal = 8.dp,
-                vertical = 4.dp,
-            )
+                horizontal = 12.dp,
+                vertical = 8.dp,
+            ),
+        contentAlignment = Alignment
+            .Center,
     ) {
         Text(
-            text = inputType,
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme
+                .typography.body2,
             color = if (isSupported) {
                 Color(0xFF4CAF50)
             } else {
-                MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                MaterialTheme
+                    .colors.onSurface.copy(alpha = 0.6f)
             },
             fontWeight = if (isSupported) {
-                FontWeight.Medium
+                FontWeight.SemiBold
             } else {
                 FontWeight.Normal
             },
+            text = inputType,
         )
     }
 }

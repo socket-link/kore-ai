@@ -56,7 +56,7 @@ data object DocumentationAgent : AgentDefinition.Bundled(
         docType = "API Documentation",
         audience = "Developers",
     ),
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_Gemini.Flash_2_5,
             aiConfiguration(AIModel_Claude.Sonnet_4),

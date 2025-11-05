@@ -6,25 +6,25 @@ import link.socket.kore.domain.ai.configuration.AIConfigurationFactory
 import link.socket.kore.domain.chat.Instructions
 
 sealed interface AgentDefinition {
+
     val name: String
     val description: String
-    val prompt: String
-    val defaultAIConfigurationBuilder: AIConfigurationFactory.() -> AIConfiguration
+    val suggestedAIConfigurationBuilder: AIConfigurationFactory.() -> AIConfiguration
 
+    val prompt: String
     val requiredInputs: List<AgentInput>
     val optionalInputs: List<AgentInput>
 
     val instructions: Instructions
-        get() =
-            Instructions(
-                prompt = prompt,
-            )
+        get() = Instructions(
+            prompt = prompt,
+        )
 
     sealed class Bundled(
         override val name: String,
         override val description: String,
-        override val prompt: String,
-        override val defaultAIConfigurationBuilder: AIConfigurationFactory.() -> AIConfiguration,
+        override val suggestedAIConfigurationBuilder: AIConfigurationFactory.() -> AIConfiguration,
+        override val prompt: String = "",
         override val requiredInputs: List<AgentInput> = emptyList(),
         override val optionalInputs: List<AgentInput> = emptyList(),
     ) : AgentDefinition
@@ -32,8 +32,8 @@ sealed interface AgentDefinition {
     abstract class Custom(
         override val name: String,
         override val description: String,
-        override val prompt: String,
-        override val defaultAIConfigurationBuilder: (AIConfigurationFactory) -> AIConfiguration,
+        override val suggestedAIConfigurationBuilder: (AIConfigurationFactory) -> AIConfiguration,
+        override val prompt: String = "",
         override val requiredInputs: List<AgentInput> = emptyList(),
         override val optionalInputs: List<AgentInput> = emptyList(),
     ) : AgentDefinition

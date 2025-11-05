@@ -29,7 +29,7 @@ data object FinancialAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_Claude.Opus_4_1,
             aiConfiguration(AIModel_Gemini.Pro_2_5),

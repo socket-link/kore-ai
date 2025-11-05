@@ -32,7 +32,7 @@ data object WritePromptAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_OpenAI.o3_mini,
             aiConfiguration(AIModel_Claude.Opus_4_1),

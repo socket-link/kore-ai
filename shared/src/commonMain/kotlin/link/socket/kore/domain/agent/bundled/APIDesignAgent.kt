@@ -91,11 +91,7 @@ private fun promptFrom(reviewType: String, principle: String): String = """
 data object APIDesignAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
-    prompt = promptFrom(
-        reviewType = "Public API Review",
-        principle = "Kotlin Idioms",
-    ),
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_Claude.Opus_4_1,
             aiConfiguration(AIModel_OpenAI.GPT_4_1),

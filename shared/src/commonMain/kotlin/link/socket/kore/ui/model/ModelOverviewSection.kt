@@ -4,11 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import link.socket.kore.domain.ai.model.AIModelFeatures
 import link.socket.kore.domain.ai.model.AIModelFeatures.RelativeReasoning
 import link.socket.kore.domain.ai.model.AIModelFeatures.RelativeSpeed
@@ -20,17 +19,18 @@ fun ModelOverviewSection(
 ) {
     Column(
         modifier = modifier,
+        verticalArrangement = Arrangement
+            .spacedBy(12.dp),
     ) {
-        Text(
-            text = "Model Overview",
-            style = MaterialTheme.typography.subtitle1,
-        )
-
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement
+                .spacedBy(16.dp),
         ) {
             PerformanceChip(
+                modifier = Modifier
+                    .weight(1f),
                 label = "Reasoning",
                 value = features.reasoningLevel.name,
                 color = when (features.reasoningLevel) {
@@ -41,6 +41,8 @@ fun ModelOverviewSection(
             )
 
             PerformanceChip(
+                modifier = Modifier
+                    .weight(1f),
                 label = "Speed",
                 value = features.speed.name,
                 color = when (features.speed) {

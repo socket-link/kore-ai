@@ -84,7 +84,7 @@ data object PlatformCompatibilityAgent : AgentDefinition.Bundled(
         platforms = "All Platforms",
         checkType = "API Compatibility",
     ),
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_Gemini.Pro_2_5,
             aiConfiguration(AIModel_OpenAI.GPT_4_1),

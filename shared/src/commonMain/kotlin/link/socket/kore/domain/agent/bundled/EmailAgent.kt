@@ -25,7 +25,7 @@ data object EmailAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_Gemini.Flash_Lite_2_0,
             aiConfiguration(AIModel_Claude.Haiku_3_5),

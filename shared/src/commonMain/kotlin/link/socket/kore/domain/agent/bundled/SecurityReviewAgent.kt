@@ -122,7 +122,7 @@ data object SecurityReviewAgent : AgentDefinition.Bundled(
         securityFocus = "General Security Audit",
         threatModel = "Library/Framework",
     ),
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_Claude.Opus_4_1,
             aiConfiguration(AIModel_Gemini.Pro_2_5),

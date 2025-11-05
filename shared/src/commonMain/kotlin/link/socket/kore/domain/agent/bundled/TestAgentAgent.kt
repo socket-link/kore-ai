@@ -13,7 +13,7 @@ data class TestAgentAgent(
     name = NAME,
     description = DESCRIPTION,
     prompt = prompt,
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_Claude.Opus_4_1,
             aiConfiguration(AIModel_OpenAI.GPT_4_1),

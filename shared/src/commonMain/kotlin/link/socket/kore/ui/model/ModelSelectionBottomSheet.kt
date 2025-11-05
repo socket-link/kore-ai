@@ -10,7 +10,7 @@ import link.socket.kore.domain.ai.model.AIModel
 import link.socket.kore.domain.ai.provider.AIProvider
 
 @Composable
-fun ModelSelectionScreen(
+fun ModelSelectionBottomSheet(
     selectedProvider: AIProvider<*, *>?,
     selectedModel: AIModel?,
     suggestedModels: List<Pair<AIProvider<*, *>, AIModel>>?,
@@ -23,11 +23,13 @@ fun ModelSelectionScreen(
     }
 
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth(),
     ) {
         if (selectedProvider != null && selectedModel != null) {
             ModelSelectedSection(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth(),
                 selectedProvider = selectedProvider,
                 selectedModel = selectedModel,
                 onClearClick = {
@@ -37,7 +39,8 @@ fun ModelSelectionScreen(
             )
         } else {
             ModelSelectionSection(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth(),
                 selectedProvider = selectedProvider,
                 selectedModel = selectedModel,
                 selectableProviders = AIProvider.ALL_PROVIDERS,

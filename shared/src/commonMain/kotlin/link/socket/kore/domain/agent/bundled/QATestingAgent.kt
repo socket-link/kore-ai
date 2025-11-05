@@ -67,7 +67,7 @@ data object QATestingAgent : AgentDefinition.Bundled(
         testType = "Unit Tests",
         platform = "Common",
     ),
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_OpenAI.GPT_5_mini,
             aiConfiguration(AIModel_Gemini.Flash_2_5),

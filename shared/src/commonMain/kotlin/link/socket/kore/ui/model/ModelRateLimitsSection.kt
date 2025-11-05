@@ -65,33 +65,41 @@ fun ModelRateLimitsSection(
 
     Column(modifier) {
         Text(
-            modifier = Modifier.padding(bottom = 12.dp),
+            modifier = Modifier
+                .padding(bottom = 12.dp),
             text = "Rate Limits",
-            style = MaterialTheme.typography.subtitle2,
+            style = MaterialTheme
+                .typography.subtitle2,
             fontWeight = FontWeight.Bold,
         )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement
+                .SpaceBetween,
+            verticalAlignment = Alignment
+                .CenterVertically,
         ) {
             Text(
                 text = "Select Tier:",
-                style = MaterialTheme.typography.body2,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
+                style = MaterialTheme
+                    .typography.body2,
+                color = MaterialTheme
+                    .colors.onSurface.copy(alpha = 0.8f),
             )
 
             Box {
                 OutlinedButton(
-                    modifier = Modifier.width(120.dp),
+                    modifier = Modifier
+                        .width(120.dp),
                     onClick = {
                         dropdownExpanded.value = true
                     },
                 ) {
                     Text(
                         text = selectedTier.value.displayName,
-                        style = MaterialTheme.typography.body2,
+                        style = MaterialTheme
+                            .typography.body2,
                     )
                 }
 
@@ -118,13 +126,16 @@ fun ModelRateLimitsSection(
         Spacer(modifier = Modifier.height(12.dp))
 
         selectedTierData?.let { tierData ->
-            RateLimitDetails(tierData)
+            RateLimitDetails(tierData, rateLimits)
         } ?: run {
             Text(
+                modifier = Modifier
+                    .padding(vertical = 8.dp),
+                style = MaterialTheme
+                    .typography.caption,
+                color = MaterialTheme
+                    .colors.onSurface.copy(alpha = 0.6f),
                 text = "No rate limit data available for this tier",
-                style = MaterialTheme.typography.caption,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
-                modifier = Modifier.padding(vertical = 8.dp),
             )
         }
     }
@@ -133,67 +144,44 @@ fun ModelRateLimitsSection(
 @Composable
 private fun RateLimitDetails(
     tierData: Tier,
+    rateLimits: RateLimits,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement
+            .spacedBy(16.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
+        // Show requests per day if available (as text since it's usually much larger than per-minute values)
+        tierData.requestsPerDay?.let { rpd ->
             RateLimitItem(
-                label = "Requests/Min",
-                value = tierData.requestsPerMinute.toString(),
+                label = "Requests/Day",
+                value = rpd.toString(),
                 color = Color(0xFF9C27B0),
             )
-
-            tierData.requestsPerDay?.let { rpd ->
-                RateLimitItem(
-                    label = "Requests/Day",
-                    value = rpd.toString(),
-                    color = Color(0xFF9C27B0),
-                )
-            }
         }
 
+        // Use RateLimitChart for per-minute rate limits with horizontal bars
         when (val tokenRate = tierData.tokenRate) {
             is TokenRate.Combined -> {
-                RateLimitItem(
-                    label = "Tokens/Min",
-                    value = tokenRate.tokensPerMinute.label,
-                    color = Color(0xFF4CAF50),
+                RateLimitChart(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    requestsPerMinute = tierData.requestsPerMinute,
+                    inputTokensPerMinute = tokenRate.tokensPerMinute,
+                    outputTokensPerMinute = null,
+                    rateLimits = rateLimits,
                 )
             }
             is TokenRate.Separated -> {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(
-                        text = "Token Limits (per minute)",
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
-                        fontWeight = FontWeight.Medium,
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        RateLimitItem(
-                            label = "Input Tokens",
-                            value = tokenRate.inputTokensPerMinute.label,
-                            color = Color(0xFF4CAF50),
-                        )
-
-                        RateLimitItem(
-                            label = "Output Tokens",
-                            value = tokenRate.outputTokensPerMinute.label,
-                            color = Color(0xFF2196F3),
-                        )
-                    }
-                }
+                RateLimitChart(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    requestsPerMinute = tierData.requestsPerMinute,
+                    inputTokensPerMinute = tokenRate.inputTokensPerMinute,
+                    outputTokensPerMinute = tokenRate.outputTokensPerMinute,
+                    rateLimits = rateLimits,
+                )
             }
         }
     }
@@ -208,13 +196,16 @@ private fun RateLimitItem(
 ) {
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment
+            .CenterHorizontally,
     ) {
         Text(
-            text = label,
-            style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+            style = MaterialTheme
+                .typography.caption,
+            color = MaterialTheme
+                .colors.onSurface.copy(alpha = 0.7f),
             textAlign = TextAlign.Center,
+            text = label,
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -232,14 +223,17 @@ private fun RateLimitItem(
                     ),
                     shape = RoundedCornerShape(8.dp),
                 )
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+                .padding(
+                    horizontal = 12.dp,
+                    vertical = 6.dp,
+                ),
         ) {
             Text(
-                text = value,
                 style = MaterialTheme.typography.body2,
-                color = color,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
+                color = color,
+                text = value,
             )
         }
     }

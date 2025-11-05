@@ -3,7 +3,6 @@ package link.socket.kore.ui.model
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -24,53 +23,58 @@ fun PerformanceChip(
     label: String,
     value: String,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val backgroundColor = remember(color) {
-        color.copy(alpha = 0.1f)
+        color.copy(alpha = 0.15f)
     }
 
     val borderColor = remember(color) {
-        color.copy(alpha = 0.3f)
+        color.copy(alpha = 0.4f)
     }
 
-    val textColor = remember(color) {
-        color.copy(alpha = 0.7f)
+    val labelColor = remember {
+        Color(0xFF6B7280)
     }
 
     Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .background(
+                color = backgroundColor,
+                shape = RoundedCornerShape(12.dp),
+            )
+            .border(
+                BorderStroke(
+                    width = 2.dp,
+                    color = borderColor,
+                ),
+                RoundedCornerShape(12.dp),
+            )
+            .padding(
+                horizontal = 16.dp,
+                vertical = 12.dp,
+            ),
+        horizontalAlignment = Alignment
+            .CenterHorizontally,
     ) {
         Text(
+            style = MaterialTheme
+                .typography.caption,
+            fontWeight = FontWeight
+                .Medium,
+            color = labelColor,
             text = label,
-            style = MaterialTheme.typography.caption,
-            color = textColor,
         )
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        Box(
-            modifier = Modifier
-                .background(
-                    color = backgroundColor,
-                    shape = RoundedCornerShape(16.dp),
-                )
-                .border(
-                    BorderStroke(
-                        width = 1.dp,
-                        color = borderColor,
-                    ),
-                    RoundedCornerShape(16.dp),
-                )
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-        ) {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.body2,
-                color = color,
-                fontWeight = FontWeight.Medium
-            )
-        }
+        Text(
+            style = MaterialTheme
+                .typography.subtitle2,
+            fontWeight = FontWeight
+                .Bold,
+            color = color,
+            text = value,
+        )
     }
 }

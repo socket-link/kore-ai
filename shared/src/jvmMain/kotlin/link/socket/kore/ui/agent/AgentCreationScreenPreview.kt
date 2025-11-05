@@ -7,8 +7,6 @@ import androidx.compose.runtime.Composable
 @Composable
 fun AgentCreationScreenPreview() {
     AgentSelectionSection(
-        partiallySelectedAgent = null,
-        setAgentPartiallySelected = {},
-        onCreateAgent = {},
+        onAgentPartiallySelected = {},
     )
 }

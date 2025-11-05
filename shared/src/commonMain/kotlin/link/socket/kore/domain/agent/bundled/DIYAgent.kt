@@ -22,7 +22,7 @@ data object DIYAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_Gemini.Flash_Lite_2_5,
             aiConfiguration(AIModel_OpenAI.GPT_5_nano),

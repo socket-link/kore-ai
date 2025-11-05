@@ -2,8 +2,8 @@ package link.socket.kore.ui.model
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
@@ -14,10 +14,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import link.socket.kore.domain.ai.model.AIModelFeatures
 
+// TODO: Potentially remove
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ModelFeaturesSection(
@@ -25,38 +25,44 @@ fun ModelFeaturesSection(
     modifier: Modifier = Modifier,
 ) {
     val cardExpanded: MutableState<Boolean> = remember {
-        mutableStateOf(false)
-    }
-
-    val cardHeight: Dp = remember(cardExpanded) {
-        if (cardExpanded.value) {
-            Dp.Unspecified
-        } else {
-            150.dp
-        }
+        mutableStateOf(true)
     }
 
     Card(
-        modifier = modifier
-            .requiredHeight(cardHeight)
-            .padding(16.dp),
-        elevation = 4.dp,
-        shape = RoundedCornerShape(12.dp),
+        modifier = modifier,
         onClick = {
             cardExpanded.value = !cardExpanded.value
         },
+        shape = RoundedCornerShape(12.dp),
+        elevation = 2.dp,
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .padding(16.dp),
+            verticalArrangement = Arrangement
+                .spacedBy(16.dp),
         ) {
             Text(
-                modifier = Modifier.padding(bottom = 4.dp),
-                style = MaterialTheme.typography.h6,
-                text = "Use Cases",
+                modifier = Modifier
+                    .padding(bottom = 4.dp),
+                style = MaterialTheme
+                    .typography.h6,
+                text = "Model Capabilities",
             )
 
-            ModelSupportedInputsSection(features.supportedInputs)
+            if (cardExpanded.value) {
+                ModelOverviewSection(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    features = features,
+                )
+                
+                ModelSupportedInputsSection(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    supportedInputs = features.supportedInputs,
+                )
+            }
         }
     }
 }

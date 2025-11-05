@@ -36,20 +36,29 @@ fun ModelSelectionSection(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 48.dp),
+        verticalArrangement = Arrangement
+            .spacedBy(16.dp),
+        horizontalAlignment = Alignment
+            .CenterHorizontally,
     ) {
         SuggestedModelsSection(
+            modifier = Modifier
+                .fillMaxWidth(),
             selectedModelId = selectedModel?.name.orEmpty(),
             suggestedModels = suggestedModels,
             onModelSelected = onModelSelected,
         )
 
+        Text(
+            text = "Or, select your own model:"
+        )
+
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement
+                .SpaceAround,
         ) {
             ProviderDropdownSelector(
                 selectedProvider = selectedProvider,
@@ -82,11 +91,14 @@ private fun ProviderDropdownSelector(
     Column(
         modifier = modifier
             .fillMaxWidth(0.5f),
-        horizontalAlignment = Alignment.Start,
+        horizontalAlignment = Alignment
+            .Start,
     ) {
         Text(
-            modifier = Modifier.padding(bottom = 4.dp),
-            style = MaterialTheme.typography.subtitle1,
+            modifier = Modifier
+                .padding(bottom = 4.dp),
+            style = MaterialTheme
+                .typography.subtitle1,
             text = "AI Provider",
         )
 
@@ -117,7 +129,8 @@ private fun ProviderDropdownSelector(
                     },
                 ) {
                     Text(
-                        style = MaterialTheme.typography.subtitle2,
+                        style = MaterialTheme
+                            .typography.subtitle2,
                         text = provider.name,
                     )
                 }
@@ -138,12 +151,16 @@ private fun ModelDropdownSelector(
     }
 
     Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.Start,
+        modifier = modifier
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment
+            .Start,
     ) {
         Text(
-            modifier = Modifier.padding(bottom = 4.dp),
-            style = MaterialTheme.typography.subtitle1,
+            modifier = Modifier
+                .padding(bottom = 4.dp),
+            style = MaterialTheme
+                .typography.subtitle1,
             text = "AI Model",
         )
 
@@ -177,7 +194,8 @@ private fun ModelDropdownSelector(
                     },
                 ) {
                     Text(
-                        style = MaterialTheme.typography.subtitle2,
+                        style = MaterialTheme
+                            .typography.subtitle2,
                         text = model.displayName,
                     )
                 }

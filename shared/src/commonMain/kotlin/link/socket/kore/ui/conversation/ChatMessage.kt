@@ -10,31 +10,33 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.twotone.FileCopy
 import androidx.compose.material.icons.twotone.ReplayCircleFilled
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.aallam.openai.api.core.Role
+import com.mikepenz.markdown.compose.Markdown
+import com.mikepenz.markdown.model.DefaultMarkdownColors
+import com.mikepenz.markdown.model.DefaultMarkdownTypography
 import link.socket.kore.domain.chat.Chat
 import link.socket.kore.ui.theme.iconAlpha
 import link.socket.kore.ui.theme.iconButtonSize
 import link.socket.kore.ui.theme.nonContentCardColor
-import link.socket.kore.ui.theme.separatorIconSize
 import link.socket.kore.ui.theme.themeColors
 import link.socket.kore.ui.theme.themeShapes
 import link.socket.kore.ui.theme.themeTypography
@@ -53,15 +55,21 @@ fun ChatMessage(
     inlineCodeBackgroundColor: Color = codeBackgroundColor,
     dividerColor: Color = MaterialTheme.colors.onSurface.copy(alpha = 0.12f),
 ) {
-    Surface(
-        modifier = modifier.wrapContentHeight(),
-        elevation = 1.dp,
-        shape = themeShapes().small,
-        color = if (message.role != Role.Assistant && message.role != Role.User) {
+    val surfaceColor = remember(message, nonContentCardColor, backgroundColor) {
+        if (message.role != Role.Assistant && message.role != Role.User) {
             nonContentCardColor
         } else {
             backgroundColor
-        },
+        }
+    }
+
+    Surface(
+        modifier = modifier
+            .wrapContentHeight(),
+        shape = themeShapes()
+            .small,
+        color = surfaceColor,
+        elevation = 1.dp,
     ) {
         Column(
             modifier = Modifier
@@ -70,55 +78,31 @@ fun ChatMessage(
                 .padding(
                     start = 16.dp,
                     end = 16.dp,
-                    bottom = 16.dp,
+                    top = 12.dp,
+                    bottom = 12.dp,
                 ),
         ) {
             Row(
                 modifier = Modifier
                     .requiredHeight(48.dp)
                     .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment
+                    .CenterVertically,
             ) {
                 if (message.role != Role.User) {
                     Row(
-                        modifier = Modifier.padding(bottom = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(bottom = 2.dp),
+                        verticalAlignment = Alignment
+                            .CenterVertically,
                     ) {
                         Text(
-                            style = themeTypography().h6,
+                            style = themeTypography()
+                                .h6,
                             text = message.role.role.replaceFirstChar { it.uppercase() },
                         )
-
-                        Spacer(modifier = Modifier.requiredWidth(8.dp))
-
-                        Image(
-                            modifier = Modifier.requiredSize(separatorIconSize),
-                            imageVector = Icons.Default.Circle,
-                            alpha = iconAlpha,
-                            contentDescription = "Separator",
-                        )
-
-                        Spacer(modifier = Modifier.requiredWidth(8.dp))
                     }
                 }
-
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    style = themeTypography().body2,
-                    textAlign = if (message.role == Role.User) {
-                        TextAlign.End
-                    } else {
-                        TextAlign.Start
-                    },
-                    text = "11/27/23, 10:03pm", // TODO: Add proper timestamp
-                )
-
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    style = themeTypography().body2,
-                    textAlign = TextAlign.End,
-                    text = "27 tokens", // TODO: Add proper token count
-                )
             }
 
             when (message) {
@@ -129,58 +113,80 @@ fun ChatMessage(
 
                     if (message.role == Role.User) {
                         Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            style = themeTypography().body1,
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            style = themeTypography()
+                                .body1,
                             textAlign = TextAlign.End,
                             text = messageContent,
                         )
                     } else {
-                        Text(
-                            text = messageContent,
-                        )
+                        val themeTextLinkStyle = themeTypography()
+                            .button.copy(color = linkTextColor).toSpanStyle()
 
-                        // val themeTextLinkStyle = themeTypography().button.copy(color = linkTextColor).toSpanStyle()
-                        // Markdown(
-                        //     modifier = Modifier.fillMaxWidth(),
-                        //     content = messageContent,
-                        //     colors = DefaultMarkdownColors(
-                        //         text = textColor,
-                        //         codeBackground = codeBackgroundColor,
-                        //         inlineCodeBackground = inlineCodeBackgroundColor,
-                        //         dividerColor = dividerColor,
-                        //         tableBackground = Color.Transparent,
-                        //     ),
-                        //     typography = DefaultMarkdownTypography(
-                        //         h1 = themeTypography().h1,
-                        //         h2 = themeTypography().h2,
-                        //         h3 = themeTypography().h3,
-                        //         h4 = themeTypography().h4,
-                        //         h5 = themeTypography().h5,
-                        //         h6 = themeTypography().h6,
-                        //         text = themeTypography().body1,
-                        //         code = themeTypography().body1.copy(
-                        //             color = codeTextColor,
-                        //         ),
-                        //         inlineCode = themeTypography().subtitle2,
-                        //         quote = themeTypography().subtitle1,
-                        //         paragraph = themeTypography().body1,
-                        //         ordered = themeTypography().caption,
-                        //         bullet = themeTypography().caption,
-                        //         list = themeTypography().body1,
-                        //         textLink = TextLinkStyles(
-                        //             style = themeTextLinkStyle,
-                        //             focusedStyle = themeTextLinkStyle,
-                        //             hoveredStyle = themeTextLinkStyle,
-                        //             pressedStyle = themeTextLinkStyle,
-                        //         ),
-                        //         table = themeTypography().body2,
-                        //     ),
-                        // )
+                        Markdown(
+                            modifier = Modifier.fillMaxWidth(),
+                            content = messageContent,
+                            colors = DefaultMarkdownColors(
+                                text = textColor,
+                                codeText = codeTextColor,
+                                inlineCodeText = codeTextColor,
+                                linkText = linkTextColor,
+                                codeBackground = codeBackgroundColor,
+                                inlineCodeBackground = inlineCodeBackgroundColor,
+                                dividerColor = dividerColor,
+                                tableText = textColor,
+                                tableBackground = Color.Transparent,
+                            ),
+                            typography = DefaultMarkdownTypography(
+                                h1 = themeTypography()
+                                    .h1,
+                                h2 = themeTypography()
+                                    .h2,
+                                h3 = themeTypography()
+                                    .h3,
+                                h4 = themeTypography()
+                                    .h4,
+                                h5 = themeTypography()
+                                    .h5,
+                                h6 = themeTypography()
+                                    .h6,
+                                text = themeTypography()
+                                    .body1,
+                                code = themeTypography()
+                                    .body1.copy(
+                                        color = codeTextColor,
+                                    ),
+                                inlineCode = themeTypography()
+                                    .subtitle2,
+                                quote = themeTypography()
+                                    .subtitle1,
+                                paragraph = themeTypography()
+                                    .body1,
+                                ordered = themeTypography()
+                                    .caption,
+                                bullet = themeTypography()
+                                    .caption,
+                                list = themeTypography()
+                                    .body1,
+                                link = themeTypography()
+                                    .button,
+                                textLink = TextLinkStyles(
+                                    style = themeTextLinkStyle,
+                                    focusedStyle = themeTextLinkStyle,
+                                    hoveredStyle = themeTextLinkStyle,
+                                    pressedStyle = themeTextLinkStyle,
+                                ),
+                                table = themeTypography()
+                                    .body2,
+                            ),
+                        )
                     }
                 }
                 is Chat.CSV -> {
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth(),
                     ) {
                         message.csvContent.forEach { line ->
                             Row {
@@ -188,17 +194,19 @@ fun ChatMessage(
                                 for (cell in line) {
                                     Text(
                                         modifier = Modifier
+                                            .fillMaxWidth(colWidth)
                                             .border(
                                                 border = BorderStroke(
                                                     width = 1.dp,
                                                     color = Color.DarkGray,
                                                 ),
                                             )
-                                            .padding(2.dp)
-                                            .fillMaxWidth(colWidth),
+                                            .padding(2.dp),
                                         text = cell,
-                                        overflow = TextOverflow.Ellipsis,
-                                        textAlign = TextAlign.Center,
+                                        overflow = TextOverflow
+                                            .Ellipsis,
+                                        textAlign = TextAlign
+                                            .Center,
                                         maxLines = 1,
                                     )
                                 }
@@ -213,17 +221,23 @@ fun ChatMessage(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
+                    verticalAlignment = Alignment
+                        .CenterVertically,
                 ) {
+                    Spacer(modifier = Modifier.weight(1f))
+
                     if (showRegenerate) {
                         IconButton(
-                            modifier = Modifier.requiredSize(iconButtonSize),
+                            modifier = Modifier
+                                .requiredSize(iconButtonSize),
                             onClick = {
                                 // TODO: Handle click
                             },
                         ) {
                             Image(
                                 alpha = iconAlpha,
-                                imageVector = Icons.TwoTone.ReplayCircleFilled,
+                                imageVector = Icons
+                                    .TwoTone.ReplayCircleFilled,
                                 contentDescription = "Regenerate Response",
                             )
                         }
@@ -232,7 +246,8 @@ fun ChatMessage(
                     val clipboardManager = LocalClipboardManager.current
 
                     IconButton(
-                        modifier = Modifier.requiredSize(iconButtonSize),
+                        modifier = Modifier
+                            .requiredSize(iconButtonSize),
                         onClick = {
                             clipboardManager.setText(
                                 AnnotatedString(message.chatMessage.content ?: ""),
@@ -242,7 +257,8 @@ fun ChatMessage(
                     ) {
                         Image(
                             alpha = iconAlpha,
-                            imageVector = Icons.TwoTone.FileCopy,
+                            imageVector = Icons
+                                .TwoTone.FileCopy,
                             contentDescription = "Copy Response",
                         )
                     }

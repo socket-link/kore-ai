@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,71 +19,77 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlin.math.max
+import link.socket.kore.domain.limits.RateLimits
 import link.socket.kore.domain.limits.TokenCount
 
+// TODO: Consolidate with ContextUsageDisplay
 @Composable
-fun TokenUsageChart(
-    contextWindow: TokenCount,
-    maxOutput: TokenCount,
-    modifier: Modifier = Modifier,
+fun RateLimitChart(
+    requestsPerMinute: Int,
+    inputTokensPerMinute: TokenCount?,
+    outputTokensPerMinute: TokenCount?,
+    rateLimits: RateLimits,
+    modifier: Modifier = Modifier
 ) {
-    val contextValue: Long = getTokenNumericValue(contextWindow)
-    val outputValue: Long = getTokenNumericValue(maxOutput)
-    val maxValue: Long = max(contextValue, outputValue)
+    val requestsValue = requestsPerMinute.toLong()
+    val inputTokensValue = inputTokensPerMinute?.let { getTokenNumericValue(it) } ?: 0L
+    val outputTokensValue = outputTokensPerMinute?.let { getTokenNumericValue(it) } ?: 0L
 
-    val minProgress = 0.15f // Minimum 15% width to ensure visibility
+    // Calculate max requests/min across all available tiers for proper scaling
+    val maxRequestsPerMinute = listOfNotNull(
+        rateLimits.tierFree?.requestsPerMinute,
+        rateLimits.tier1?.requestsPerMinute,
+        rateLimits.tier2?.requestsPerMinute,
+        rateLimits.tier3?.requestsPerMinute,
+        rateLimits.tier4?.requestsPerMinute,
+        rateLimits.tier5?.requestsPerMinute,
+    ).maxOrNull()?.toLong() ?: requestsValue
 
-    val contextProgress = remember(contextValue, maxValue) {
-        if (maxValue > 0) {
-            val calculated = (contextValue.toFloat() / maxValue.toFloat())
+    // Calculate max token values for token-based metrics
+    val maxTokenValue: Long = max(inputTokensValue, outputTokensValue)
 
-            if (calculated > 0f) {
-                max(calculated, minProgress)
-            } else {
-                0f
-            }
-        } else {
-            0f
-        }
-    }
-
-    val outputProgress = remember(outputValue, maxValue) {
-        if (maxValue > 0) {
-            val calculated = (outputValue.toFloat() / maxValue.toFloat())
-
-            if (calculated > 0f) {
-                max(calculated, minProgress)
-            } else {
-                0f
-            }
-        } else {
-            0f
-        }
-    }
+    // Calculate separate progress values for different metric types
+    val requestsProgress: Float = if (maxRequestsPerMinute > 0) (requestsValue.toFloat() / maxRequestsPerMinute.toFloat()) else 0f
+    val inputProgress: Float = if (maxTokenValue > 0) (inputTokensValue.toFloat() / maxTokenValue.toFloat()) else 0f
+    val outputProgress: Float = if (maxTokenValue > 0) (outputTokensValue.toFloat() / maxTokenValue.toFloat()) else 0f
 
     Column(modifier = modifier) {
-        TokenBar(
-            label = "Context Window",
-            value = contextWindow.label,
-            progress = contextProgress,
-            color = Color(0xFF4CAF50),
-            isLarger = contextValue >= outputValue,
+        RateLimitBar(
+            label = "Requests/Min",
+            value = requestsPerMinute.toString(),
+            progress = requestsProgress,
+            color = Color(0xFF9C27B0),
+            isLarger = true, // Always emphasize since it's on its own scale
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        if (inputTokensPerMinute != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            RateLimitBar(
+                label = "Input Tokens/Min",
+                value = inputTokensPerMinute.label,
+                progress = inputProgress,
+                color = Color(0xFF4CAF50),
+                isLarger = inputTokensValue >= outputTokensValue
+            )
+        }
 
-        TokenBar(
-            label = "Max Output",
-            value = maxOutput.label,
-            progress = outputProgress,
-            color = Color(0xFF2196F3),
-            isLarger = outputValue > contextValue
-        )
+        if (outputTokensPerMinute != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            RateLimitBar(
+                label = "Output Tokens/Min",
+                value = outputTokensPerMinute.label,
+                progress = outputProgress,
+                color = Color(0xFF2196F3),
+                isLarger = outputTokensValue >= inputTokensValue
+            )
+        }
     }
 }
 
 @Composable
-private fun TokenBar(
+private fun RateLimitBar(
     label: String,
     value: String,
     progress: Float,
@@ -93,19 +98,14 @@ private fun TokenBar(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth(),
-        verticalAlignment = Alignment
-            .CenterVertically,
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            modifier = Modifier
-                .width(80.dp),
-            style = MaterialTheme
-                .typography.caption,
-            color = MaterialTheme
-                .colors.onSurface.copy(alpha = 0.8f),
             text = label,
+            style = MaterialTheme.typography.caption,
+            color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
+            modifier = Modifier.width(100.dp)
         )
 
         Spacer(modifier = Modifier.width(8.dp))
@@ -115,8 +115,7 @@ private fun TokenBar(
                 .weight(1f)
                 .height(8.dp)
                 .background(
-                    color = MaterialTheme
-                        .colors.onSurface.copy(alpha = 0.1f),
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(4.dp)
                 )
         ) {
@@ -134,18 +133,12 @@ private fun TokenBar(
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            modifier = Modifier
-                .width(60.dp),
-            style = MaterialTheme
-                .typography.caption,
-            fontWeight = if (isLarger) {
-                FontWeight.Bold
-            } else {
-                FontWeight.Normal
-            },
-            textAlign = TextAlign.End,
-            color = color,
             text = value,
+            style = MaterialTheme.typography.caption,
+            fontWeight = FontWeight.Bold,
+            color = color,
+            textAlign = TextAlign.End,
+            modifier = Modifier.width(80.dp)
         )
     }
 }

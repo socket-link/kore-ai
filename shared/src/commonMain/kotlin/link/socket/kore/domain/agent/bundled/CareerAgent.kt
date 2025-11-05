@@ -28,7 +28,7 @@ data object CareerAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = PROMPT,
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_Claude.Sonnet_4,
             aiConfiguration(AIModel_OpenAI.GPT_5_mini),

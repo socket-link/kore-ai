@@ -18,7 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import link.socket.kore.domain.agent.AgentInput
 import link.socket.kore.domain.agent.bundled.AgentDefinition
 import link.socket.kore.domain.agent.bundled.codeAgents
 import link.socket.kore.domain.agent.bundled.generalAgents
@@ -27,64 +26,30 @@ import link.socket.kore.domain.agent.bundled.reasoningAgents
 
 @Composable
 fun AgentSelectionSection(
-    partiallySelectedAgent: AgentDefinition?,
-    setAgentPartiallySelected: (AgentDefinition) -> Unit,
-    onCreateAgent: (AgentDefinition) -> Unit,
+    onAgentPartiallySelected: (AgentDefinition) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-   val requiredInputs: MutableState<List<AgentInput>> = remember(partiallySelectedAgent) {
-       mutableStateOf(partiallySelectedAgent?.requiredInputs ?: emptyList())
-   }
-
-    val optionalInputs: MutableState<List<AgentInput>> = remember(partiallySelectedAgent) {
-        mutableStateOf(partiallySelectedAgent?.optionalInputs ?: emptyList())
-    }
-
-    val onAgentSelected: (AgentDefinition) -> Unit = { agentDefinition ->
-        if (agentDefinition.requiredInputs.isNotEmpty()) {
-            setAgentPartiallySelected(agentDefinition)
-        } else {
-            onCreateAgent(agentDefinition)
-        }
-    }
-
-    Column(
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        AgentColumn(
-            onAgentSelected = onAgentSelected,
-        )
-
-        AgentInputsSection(
-            requiredInputs = requiredInputs.value,
-            optionalInputs = optionalInputs.value,
-            onAgentSubmission = {
-                // TODO: Modify AgentDefinition to accept inputs
-                onCreateAgent(partiallySelectedAgent!!)
-            },
+    val agents = remember {
+        listOf(
+            "Code Agents" to codeAgents,
+            "General Agents" to generalAgents,
+            "Prompt Agents" to promptAgents,
+            "Reasoning Agents" to reasoningAgents,
         )
     }
-}
-
-@Composable
-fun AgentColumn(
-    onAgentSelected: (AgentDefinition) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val agents = listOf(
-        "Code Agents" to codeAgents,
-        "General Agents" to generalAgents,
-        "Prompt Agents" to promptAgents,
-        "Reasoning Agents" to reasoningAgents,
-    )
 
     LazyColumn(
         modifier = modifier
             .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement
+            .spacedBy(16.dp),
     ) {
         items(agents) { (header, row) ->
-            AgentRow(header, row, onAgentSelected)
+            AgentRow(
+                category = header,
+                agents = row,
+                onAgentSelected = onAgentPartiallySelected,
+            )
         }
     }
 }
@@ -99,12 +64,14 @@ private fun AgentRow(
 ) {
     val isExpanded: MutableState<Boolean> = remember { mutableStateOf(true) }
     
-    Column {
+    Column(modifier = modifier) {
         Surface(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            onClick = { isExpanded.value = !isExpanded.value }
+            modifier = Modifier
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 4.dp,
+                ),
+            onClick = { isExpanded.value = !isExpanded.value },
         ) {
             Text(
                 modifier = Modifier
@@ -118,8 +85,11 @@ private fun AgentRow(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                    .padding(
+                        horizontal = 16.dp,
+                    ),
+                verticalArrangement = Arrangement
+                    .spacedBy(8.dp),
             ) {
                 agents.forEach { agent ->
                     AgentCard(
@@ -155,7 +125,8 @@ fun AgentCard(
                 .fillMaxWidth()
                 .padding(16.dp),
             text = agent.name,
-            textAlign = TextAlign.Start,
+            textAlign = TextAlign
+                .Start,
         )
     }
 }

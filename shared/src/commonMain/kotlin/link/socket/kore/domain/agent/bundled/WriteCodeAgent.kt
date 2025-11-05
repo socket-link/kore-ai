@@ -26,7 +26,7 @@ data object WriteCodeAgent : AgentDefinition.Bundled(
     name = NAME,
     description = DESCRIPTION,
     prompt = promptFrom(technologies = "Kotlin"),
-    defaultAIConfigurationBuilder = {
+    suggestedAIConfigurationBuilder = {
         aiConfiguration(
             AIModel_Claude.Opus_4_1,
             aiConfiguration(AIModel_OpenAI.GPT_4_1),

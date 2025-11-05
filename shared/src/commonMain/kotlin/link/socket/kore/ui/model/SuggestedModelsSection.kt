@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,10 +16,12 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import link.socket.kore.domain.ai.model.AIModel
 import link.socket.kore.domain.ai.provider.AIProvider
 import link.socket.kore.ui.theme.themeColors
+import link.socket.kore.ui.theme.themeTypography
 
 @Composable
 fun SuggestedModelsSection(
@@ -30,34 +31,40 @@ fun SuggestedModelsSection(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
     ) {
         Text(
+            modifier = Modifier
+                .fillMaxWidth(),
+            style = themeTypography().h6,
+            textAlign = TextAlign.Start,
             text = "Suggested Models",
-            style = MaterialTheme.typography.subtitle2,
-            fontWeight = MaterialTheme.typography.subtitle2.fontWeight,
         )
 
-        Spacer(modifier = Modifier.requiredHeight(8.dp))
+        Spacer(modifier = Modifier.requiredHeight(24.dp))
 
         LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier
+                .requiredHeight(200.dp)
+                .padding(horizontal = 8.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement
+                .SpaceBetween,
         ) {
             suggestedModels ?: return@LazyRow
 
             items(suggestedModels) { (provider, model) ->
-                val isSelected = remember(selectedModelId) {
+                val isSelected = remember(model, selectedModelId) {
                     model.name == selectedModelId
                 }
 
                 SuggestedModelCard(
                     modifier = Modifier
-                        .requiredHeight(320.dp)
-                        .requiredWidth(240.dp),
+                        .fillParentMaxHeight()
+                        .fillParentMaxWidth(0.3f),
+                    isSelected = isSelected,
                     provider = provider,
                     model = model,
-                    isSelected = isSelected,
                     onClick = {
                         onModelSelected(model)
                     }
@@ -70,9 +77,9 @@ fun SuggestedModelsSection(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun SuggestedModelCard(
+    isSelected: Boolean,
     provider: AIProvider<*, *>,
     model: AIModel,
-    isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -88,10 +95,10 @@ private fun SuggestedModelCard(
 
     Card(
         modifier = modifier,
-        elevation = 4.dp,
+        onClick = onClick,
         shape = RoundedCornerShape(12.dp),
         backgroundColor = color,
-        onClick = onClick,
+        elevation = 4.dp,
     ) {
         Column(
             modifier = Modifier
@@ -102,21 +109,24 @@ private fun SuggestedModelCard(
         ) {
             Text(
                 text = provider.name,
-                style = MaterialTheme.typography.subtitle2,
+                style = MaterialTheme
+                    .typography.subtitle2,
             )
 
             Spacer(modifier = Modifier.requiredHeight(8.dp))
 
             Text(
                 text = model.displayName,
-                style = MaterialTheme.typography.subtitle1,
+                style = MaterialTheme
+                    .typography.subtitle1,
             )
 
             Spacer(modifier = Modifier.requiredHeight(8.dp))
 
             Text(
                 text = model.description,
-                style = MaterialTheme.typography.caption,
+                style = MaterialTheme
+                    .typography.caption,
             )
         }
     }

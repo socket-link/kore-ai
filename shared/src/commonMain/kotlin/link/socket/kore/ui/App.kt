@@ -22,7 +22,7 @@ import link.socket.kore.domain.ai.configuration.AIConfigurationFactory
 import link.socket.kore.domain.chat.Conversation
 import link.socket.kore.domain.chat.ConversationId
 import link.socket.kore.domain.koog.KoogAgentFactory
-import link.socket.kore.ui.agent.AgentCreationScreen
+import link.socket.kore.ui.agent.AgentSetupScreen
 import link.socket.kore.ui.conversation.ConversationScreen
 import link.socket.kore.ui.home.HomeScreen
 import link.socket.kore.ui.theme.themeColors
@@ -135,7 +135,7 @@ fun App(
                         modifier = Modifier.fillMaxSize(),
                         agentConversationsList = allConversations.value.values.toList(),
                         onCreateConversationSelected = {
-                            selectedScreen.value = Screen.AGENT_CREATION
+                            selectedScreen.value = Screen.AGENT_SETUP
                         },
                         onConversationSelected = { conversation ->
                             onConversationSelected(conversation.id)
@@ -143,8 +143,8 @@ fun App(
                     )
                 }
 
-                Screen.AGENT_CREATION -> {
-                    AgentCreationScreen(
+                Screen.AGENT_SETUP -> {
+                    AgentSetupScreen(
                         modifier = Modifier.fillMaxSize(),
                         selectedConfig = selectedConfig.value,
                         aiConfigurationFactory = aiConfigurationFactory,
