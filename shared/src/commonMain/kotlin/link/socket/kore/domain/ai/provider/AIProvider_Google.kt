@@ -14,7 +14,6 @@ data object AIProvider_Google : AIProvider<AITool_Gemini, AIModel_Gemini> {
     override val id: ProviderId = ID
     override val name: String = NAME
     override val apiToken: String = KotlinConfig.google_api_key
-    override val defaultModel: AIModel_Gemini = AIModel_Gemini.DEFAULT
     override val availableModels: List<AIModel_Gemini> = AIModel_Gemini.ALL_MODELS
 
     override val client: Client by lazy {

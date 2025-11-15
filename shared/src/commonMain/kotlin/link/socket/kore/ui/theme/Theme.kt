@@ -36,5 +36,6 @@ fun themeShapes() =
     with(MaterialTheme.shapes) {
         copy(
             small = small.copy(CornerSize(4.dp)),
+            medium = medium.copy(CornerSize(12.dp)),
         )
     }

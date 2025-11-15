@@ -1,4 +1,4 @@
-package link.socket.kore.ui.agent
+package link.socket.kore.ui.agent.setup
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

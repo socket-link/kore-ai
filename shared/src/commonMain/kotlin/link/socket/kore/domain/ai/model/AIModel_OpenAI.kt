@@ -4,12 +4,12 @@ package link.socket.kore.domain.ai.model
 
 import io.ktor.util.date.GMTDate
 import io.ktor.util.date.Month
+import link.socket.kore.domain.ai.model.AIModelFeatures.SupportedInputs.Companion.TEXT
+import link.socket.kore.domain.ai.model.AIModelFeatures.SupportedInputs.Companion.TEXT_AND_IMAGE
 import link.socket.kore.domain.limits.ModelLimits
 import link.socket.kore.domain.limits.RateLimitsFactory
 import link.socket.kore.domain.limits.TokenCount
 import link.socket.kore.domain.limits.TokenLimits
-import link.socket.kore.domain.ai.model.AIModelFeatures.SupportedInputs.Companion.TEXT
-import link.socket.kore.domain.ai.model.AIModelFeatures.SupportedInputs.Companion.TEXT_AND_IMAGE
 import link.socket.kore.domain.tool.AITool_OpenAI
 import link.socket.kore.domain.tool.ProvidedTool
 
@@ -527,8 +527,6 @@ sealed class AIModel_OpenAI(
 
 
         // ---- Models ----
-
-        val DEFAULT = GPT_5_mini
 
         val ALL_MODELS = listOf(
             GPT_5,

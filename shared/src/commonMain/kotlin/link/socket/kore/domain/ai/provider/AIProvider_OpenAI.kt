@@ -13,7 +13,6 @@ data object AIProvider_OpenAI: AIProvider<AITool_OpenAI, AIModel_OpenAI> {
     override val id: ProviderId = ID
     override val name: String = NAME
     override val apiToken: String = KotlinConfig.openai_api_key
-    override val defaultModel: AIModel_OpenAI = AIModel_OpenAI.DEFAULT
     override val availableModels: List<AIModel_OpenAI> = AIModel_OpenAI.ALL_MODELS
 
     override val client: Client by lazy {

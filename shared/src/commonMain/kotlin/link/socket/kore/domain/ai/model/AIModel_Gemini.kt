@@ -4,13 +4,13 @@ package link.socket.kore.domain.ai.model
 
 import io.ktor.util.date.GMTDate
 import io.ktor.util.date.Month
+import link.socket.kore.domain.ai.model.AIModelFeatures.RelativeReasoning
+import link.socket.kore.domain.ai.model.AIModelFeatures.RelativeSpeed
+import link.socket.kore.domain.ai.model.AIModelFeatures.SupportedInputs
 import link.socket.kore.domain.limits.ModelLimits
 import link.socket.kore.domain.limits.RateLimitsFactory
 import link.socket.kore.domain.limits.TokenCount
 import link.socket.kore.domain.limits.TokenLimits
-import link.socket.kore.domain.ai.model.AIModelFeatures.RelativeReasoning
-import link.socket.kore.domain.ai.model.AIModelFeatures.RelativeSpeed
-import link.socket.kore.domain.ai.model.AIModelFeatures.SupportedInputs
 import link.socket.kore.domain.tool.AITool_Gemini
 import link.socket.kore.domain.tool.ProvidedTool
 
@@ -356,8 +356,6 @@ sealed class AIModel_Gemini(
 
 
         // ---- Models ----
-
-        val DEFAULT = Flash_2_5
 
         val ALL_MODELS = listOf(
             Pro_2_5,

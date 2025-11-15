@@ -2,6 +2,7 @@ package link.socket.kore.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -18,11 +19,13 @@ import kotlinx.coroutines.launch
 import link.socket.kore.data.ConversationRepository
 import link.socket.kore.domain.agent.KoreAgent
 import link.socket.kore.domain.agent.KoreAgentFactory
+import link.socket.kore.domain.agent.bundled.AgentDefinition
 import link.socket.kore.domain.ai.configuration.AIConfigurationFactory
 import link.socket.kore.domain.chat.Conversation
 import link.socket.kore.domain.chat.ConversationId
 import link.socket.kore.domain.koog.KoogAgentFactory
-import link.socket.kore.ui.agent.AgentSetupScreen
+import link.socket.kore.ui.agent.AgentSelectionSection
+import link.socket.kore.ui.agent.setup.AgentSetupScreen
 import link.socket.kore.ui.conversation.ConversationScreen
 import link.socket.kore.ui.home.HomeScreen
 import link.socket.kore.ui.theme.themeColors
@@ -37,10 +40,6 @@ fun App(
     val conversationRepository = remember { ConversationRepository(scope) }
     val aiConfigurationFactory = remember { AIConfigurationFactory() }
     val koogAgentFactory = remember { KoogAgentFactory() }
-
-    val selectedConfig = remember {
-        mutableStateOf(aiConfigurationFactory.getDefaultConfiguration())
-    }
 
     val agentFactory = remember {
         KoreAgentFactory(conversationRepository, scope)
@@ -111,12 +110,11 @@ fun App(
                 onExecutingConversation()
 
                 conversationRepository.runConversation(
-                    config = selectedConfig.value,
                     conversationId = selectedConversationId.value!!,
                 )
 
                 val koogAgent = koogAgentFactory.createKoogAgent(
-                    aiConfiguration = selectedConfig.value,
+                    aiConfiguration = agent.config,
                     agent = agent,
                 )
 
@@ -126,16 +124,21 @@ fun App(
             }
         }
 
+        val selectedAgentDefinition = remember {
+            mutableStateOf<AgentDefinition?>(null)
+        }
+
         Box(
             modifier = modifier,
         ) {
             when (selectedScreen.value) {
                 Screen.HOME -> {
                     HomeScreen(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize(),
                         agentConversationsList = allConversations.value.values.toList(),
                         onCreateConversationSelected = {
-                            selectedScreen.value = Screen.AGENT_SETUP
+                            selectedScreen.value = Screen.AGENT_SELECTION
                         },
                         onConversationSelected = { conversation ->
                             onConversationSelected(conversation.id)
@@ -143,38 +146,49 @@ fun App(
                     )
                 }
 
-                Screen.AGENT_SETUP -> {
-                    AgentSetupScreen(
-                        modifier = Modifier.fillMaxSize(),
-                        selectedConfig = selectedConfig.value,
-                        aiConfigurationFactory = aiConfigurationFactory,
-                        agentFactory = agentFactory,
-                        onAgentCreated = { agent ->
-                            selectedScreen.value = Screen.CONVERSATION
-                            onNewConversation(agent)
-                        },
-                        onBackClicked = {
-                            selectedScreen.value = Screen.HOME
+                Screen.AGENT_SELECTION -> {
+                    AgentSelectionSection(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        onAgentPartiallySelected = { agent ->
+                            selectedAgentDefinition.value = agent
+                            selectedScreen.value = Screen.AGENT_SETUP
                         },
                     )
+                }
+
+                Screen.AGENT_SETUP -> {
+                    selectedAgentDefinition.value?.let { agentDefinition ->
+                        AgentSetupScreen(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            agentDefinition = agentDefinition,
+                            aiConfigurationFactory = aiConfigurationFactory,
+                            agentFactory = agentFactory,
+                            onAgentCreated = { agent ->
+                                selectedScreen.value = Screen.CONVERSATION
+                                onNewConversation(agent)
+                            },
+                            onBackClicked = {
+                                selectedScreen.value = Screen.HOME
+                            },
+                        )
+                    }
                 }
 
                 Screen.CONVERSATION -> {
                     selectedConversation.value?.let { conversation ->
                         ConversationScreen(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize(),
                             listState = conversationListState,
                             conversation = conversation,
                             isLoading = isLoading.value,
                             onChatSent = { input ->
-                                selectedConversationId.value?.let { id ->
+                                selectedConversationId.value?.let { conversationId ->
                                     scope.launch {
                                         onExecutingConversation()
-                                        conversationRepository.addUserChat(
-                                            config = selectedConfig.value,
-                                            conversationId = id,
-                                            input = input,
-                                        )
+                                        conversationRepository.addUserChat(conversationId, input)
                                         onConversationFinishedExecuting()
                                     }
                                 }

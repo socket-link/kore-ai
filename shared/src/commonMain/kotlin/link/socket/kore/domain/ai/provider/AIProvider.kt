@@ -20,7 +20,6 @@ sealed interface AIProvider<
 
     val id: ProviderId
     val name: String
-    val defaultModel: L
     val availableModels: List<L>
     val apiToken: String
 

@@ -14,7 +14,6 @@ data object AIProvider_Anthropic : AIProvider<AITool_Claude, AIModel_Claude> {
     override val id: ProviderId = ID
     override val name: String = NAME
     override val apiToken: String = KotlinConfig.anthropic_api_key
-    override val defaultModel: AIModel_Claude = AIModel_Claude.DEFAULT
     override val availableModels: List<AIModel_Claude> = AIModel_Claude.ALL_MODELS
 
     override val client: Client by lazy {

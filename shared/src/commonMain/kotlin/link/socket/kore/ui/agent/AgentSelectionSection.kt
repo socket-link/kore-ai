@@ -1,6 +1,6 @@
 package link.socket.kore.ui.agent
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -41,8 +41,7 @@ fun AgentSelectionSection(
     LazyColumn(
         modifier = modifier
             .fillMaxWidth(),
-        verticalArrangement = Arrangement
-            .spacedBy(16.dp),
+        verticalArrangement = spacedBy(16.dp),
     ) {
         items(agents) { (header, row) ->
             AgentRow(
@@ -88,8 +87,7 @@ private fun AgentRow(
                     .padding(
                         horizontal = 16.dp,
                     ),
-                verticalArrangement = Arrangement
-                    .spacedBy(8.dp),
+                verticalArrangement = spacedBy(8.dp),
             ) {
                 agents.forEach { agent ->
                     AgentCard(
@@ -125,8 +123,7 @@ fun AgentCard(
                 .fillMaxWidth()
                 .padding(16.dp),
             text = agent.name,
-            textAlign = TextAlign
-                .Start,
+            textAlign = TextAlign.Start,
         )
     }
 }

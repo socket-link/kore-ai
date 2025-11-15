@@ -5,8 +5,8 @@ import kotlinx.coroutines.CoroutineScope
 import link.socket.kore.data.ConversationRepository
 import link.socket.kore.domain.agent.bundled.AgentDefinition
 import link.socket.kore.domain.agent.bundled.getAgentDefinition
-import link.socket.kore.domain.chat.ConversationId
 import link.socket.kore.domain.ai.configuration.AIConfiguration
+import link.socket.kore.domain.chat.ConversationId
 import link.socket.kore.util.logWith
 
 data class PromptSubAgentParams(
@@ -26,7 +26,7 @@ class KoreAgentFactory(
         get() = { params ->
             with(params) {
                 // TODO: Improve repetitive logging for function calls, use better format
-                logWith(tag).i("\nllm=${config.model?.name}\nparentConversationId=$parentConversationId\nArgs:\nagentName=$agentName\nprompt=$prompt\n$initialUserChat")
+                logWith(tag).i("\nllm=${config.model.name}\nparentConversationId=$parentConversationId\nArgs:\nagentName=$agentName\nprompt=$prompt\n$initialUserChat")
 
                 val agent = KoreAgent(
                     config = config,
@@ -43,15 +43,14 @@ class KoreAgentFactory(
 
                 if (initialUserChat != null) {
                     // Option to get the _second_ LLM response, after a User provides their initial reply to the _first_ LLM response
-                    conversationRepository.runConversation(config, conversationId)
+                    conversationRepository.runConversation(conversationId)
                     conversationRepository.addUserChat(
-                        config = config,
                         conversationId = conversationId,
                         input = initialUserChat,
                     )
                 }
 
-                conversationRepository.runConversation(config, conversationId)
+                conversationRepository.runConversation(conversationId)
 
                 conversationRepository
                     .getValue(conversationId)

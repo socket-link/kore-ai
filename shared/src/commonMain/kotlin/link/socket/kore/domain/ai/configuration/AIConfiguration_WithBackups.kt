@@ -44,7 +44,7 @@ data class AIConfiguration_WithBackups(
             }
         }
 
-    override val model: AIModel?
+    override val model: AIModel
         get() = if (usedSecondBackupConfiguration) {
             secondBackupConfigurationProvider?.model
                 ?: throw IllegalStateException(
