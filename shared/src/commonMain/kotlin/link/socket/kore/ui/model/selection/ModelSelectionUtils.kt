@@ -10,6 +10,7 @@ val ALL_AI_CONFIGURATIONS: List<AIConfiguration> = ALL_PROVIDERS
             /**
              * TODO: Figure out why [model] can be null here
              */
+            @Suppress("SENSELESS_COMPARISON")
             if (model != null) {
                 AIConfiguration_Default(
                     provider = provider,

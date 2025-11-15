@@ -103,6 +103,10 @@ kotlin {
     }
 
     sourceSets {
+        all {
+            languageSettings.enableLanguageFeature("ExpectActualClasses")
+        }
+
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("reflect"))
