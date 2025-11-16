@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.datetime.Instant
 import link.socket.kore.data.EventRepository
 
 typealias EventExecutionMap = MutableMap<String, suspend (Event) -> Unit>
@@ -82,8 +83,8 @@ class EventBus(
      * Fetch events from persistence and publish them to current subscribers.
      * If [since] is provided, only events with timestamp >= since are replayed; otherwise all events.
      */
-    suspend fun replayEvents(since: Long) {
-        val result = if (since > 0L) {
+    suspend fun replayEvents(since: Instant?) {
+        val result = if (since != null) {
             eventRepository.getEventsSinceResult(since)
         } else {
             eventRepository.getAllEventsResult()
@@ -104,7 +105,10 @@ class EventBus(
      * - If [since] is provided, returns events since that timestamp.
      * - If both are null, returns all events.
      */
-    fun getEventHistory(eventType: String? = null, since: Long? = null): List<Event> {
+    fun getEventHistory(
+        eventType: String? = null,
+        since: Instant? = null,
+    ): List<Event> {
         val result: Result<List<Event>> = when {
             eventType != null && since != null -> {
                 eventRepository

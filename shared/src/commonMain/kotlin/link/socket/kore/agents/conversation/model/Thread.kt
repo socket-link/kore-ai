@@ -2,12 +2,15 @@ package link.socket.kore.agents.conversation.model
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.serialization.Serializable
 
 typealias ThreadId = String
 
+@Serializable
 data class Thread(
     val id: ThreadId,
     val channel: Channel,
+    val createdBy: Sender,
     val participants: List<Sender>,
     val messages: List<Message>,
     val status: ThreadStatus,
@@ -22,12 +25,13 @@ data class Thread(
             initialMessage: Message,
         ): Thread {
             val now = initialMessage.timestamp
-            val initialParticipant = listOf(initialMessage.sender)
+            val initialParticipants = listOf(initialMessage.sender)
 
             return Thread(
                 id = id,
                 channel = channel,
-                participants = initialParticipant,
+                createdBy = initialMessage.sender,
+                participants = initialParticipants,
                 messages = listOf(initialMessage),
                 status = ThreadStatus.OPEN,
                 createdAt = now,

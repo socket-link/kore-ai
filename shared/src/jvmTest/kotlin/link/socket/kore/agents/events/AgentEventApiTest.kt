@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.datetime.Clock
 import link.socket.kore.data.DEFAULT_JSON
 import link.socket.kore.data.EventRepository
 
@@ -44,12 +45,12 @@ class AgentEventApiTest {
             val agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBusFactory)
             val api = agentEventApiFactory.create("agent-1")
 
-            val received = CompletableDeferred<TaskCreatedEvent>()
+            val received = CompletableDeferred<Event.TaskCreated>()
             api.onTaskCreated { received.complete(it) }
             api.publishTaskCreated(taskId = "task-123", description = "Implement feature X")
 
             val event = received.await()
-            assertEquals("agent-1", event.sourceAgentId)
+            assertEquals("agent-1", event.eventSource.getIdentifier())
             assertEquals("task-123", event.taskId)
             assertEquals(true, event.eventId.isNotBlank())
         }
@@ -80,7 +81,7 @@ class AgentEventApiTest {
             val agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBusFactory)
             val api = agentEventApiFactory.create("agent-1")
 
-            val since = currentTimeMillis()
+            val since = Clock.System.now()
             delay(5)
             api.publishQuestionRaised(
                 questionText = "Why?",
@@ -92,7 +93,7 @@ class AgentEventApiTest {
             delay(100)
 
             val events = api.getRecentEvents(since)
-            assertEquals(true, events.any { it is QuestionRaisedEvent })
+            assertEquals(true, events.any { it is Event.QuestionRaised })
         }
     }
 
@@ -103,8 +104,8 @@ class AgentEventApiTest {
             val a1 = agentEventApiFactory.create("agent-A")
             val a2 = agentEventApiFactory.create("agent-B")
 
-            val receivedA = CompletableDeferred<TaskCreatedEvent>()
-            val receivedB = CompletableDeferred<TaskCreatedEvent>()
+            val receivedA = CompletableDeferred<Event.TaskCreated>()
+            val receivedB = CompletableDeferred<Event.TaskCreated>()
             a1.onTaskCreated { receivedA.complete(it) }
             a2.onTaskCreated { receivedB.complete(it) }
 
@@ -113,8 +114,8 @@ class AgentEventApiTest {
 
             val eA = receivedA.await()
             val eB = receivedB.await()
-            assertEquals("agent-A", eA.sourceAgentId)
-            assertEquals("agent-B", eB.sourceAgentId)
+            assertEquals("agent-A", eA.eventSource.getIdentifier())
+            assertEquals("agent-B", eB.eventSource.getIdentifier())
             assertNotEquals(eA.eventId, eB.eventId)
         }
     }
@@ -124,13 +125,13 @@ class AgentEventApiTest {
         runBlocking {
             val agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBusFactory)
             val api = agentEventApiFactory.create("agent-1")
-            val received = CompletableDeferred<CodeSubmittedEvent>()
+            val received = CompletableDeferred<Event.CodeSubmitted>()
 
             api.onCodeSubmitted { received.complete(it) }
             api.publishCodeSubmitted(filePath = "/tmp/a.kt", changeDescription = "Add feature", reviewRequired = true)
 
             val e = received.await()
-            assertIs<CodeSubmittedEvent>(e)
+            assertIs<Event.CodeSubmitted>(e)
             assertEquals("/tmp/a.kt", e.filePath)
             assertEquals(true, e.reviewRequired)
         }

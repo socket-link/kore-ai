@@ -47,7 +47,7 @@ class AgentEventBusIntegrationTest {
             val api3 = agentEventApiFactory.create("task-manager")
 
             // Code writer subscribes to tasks before any are published
-            val received = CompletableDeferred<TaskCreatedEvent>()
+            val received = CompletableDeferred<Event.TaskCreated>()
             api1.onTaskCreated { received.complete(it) }
 
             // Scenario: Task manager creates task (after subscription is in place)
@@ -63,7 +63,7 @@ class AgentEventBusIntegrationTest {
             assertEquals(true, event.eventId.isNotBlank())
 
             // Code reviewer subscribes before code is submitted
-            val codeSubmissions = mutableListOf<CodeSubmittedEvent>()
+            val codeSubmissions = mutableListOf<Event.CodeSubmitted>()
             api2.onCodeSubmitted { codeSubmissions.add(it) }
 
             // Code writer submits code (after reviewer subscription)
@@ -84,11 +84,11 @@ class AgentEventBusIntegrationTest {
             )
 
             // Verify all events are in history
-            val allEvents = api1.getRecentEvents(since = 0)
+            val allEvents = api1.getRecentEvents(since = null)
             assertEquals(3, allEvents.size)
-            assertEquals(true, allEvents.any { it is TaskCreatedEvent })
-            assertEquals(true, allEvents.any { it is CodeSubmittedEvent })
-            assertEquals(true, allEvents.any { it is QuestionRaisedEvent })
+            assertEquals(true, allEvents.any { it is Event.TaskCreated })
+            assertEquals(true, allEvents.any { it is Event.CodeSubmitted })
+            assertEquals(true, allEvents.any { it is Event.QuestionRaised })
         }
     }
 }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.datetime.Clock
 import link.socket.kore.data.DEFAULT_JSON
 import link.socket.kore.data.EventRepository
 
@@ -18,6 +19,9 @@ class EventBusLoggingAndErrorsTest {
 
     private val scope = TestScope(UnconfinedTestDispatcher())
     private val json = DEFAULT_JSON
+
+    private val stubTimestamp = Clock.System.now()
+    private val stubEventSource = EventSource.Agent("agent-X")
 
     private lateinit var driver: JdbcSqliteDriver
     private lateinit var db: Database
@@ -34,10 +38,10 @@ class EventBusLoggingAndErrorsTest {
         driver.close()
     }
 
-    private fun taskEvent(): TaskCreatedEvent = TaskCreatedEvent(
+    private fun taskEvent(): Event.TaskCreated = Event.TaskCreated(
         eventId = "evt-log-1",
-        timestamp = System.currentTimeMillis(),
-        sourceAgentId = "agent-1",
+        timestamp = stubTimestamp,
+        eventSource = stubEventSource,
         taskId = "task-1",
         description = "desc",
         assignedTo = null,
@@ -69,8 +73,8 @@ class EventBusLoggingAndErrorsTest {
             val bus = EventBus(scope, repo, logger)
 
             var goodCalled = false
-            bus.subscribe<TaskCreatedEvent> { throw IllegalStateException("boom") }
-            bus.subscribe<TaskCreatedEvent> { goodCalled = true }
+            bus.subscribe<Event.TaskCreated> { throw IllegalStateException("boom") }
+            bus.subscribe<Event.TaskCreated> { goodCalled = true }
 
             bus.publish(taskEvent())
             delay(200)
@@ -89,7 +93,7 @@ class EventBusLoggingAndErrorsTest {
             val bus = EventBus(scope, repo, logger)
 
             var delivered = false
-            bus.subscribe<TaskCreatedEvent> { delivered = true }
+            bus.subscribe<Event.TaskCreated> { delivered = true }
 
             // Simulate failure by corrupting table (drop table name typo) is heavy; instead call publish and ensure regardless of save failure subscribers receive.
             // We cannot inject proxy easily without changing production code further; use SQL constraint failure: insert duplicate primary key to trigger persistence error.
@@ -119,7 +123,7 @@ class EventBusLoggingAndErrorsTest {
             db.eventStoreQueries.insertEvent(
                 event_id = "bad-json-1",
                 event_type = "TaskCreatedEvent",
-                source_agent_id = "agent-X",
+                source_id = "agent-X",
                 timestamp = 1L,
                 payload = "{ this is not valid json }",
             )

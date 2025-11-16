@@ -1,6 +1,7 @@
 package link.socket.kore.data
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.datetime.Instant
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import link.socket.kore.agents.events.Database
@@ -42,8 +43,8 @@ class EventRepository(
             queries.insertEvent(
                 event_id = event.eventId,
                 event_type = event.eventType,
-                source_agent_id = event.sourceAgentId,
-                timestamp = event.timestamp,
+                source_id = event.eventSource.getIdentifier(),
+                timestamp = event.timestamp.toEpochMilliseconds(),
                 payload = payload
             )
         }.getOrElse { t ->
@@ -65,10 +66,10 @@ class EventRepository(
     /**
      * Retrieve all events since the given epoch millis [timestamp], ascending by time.
      */
-    fun getEventsSince(timestamp: Long): List<Event> = getEventsSinceResult(timestamp).getOrThrow()
+    fun getEventsSince(timestamp: Instant): List<Event> = getEventsSinceResult(timestamp).getOrThrow()
 
-    fun getEventsSinceResult(timestamp: Long): Result<List<Event>> = runCatching {
-        val rows = runCatching { queries.getEventsSince(timestamp).executeAsList() }
+    fun getEventsSinceResult(timestamp: Instant): Result<List<Event>> = runCatching {
+        val rows = runCatching { queries.getEventsSince(timestamp.toEpochMilliseconds()).executeAsList() }
             .getOrElse { t -> throw EventPersistenceException("Failed to query events since $timestamp", t) }
         rows.map { row -> decode(row.payload) }
     }

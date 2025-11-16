@@ -1,8 +1,30 @@
 package link.socket.kore.agents.events
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import link.socket.kore.agents.core.AgentId
 
 typealias EventId = String
+
+/** Urgency levels for questions raised by agents. */
+@Serializable
+enum class Urgency {
+    LOW,
+    MEDIUM,
+    HIGH;
+}
+
+/** Source of an event, either an agent or a human. */
+@Serializable
+sealed class EventSource {
+    data class Agent(val agentId: AgentId) : EventSource()
+    data object Human : EventSource()
+
+    fun getIdentifier(): String = when (this) {
+        is Agent -> agentId
+        is Human -> "human"
+    }
+}
 
 /**
  * Base type for all events flowing through the agent system.
@@ -12,14 +34,15 @@ typealias EventId = String
  */
 @Serializable
 sealed interface Event {
+
     /** Globally unique identifier for this event (UUID string). */
     val eventId: EventId
 
-    /** Epoch milliseconds when the event occurred. */
-    val timestamp: Long
+    /** [kotlinx.datetime.Instant] when the event occurred. */
+    val timestamp: Instant
 
-    /** Identifier of the agent that produced the event. */
-    val sourceAgentId: String
+    /** Identifier of the agent or human that produced the event. */
+    val eventSource: EventSource
 
     /**
      * A type discriminator for the event, derived from the implementing class name.
@@ -27,4 +50,37 @@ sealed interface Event {
      */
     val eventType: String
         get() = this::class.simpleName ?: "Event"
+
+    /** Event emitted when a new task is created in the system. */
+    @Serializable
+    data class TaskCreated(
+        override val eventId: EventId,
+        override val timestamp: Instant,
+        override val eventSource: EventSource,
+        val taskId: String,
+        val description: String,
+        val assignedTo: AgentId?,
+    ) : Event
+
+    /** Event emitted when an agent raises a question needing attention. */
+    @Serializable
+    data class QuestionRaised(
+        override val eventId: EventId,
+        override val timestamp: Instant,
+        override val eventSource: EventSource,
+        val questionText: String,
+        val context: String,
+        val urgency: Urgency,
+    ) : Event
+
+    /** Event emitted when code is submitted by an agent for review or integration. */
+    @Serializable
+    data class CodeSubmitted(
+        override val eventId: EventId,
+        override val timestamp: Instant,
+        override val eventSource: EventSource,
+        val filePath: String,
+        val changeDescription: String,
+        val reviewRequired: Boolean,
+    ) : Event
 }
