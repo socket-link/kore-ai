@@ -1,5 +1,6 @@
 package link.socket.kore.agents.implementations
 
+import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.core.Context
 import link.socket.kore.agents.core.Message
 import link.socket.kore.agents.core.MessageSeverity
@@ -18,9 +19,12 @@ import link.socket.kore.agents.tools.Tool
 class CodeWriterAgent(
     private val tools: Map<String, Tool>
 ) : MinimalAutonomousAgent {
+
     private var currentTask: String? = null
     private var currentPlan: Plan? = null
     private var executionHistory: MutableList<String> = mutableListOf()
+
+    override val id: AgentId = "CodeWriterAgent"
 
     fun setTask(task: String) {
         currentTask = task
