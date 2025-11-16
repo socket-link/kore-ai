@@ -1,0 +1,157 @@
+package link.socket.kore.agents.events
+
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.div
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.withTimeout
+import link.socket.kore.data.DEFAULT_JSON
+import link.socket.kore.data.EventRepository
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class EventBusIntegrationTest {
+
+    private val json = DEFAULT_JSON
+    private val scope = TestScope(UnconfinedTestDispatcher())
+    private val eventBusFactory = EventBusFactory(scope)
+
+    private lateinit var driver: JdbcSqliteDriver
+    private lateinit var eventRepository: EventRepository
+
+    @BeforeTest
+    fun setUp() {
+        driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+        Database.Schema.create(driver)
+        eventRepository = EventRepository(json, scope, Database(driver))
+    }
+
+    @AfterTest
+    fun tearDown() {
+        driver.close()
+    }
+
+    private fun taskEvent(
+        id: String,
+        ts: Long = System.currentTimeMillis(),
+    ) = TaskCreatedEvent(
+        eventId = id,
+        timestamp = ts,
+        sourceAgentId = "agent-A",
+        taskId = "task-123",
+        description = "Persisted Task",
+        assignedTo = "agent-B",
+    )
+
+    private fun questionEvent(
+        id: String,
+        ts: Long = System.currentTimeMillis(),
+    ) = QuestionRaisedEvent(
+        eventId = id,
+        timestamp = ts,
+        sourceAgentId = "agent-Q",
+        questionText = "What happened?",
+        context = "IntegrationTest",
+        urgency = Urgency.LOW,
+    )
+
+    @Test
+    fun `events persist and can be replayed`() {
+        runBlocking {
+            val dir = createTempDirectory(prefix = "events-bus-db")
+            val dbFile = dir / "bus.sqlite"
+
+            // First bus publishes events
+            val driver1 = JdbcSqliteDriver("jdbc:sqlite:$dbFile")
+            Database.Schema.create(driver1)
+            val bus1 = eventBusFactory.create(eventRepository)
+
+            val e1 = taskEvent("evt-bus-1", ts = 10_000)
+            val e2 = questionEvent("evt-bus-2", ts = 20_000)
+            bus1.publish(e1)
+            bus1.publish(e2)
+
+            // Simulate restart (close driver and re-open)
+            driver1.close()
+
+            val driver2 = JdbcSqliteDriver("jdbc:sqlite:$dbFile")
+            val bus2 = eventBusFactory.create(eventRepository)
+
+            // History query
+            val history = bus2.getEventHistory()
+            assertEquals(2, history.size)
+            assertIs<TaskCreatedEvent>(history.first { it.eventId == "evt-bus-1" })
+
+            // Subscribe fresh handler and replay events since 0
+            val received = CompletableDeferred<List<String>>()
+            val acc = mutableListOf<String>()
+            bus2.subscribe<TaskCreatedEvent> { acc += it.eventId }
+            bus2.subscribe<QuestionRaisedEvent> { acc += it.eventId }
+
+            bus2.replayEvents(since = 0L)
+
+            withTimeout(2_000) {
+                // small delay to allow async handlers to process
+                delay(200)
+                received.complete(acc)
+            }
+            val ids = received.await()
+            assertTrue(ids.containsAll(listOf("evt-bus-1", "evt-bus-2")))
+
+            driver2.close()
+        }
+    }
+
+    @Test
+    fun `publish failures do not crash bus`() {
+        runBlocking {
+            val bus = eventBusFactory.create(eventRepository)
+
+            var goodHandlerCalled = false
+            bus.subscribe<TaskCreatedEvent> { throw IllegalStateException("boom") }
+            bus.subscribe<TaskCreatedEvent> { goodHandlerCalled = true }
+
+            bus.publish(taskEvent("evt-crash-1"))
+
+            // allow time for handler execution
+            delay(200)
+            assertTrue(goodHandlerCalled)
+        }
+    }
+
+    @Test
+    fun `concurrent publishing is safe and persists all events`() {
+        runBlocking {
+            val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+            Database.Schema.create(driver)
+            val bus = eventBusFactory.create(eventRepository)
+
+            val n = 25
+            coroutineScope {
+                (1..n).map { i ->
+                    async { bus.publish(taskEvent("evt-conc-$i")) }
+                }.awaitAll()
+            }
+
+            // Give some time for async dispatch
+            delay(200)
+
+            val history = bus.getEventHistory(eventType = "TaskCreatedEvent")
+            assertEquals(n, history.size)
+            driver.close()
+        }
+    }
+}

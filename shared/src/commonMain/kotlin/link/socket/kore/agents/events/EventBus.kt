@@ -3,12 +3,11 @@ package link.socket.kore.agents.events
 import kotlin.random.Random
 import kotlin.reflect.KClass
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import link.socket.kore.data.EventRepository
 
 typealias EventExecutionMap = MutableMap<String, suspend (Event) -> Unit>
 
@@ -18,14 +17,16 @@ typealias EventExecutionMap = MutableMap<String, suspend (Event) -> Unit>
 data class SubscriptionToken(val id: String)
 
 /**
- * In-memory, type-safe event bus for publish-subscribe communication between agents.
+ * Type-safe event bus for publish-subscribe communication between agents with optional persistence.
  *
- * This implementation is thread-safe and Kotlin Multiplatform compatible. It focuses on the core
- * pub-sub mechanics (no persistence). Handlers are invoked asynchronously using the provided
- * [CoroutineScope].
+ * - Thread-safe and Kotlin Multiplatform compatible
+ * - Handlers are invoked asynchronously using the provided [CoroutineScope]
+ * - When an [EventRepository] is provided, events are persisted on publish and can be replayed/query history
  */
 class EventBus(
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+    private val scope: CoroutineScope,
+    private val eventRepository: EventRepository,
+    private val logger: EventLogger = ConsoleEventLogger(),
 ) {
     // Map event KClass -> (tokenId -> handler)
     private val subscribers: MutableMap<KClass<out Event>, EventExecutionMap> = mutableMapOf()
@@ -37,23 +38,96 @@ class EventBus(
 
     /**
      * Publish an [event] to all subscribers of its exact KClass.
-     * Handlers are launched asynchronously on [scope].
+     * - The event is saved in [eventRepository] before notifying subscribers.
+     * - Handlers are launched asynchronously on [scope].
+     * - Any individual handler failures are swallowed to avoid impacting other subscribers.
      */
     suspend fun publish(event: Event) {
+        // Persist and snapshot handlers under the same lock to maintain ordering and thread-safety
         val handlers: List<suspend (Event) -> Unit> = mutex.withLock {
+            // Attempt to persist the event; log but do not fail publish on errors
+            eventRepository.saveEventResult(event).onFailure { th ->
+                logger.logError(
+                    message = "Failed to persist event ${event.eventType} id=${event.eventId}",
+                    throwable = th,
+                )
+            }
+
             subscribers[event::class]?.values?.toList().orEmpty()
         }
-        if (handlers.isEmpty()) return
+
+        if (handlers.isEmpty()) {
+            return
+        }
+
+        // Log the publication after persistence attempt
+        logger.logPublish(event)
+
         for (handler in handlers) {
             scope.launch {
                 try {
                     handler(event)
-                } catch (_: Throwable) {
-                    // Swallow exceptions from handlers to avoid impacting other subscribers.
-                    // TODO: Log exceptions
+                } catch (t: Throwable) {
+                    // Swallow exceptions from handlers to avoid impacting other subscribers, but log them.
+                    logger.logError(
+                        message = "Subscriber handler failure for ${event.eventType} id=${event.eventId}",
+                        throwable = t,
+                    )
                 }
             }
         }
+    }
+
+    /**
+     * Fetch events from persistence and publish them to current subscribers.
+     * If [since] is provided, only events with timestamp >= since are replayed; otherwise all events.
+     */
+    suspend fun replayEvents(since: Long) {
+        val result = if (since > 0L) {
+            eventRepository.getEventsSinceResult(since)
+        } else {
+            eventRepository.getAllEventsResult()
+        }
+
+        val events: List<Event> = result.onFailure { th ->
+            logger.logError("Failed to load events for replay since=$since", th)
+        }.getOrElse { emptyList() }
+
+        for (e in events) {
+            publish(e)
+        }
+    }
+
+    /**
+     * Retrieve historical events from persistence.
+     * - If [eventType] is provided, filters by that type.
+     * - If [since] is provided, returns events since that timestamp.
+     * - If both are null, returns all events.
+     */
+    fun getEventHistory(eventType: String? = null, since: Long? = null): List<Event> {
+        val result: Result<List<Event>> = when {
+            eventType != null && since != null -> {
+                eventRepository
+                    .getEventsByTypeResult(eventType)
+                    .map { list -> list.filter { it.timestamp >= since } }
+            }
+            eventType != null -> {
+                eventRepository.getEventsByTypeResult(eventType)
+            }
+            since != null -> {
+                eventRepository.getEventsSinceResult(since)
+            }
+            else -> {
+                eventRepository.getAllEventsResult()
+            }
+        }
+
+        return result.onFailure { th ->
+            logger.logError(
+                message = "Failed to load event history (type=$eventType since=$since)",
+                throwable = th,
+            )
+        }.getOrElse { emptyList() }
     }
 
     /**
@@ -77,6 +151,9 @@ class EventBus(
             tokenIndex[token.id] = eventClass
         }
 
+        // Log subscription
+        logger.logSubscription(eventClass.simpleName ?: "Event", token.id)
+
         return token
     }
 
@@ -84,6 +161,7 @@ class EventBus(
      * Cancel the subscription associated with [token]. Safe to call multiple times.
      */
     fun unsubscribe(token: SubscriptionToken) {
+        var eventClassForLog: String? = null
         runBlockingLock {
             val kClass: KClass<out Event> =
                 tokenIndex.remove(token.id) ?: return@runBlockingLock
@@ -96,7 +174,12 @@ class EventBus(
             if (map.isEmpty()) {
                 subscribers.remove(kClass)
             }
+
+            eventClassForLog = kClass.simpleName
         }
+
+        // Log unsubscription
+        logger.logSubscription("${eventClassForLog ?: "Event"}#unsubscribe", token.id)
     }
 
     // Helper to reuse the same locking pattern in non-suspending API without exposing Mutex.

@@ -1,13 +1,40 @@
 package link.socket.kore.agents.events
 
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.withTimeout
+import link.socket.kore.data.DEFAULT_JSON
+import link.socket.kore.data.EventRepository
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class EventBusTest {
+
+    private val json = DEFAULT_JSON
+    private val scope = TestScope(UnconfinedTestDispatcher())
+
+    private lateinit var driver: JdbcSqliteDriver
+    private lateinit var eventRepository: EventRepository
+
+    @BeforeTest
+    fun setUp() {
+        driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+        Database.Schema.create(driver)
+        eventRepository = EventRepository(json, scope, Database(driver))
+    }
+
+    @AfterTest
+    fun tearDown() {
+        driver.close()
+    }
 
     private fun taskEvent(): TaskCreatedEvent = TaskCreatedEvent(
         eventId = "evt-1",
@@ -30,7 +57,7 @@ class EventBusTest {
     @Test
     fun `subscriber receives only matching events`() {
         runBlocking {
-            val bus = EventBus()
+            val bus = EventBus(scope, eventRepository)
             val receivedTask = CompletableDeferred<TaskCreatedEvent>()
             var nonMatchingCalled: Boolean
 
@@ -58,7 +85,7 @@ class EventBusTest {
     @Test
     fun `multiple subscribers receive event`() {
         runBlocking {
-            val bus = EventBus()
+            val bus = EventBus(scope, eventRepository)
             val s1 = CompletableDeferred<Boolean>()
             val s2 = CompletableDeferred<Boolean>()
 
@@ -81,7 +108,7 @@ class EventBusTest {
         runBlocking {
             var count = 0
 
-            val bus = EventBus()
+            val bus = EventBus(scope, eventRepository)
             val token = bus.subscribe<TaskCreatedEvent> { count += 1 }
 
             // First publish should deliver
