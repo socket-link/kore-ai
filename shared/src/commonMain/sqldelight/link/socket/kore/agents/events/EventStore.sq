@@ -1,0 +1,40 @@
+CREATE TABLE event_store (
+  event_id TEXT PRIMARY KEY NOT NULL,
+  event_type TEXT NOT NULL,
+  source_agent_id TEXT NOT NULL,
+  timestamp INTEGER NOT NULL,
+  payload TEXT NOT NULL,
+  created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
+CREATE INDEX idx_event_type ON event_store(event_type);
+CREATE INDEX idx_timestamp ON event_store(timestamp);
+
+-- Queries
+
+insertEvent:
+INSERT INTO event_store(event_id, event_type, source_agent_id, timestamp, payload)
+VALUES (?, ?, ?, ?, ?);
+
+getAllEvents:
+SELECT event_id, event_type, source_agent_id, timestamp, payload
+FROM event_store
+ORDER BY timestamp DESC;
+
+getEventsByType:
+SELECT event_id, event_type, source_agent_id, timestamp, payload
+FROM event_store
+WHERE event_type = ?
+ORDER BY timestamp DESC;
+
+getEventsSince:
+SELECT event_id, event_type, source_agent_id, timestamp, payload
+FROM event_store
+WHERE timestamp >= ?
+ORDER BY timestamp ASC;
+
+getEventById:
+SELECT event_id, event_type, source_agent_id, timestamp, payload
+FROM event_store
+WHERE event_id = ?
+LIMIT 1;

@@ -1,6 +1,7 @@
 package link.socket.kore.data
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.serialization.json.Json
 import link.socket.kore.domain.agent.KoreAgent
 import link.socket.kore.domain.chat.Chat
 import link.socket.kore.domain.chat.Conversation
@@ -14,8 +15,9 @@ import link.socket.kore.util.randomUUID
  * @property scope - CoroutineScope for managing coroutines
  */
 class ConversationRepository(
+    override val json: Json,
     override val scope: CoroutineScope,
-) : Repository<ConversationId, Conversation>(scope) {
+) : Repository<ConversationId, Conversation>(json, scope) {
 
     override val tag: String = "Conversation${super.tag}"
 

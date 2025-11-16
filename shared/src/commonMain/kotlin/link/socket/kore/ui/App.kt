@@ -14,9 +14,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import app.cash.sqldelight.db.SqlDriver
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import link.socket.kore.data.ConversationRepository
+import link.socket.kore.data.DEFAULT_JSON
+import link.socket.kore.data.EventRepository
+import link.socket.kore.data.RepositoryFactory
 import link.socket.kore.domain.agent.KoreAgent
 import link.socket.kore.domain.agent.KoreAgentFactory
 import link.socket.kore.domain.agent.bundled.AgentDefinition
@@ -34,14 +38,36 @@ import link.socket.kore.ui.theme.themeTypography
 
 @Composable
 fun App(
+    databaseDriver: SqlDriver,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    val conversationRepository = remember { ConversationRepository(scope) }
-    val aiConfigurationFactory = remember { AIConfigurationFactory() }
-    val koogAgentFactory = remember { KoogAgentFactory() }
 
-    val agentFactory = remember {
+    val json = remember {
+        DEFAULT_JSON
+    }
+
+    val aiConfigurationFactory = remember {
+        AIConfigurationFactory()
+    }
+
+    val koogAgentFactory = remember {
+        KoogAgentFactory()
+    }
+
+    val repositoryFactory = remember(scope, json) {
+        RepositoryFactory(scope, databaseDriver, json)
+    }
+
+    val conversationRepository = remember(repositoryFactory) {
+        repositoryFactory.createRepository<ConversationRepository>()
+    }
+
+    val eventRepository = remember(repositoryFactory) {
+        repositoryFactory.createRepository<EventRepository>()
+    }
+
+    val agentFactory = remember(conversationRepository, scope) {
         KoreAgentFactory(conversationRepository, scope)
     }
 

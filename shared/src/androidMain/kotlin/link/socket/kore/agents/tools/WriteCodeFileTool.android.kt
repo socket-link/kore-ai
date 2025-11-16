@@ -15,20 +15,41 @@ actual class WriteCodeFileTool actual constructor(
     actual override val requiredAutonomyLevel: AutonomyLevel = AutonomyLevel.ACT_WITH_NOTIFICATION
 
     actual override suspend fun execute(parameters: Map<String, Any>): Outcome {
-        val filePath = parameters["filePath"] as? String
-            ?: return Outcome(false, null, "Missing 'filePath' parameter")
-        val content = parameters["content"] as? String
-            ?: return Outcome(false, null, "Missing 'content' parameter")
+        val filePath = parameters["filePath"]
+            as? String
+            ?: return Outcome(
+                success = false,
+                result = null,
+                errorMessage = "Missing 'filePath' parameter",
+            )
+
+        val content = parameters["content"]
+            as? String
+            ?: return Outcome(
+                success = false,
+                result = null,
+                errorMessage = "Missing 'content' parameter",
+            )
 
         return try {
             val file = File(baseDirectory, filePath)
+
             file.parentFile?.let { parent ->
                 if (!parent.exists()) parent.mkdirs()
             }
             file.writeText(content)
-            Outcome(true, "File written: ${file.absolutePath}")
+
+            Outcome(
+                success = true,
+                result = $$"File written: ${file.absolutePath}",
+            )
         } catch (e: Exception) {
-            Outcome(false, null, "Failed to write file: ${e.message}")
+            // TODO: Log exception
+            Outcome(
+                success = false,
+                result = null,
+                errorMessage = $$"Failed to write file: ${e.message}",
+            )
         }
     }
 

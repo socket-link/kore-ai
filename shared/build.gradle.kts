@@ -4,6 +4,7 @@ import java.util.Properties
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
     kotlin("multiplatform")
@@ -13,7 +14,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("maven-publish")
     id("signing")
-    id("org.jetbrains.dokka") version "2.0.0"
+    id("org.jetbrains.dokka") version "2.1.0"
+    id("app.cash.sqldelight") version "2.2.1"
     id("org.jlleitschuh.gradle.ktlint")
 }
 
@@ -37,7 +39,7 @@ publishing {
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
                     }
                 }
 
@@ -79,6 +81,14 @@ tasks.withType<DokkaTask>().configureEach {
     }
 }
 
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("link.socket.kore.agents.events")
+        }
+    }
+}
+
 kotlin {
     androidTarget {
         compilerOptions {
@@ -114,21 +124,25 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material)
-                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
                 implementation(compose.materialIconsExtended)
 
                 implementation("ai.koog:koog-agents:0.4.1")
+                implementation("app.cash.sqldelight:coroutines-extensions:2.2.1")
+                implementation("app.cash.sqldelight:runtime:2.2.1")
                 implementation("com.aallam.openai:openai-client:4.0.1")
-                implementation("io.ktor:ktor-client-core:3.2.2")
                 implementation("com.squareup.okio:okio:3.11.0")
                 implementation("com.mikepenz:multiplatform-markdown-renderer:0.33.0")
                 implementation("co.touchlab:kermit:2.0.6")
+                implementation("io.ktor:ktor-client-core:3.2.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
             }
         }
         val androidMain by getting {
@@ -138,6 +152,7 @@ kotlin {
                 api("androidx.activity:activity-compose:1.11.0")
                 api("androidx.appcompat:appcompat:1.7.1")
                 api("androidx.core:core-ktx:1.17.0")
+                implementation("app.cash.sqldelight:android-driver:2.2.1")
                 implementation("com.lordcodes.turtle:turtle:0.10.0")
                 implementation("io.ktor:ktor-client-okhttp:3.2.2")
             }
@@ -146,6 +161,7 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.common)
 
+                implementation("app.cash.sqldelight:sqlite-driver:2.2.1")
                 implementation("com.lordcodes.turtle:turtle:0.10.0")
                 implementation("io.ktor:ktor-client-okhttp:3.2.2")
             }
@@ -165,6 +181,7 @@ kotlin {
             iosSimulatorArm64Main.dependsOn(this)
 
             dependencies {
+                implementation("app.cash.sqldelight:native-driver:2.2.1")
                 implementation("io.ktor:ktor-client-darwin:3.2.2")
             }
         }
@@ -202,18 +219,21 @@ android {
 }
 
 tasks.register("kotlinConfiguration") {
-    val generatedSources = File(buildDir, "generated/kotlin/config")
+    val generatedSources = File(layout.buildDirectory.asFile.get(), "generated/kotlin/config")
     generatedSources.mkdirs()
     kotlin.sourceSets.commonMain.get().kotlin.srcDirs(generatedSources)
 
-    val localProperties =
-        Properties().apply {
-            load(FileInputStream(File(rootProject.rootDir, "local.properties")))
-        }
+    val localProperties = Properties().apply {
+        load(FileInputStream(File(rootProject.rootDir, "local.properties")))
+    }
 
-    val properties =
-        localProperties.entries.filter { (key, _) -> (key as? String)?.contains(".") == false }
-            .joinToString("\n") { (key, value) -> "\tconst val $key = \"$value\"" }
+    val properties = localProperties.entries
+        .filter { (key, _) ->
+            (key as? String)?.contains(".") == false
+        }
+        .joinToString("\n") { (key, value) ->
+            "\tconst val $key = \"$value\""
+        }
 
     val kotlinConfig = File(generatedSources, "KotlinConfig.kt")
     kotlinConfig.writeText(
@@ -245,7 +265,7 @@ ktlint {
     }
 
     reporters {
-        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
-        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+        reporter(ReporterType.PLAIN)
+        reporter(ReporterType.CHECKSTYLE)
     }
 }

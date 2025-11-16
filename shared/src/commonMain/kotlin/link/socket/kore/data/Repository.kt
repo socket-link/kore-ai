@@ -4,10 +4,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 /**
  * A base repository class that provides fundamental operations to store and manage values in a mutable map.
@@ -18,17 +20,15 @@ import kotlinx.coroutines.launch
  * @property scope The CoroutineScope used for launching coroutine operations within repository functions.
  */
 abstract class Repository<Key : Any, Value>(
+    open val json: Json,
     open val scope: CoroutineScope,
 ) {
     open val tag: String = "Repository"
 
     private val values: MutableMap<Key, Value> = mutableMapOf()
 
-    // MutableStateFlow to emit the changes in the values map
     private val _valuesFlow: MutableStateFlow<Map<Key, Value>> = MutableStateFlow(values)
-
-    // Read-only StateFlow exposed to observers
-    private val valuesFlow: StateFlow<Map<Key, Value>> = _valuesFlow
+    private val valuesFlow: StateFlow<Map<Key, Value>> = _valuesFlow.asStateFlow()
 
     /**
      * Stores a value associated with the specified key and emits the updated map via a flow.

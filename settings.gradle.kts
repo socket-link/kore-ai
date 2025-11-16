@@ -17,6 +17,7 @@ pluginManagement {
         val agpVersion = extra["agp.version"] as String
         val composeVersion = extra["compose.version"] as String
         val ktorVersion = extra["ktor.version"] as String
+        val sqldelight = extra["sqldelight.version"] as String
 
         kotlin("jvm").version(kotlinVersion)
         kotlin("multiplatform").version(kotlinVersion)
@@ -28,6 +29,7 @@ pluginManagement {
         id("org.jetbrains.compose").version(composeVersion)
         kotlin("plugin.compose").version(kotlinVersion)
         id("io.ktor.plugin").version(ktorVersion)
+        id("app.cash.sqldelight").version(sqldelight)
     }
 }
 
