@@ -22,7 +22,7 @@ import link.socket.kore.data.EventRepository
 import link.socket.kore.data.MessageRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class MessageThreadServiceTest {
+class AgentMessageApiTest {
 
     private val stubAgentId = "agent-A"
     private val stubAgentId2 = "agent-B"
@@ -44,7 +44,7 @@ class MessageThreadServiceTest {
 
         eventRepository = EventRepository(json, scope, database)
         messageRepository = MessageRepository(json, scope, database)
-        eventBus = eventBusFactory.create(eventRepository)
+        eventBus = eventBusFactory.create()
         agentMessageApiFactory = AgentMessageApiFactory(messageRepository, eventBus)
     }
 
@@ -71,7 +71,7 @@ class MessageThreadServiceTest {
                 initialMessageContent = "Kickoff",
             )
 
-            val fetchedThread1 = api.getThread(thread.id)
+            val fetchedThread1 = api.getThread(thread.id).getOrNull()
             assertNotNull(fetchedThread1)
             assertEquals(MessageThreadStatus.OPEN, fetchedThread1.status)
             assertEquals(2, fetchedThread1.participants.size) // sender + agent-B
@@ -84,7 +84,7 @@ class MessageThreadServiceTest {
             )
             assertEquals("Update", message.content)
 
-            val fetchedThread2 = api.getThread(thread.id)
+            val fetchedThread2 = api.getThread(thread.id).getOrNull()
             assertNotNull(fetchedThread2)
             assertEquals(2, fetchedThread2.messages.size)
 
@@ -93,7 +93,7 @@ class MessageThreadServiceTest {
                 threadId = thread.id,
                 reason = "Need approval",
             )
-            val fetchedThread3 = api.getThread(thread.id)
+            val fetchedThread3 = api.getThread(thread.id).getOrNull()
             assertNotNull(fetchedThread3)
             assertEquals(MessageThreadStatus.WAITING_FOR_HUMAN, fetchedThread3.status)
 
@@ -113,7 +113,7 @@ class MessageThreadServiceTest {
 
             // Resolve
             api.resolveThread(thread.id)
-            val fetched4 = api.getThread(thread.id)
+            val fetched4 = api.getThread(thread.id).getOrNull()
             assertNotNull(fetched4)
             assertEquals(MessageThreadStatus.RESOLVED, fetched4.status)
 

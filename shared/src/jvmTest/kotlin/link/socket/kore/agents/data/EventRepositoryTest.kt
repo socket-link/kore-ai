@@ -77,7 +77,7 @@ class EventRepositoryTest {
             val event = sampleTask(id = "evt-100", ts = Instant.fromEpochSeconds(1000))
             repo.saveEvent(event)
 
-            val loaded = repo.getEventById("evt-100")
+            val loaded = repo.getEventById("evt-100").getOrNull()
             assertNotNull(loaded)
             assertIs<Event.TaskCreated>(loaded)
             assertEquals("task-123", loaded.taskId)
@@ -92,7 +92,8 @@ class EventRepositoryTest {
             repo.saveEvent(t1)
             repo.saveEvent(q1)
 
-            val tasks = repo.getEventsByType(Event.TaskCreated.EVENT_TYPE)
+            val tasks = repo.getEventsByType(Event.TaskCreated.EVENT_TYPE).getOrNull()
+            assertNotNull(tasks)
             assertEquals(1, tasks.size)
             assertIs<Event.TaskCreated>(tasks.first())
         }
@@ -108,7 +109,8 @@ class EventRepositoryTest {
             repo.saveEvent(t2)
             repo.saveEvent(q1)
 
-            val since = repo.getEventsSince(Instant.fromEpochSeconds(1_500))
+            val since = repo.getEventsSince(Instant.fromEpochSeconds(1_500)).getOrNull()
+            assertNotNull(since)
             assertEquals(listOf("evt-3", "evt-2"), since.map { it.eventId })
         }
     }
@@ -121,7 +123,7 @@ class EventRepositoryTest {
 
             // First open
             val driver1 = JdbcSqliteDriver("jdbc:sqlite:$dbFile")
-            Database.Companion.Schema.create(driver1)
+            Database.Schema.create(driver1)
 
             val repo1 = EventRepository(stubJson, testScope, Database.Companion(driver1))
             val e = sampleTask(id = "evt-persist", ts = Instant.fromEpochSeconds(42_000))
@@ -131,7 +133,7 @@ class EventRepositoryTest {
             // Re-open same file
             val driver2 = JdbcSqliteDriver("jdbc:sqlite:$dbFile")
             val repo2 = EventRepository(stubJson, testScope, Database.Companion(driver2))
-            val loaded = repo2.getEventById("evt-persist")
+            val loaded = repo2.getEventById("evt-persist").getOrNull()
 
             assertNotNull(loaded)
             assertIs<Event.TaskCreated>(loaded)

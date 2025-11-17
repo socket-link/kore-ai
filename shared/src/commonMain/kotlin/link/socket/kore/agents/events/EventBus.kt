@@ -7,8 +7,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.datetime.Instant
-import link.socket.kore.data.EventRepository
 
 typealias EventExecutionMap = MutableMap<String, suspend (Event) -> Unit>
 
@@ -22,11 +20,10 @@ data class SubscriptionToken(val id: String)
  *
  * - Thread-safe and Kotlin Multiplatform compatible
  * - Handlers are invoked asynchronously using the provided [CoroutineScope]
- * - When an [EventRepository] is provided, events are persisted on publish and can be replayed/query history
+ * - Persistence is handled by higher-level APIs; EventBus only dispatches events to subscribers
  */
 class EventBus(
     private val scope: CoroutineScope,
-    private val eventRepository: EventRepository,
     private val logger: EventLogger = ConsoleEventLogger(),
 ) {
     // Map event KClass -> (tokenId -> handler)
@@ -39,21 +36,12 @@ class EventBus(
 
     /**
      * Publish an [event] to all subscribers of its exact KClass.
-     * - The event is saved in [eventRepository] before notifying subscribers.
      * - Handlers are launched asynchronously on [scope].
      * - Any individual handler failures are swallowed to avoid impacting other subscribers.
      */
     suspend fun publish(event: Event) {
-        // Persist and snapshot handlers under the same lock to maintain ordering and thread-safety
+        // Snapshot handlers under lock to maintain ordering and thread-safety
         val handlers: List<suspend (Event) -> Unit> = mutex.withLock {
-            // Attempt to persist the event; log but do not fail publish on errors
-            eventRepository.saveEventResult(event).onFailure { th ->
-                logger.logError(
-                    message = "Failed to persist event ${event.eventType} id=${event.eventId}",
-                    throwable = th,
-                )
-            }
-
             subscribers[event::class]?.values?.toList().orEmpty()
         }
 
@@ -61,7 +49,6 @@ class EventBus(
             return
         }
 
-        // Log the publication after persistence attempt
         logger.logPublish(event)
 
         for (handler in handlers) {
@@ -77,61 +64,6 @@ class EventBus(
                 }
             }
         }
-    }
-
-    /**
-     * Fetch events from persistence and publish them to current subscribers.
-     * If [since] is provided, only events with timestamp >= since are replayed; otherwise all events.
-     */
-    suspend fun replayEvents(since: Instant?) {
-        val result = if (since != null) {
-            eventRepository.getEventsSinceResult(since)
-        } else {
-            eventRepository.getAllEventsResult()
-        }
-
-        val events: List<Event> = result.onFailure { th ->
-            logger.logError("Failed to load events for replay since=$since", th)
-        }.getOrElse { emptyList() }
-
-        for (e in events) {
-            publish(e)
-        }
-    }
-
-    /**
-     * Retrieve historical events from persistence.
-     * - If [eventType] is provided, filters by that type.
-     * - If [since] is provided, returns events since that timestamp.
-     * - If both are null, returns all events.
-     */
-    fun getEventHistory(
-        eventType: String? = null,
-        since: Instant? = null,
-    ): List<Event> {
-        val result: Result<List<Event>> = when {
-            eventType != null && since != null -> {
-                eventRepository
-                    .getEventsByTypeResult(eventType)
-                    .map { list -> list.filter { it.timestamp >= since } }
-            }
-            eventType != null -> {
-                eventRepository.getEventsByTypeResult(eventType)
-            }
-            since != null -> {
-                eventRepository.getEventsSinceResult(since)
-            }
-            else -> {
-                eventRepository.getAllEventsResult()
-            }
-        }
-
-        return result.onFailure { th ->
-            logger.logError(
-                message = "Failed to load event history (type=$eventType since=$since)",
-                throwable = th,
-            )
-        }.getOrElse { emptyList() }
     }
 
     /**

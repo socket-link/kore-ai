@@ -79,21 +79,23 @@ class EventBusIntegrationTest {
             // First bus publishes events
             val driver1 = JdbcSqliteDriver("jdbc:sqlite:$dbFile")
             Database.Schema.create(driver1)
-            val bus1 = eventBusFactory.create(eventRepository)
-
+            val bus1 = eventBusFactory.create()
+            
             val e1 = taskEvent("evt-bus-1", ts = Instant.fromEpochSeconds((10_000)))
             val e2 = questionEvent("evt-bus-2", ts = Instant.fromEpochSeconds(20_000))
-            bus1.publish(e1)
-            bus1.publish(e2)
+            val api1 = AgentEventApiFactory(eventRepository, bus1).create("agent-A")
+            api1.publish(e1)
+            api1.publish(e2)
 
             // Simulate restart (close driver and re-open)
             driver1.close()
 
             val driver2 = JdbcSqliteDriver("jdbc:sqlite:$dbFile")
-            val bus2 = eventBusFactory.create(eventRepository)
-
+            val bus2 = eventBusFactory.create()
+            val api2 = AgentEventApiFactory(eventRepository, bus2).create("agent-A")
+            
             // History query
-            val history = bus2.getEventHistory()
+            val history = api2.getEventHistory()
             assertEquals(2, history.size)
             assertIs<Event.TaskCreated>(history.first { it.eventId == "evt-bus-1" })
 
@@ -103,7 +105,7 @@ class EventBusIntegrationTest {
             bus2.subscribe<Event.TaskCreated> { acc += it.eventId }
             bus2.subscribe<Event.QuestionRaised> { acc += it.eventId }
 
-            bus2.replayEvents(since = Instant.fromEpochSeconds(0L))
+            api2.replayEvents(since = Instant.fromEpochSeconds(0L))
 
             withTimeout(2_000) {
                 // small delay to allow async handlers to process
@@ -120,13 +122,15 @@ class EventBusIntegrationTest {
     @Test
     fun `publish failures do not crash bus`() {
         runBlocking {
-            val bus = eventBusFactory.create(eventRepository)
+            val bus = eventBusFactory.create()
 
             var goodHandlerCalled = false
             bus.subscribe<Event.TaskCreated> { throw IllegalStateException("boom") }
             bus.subscribe<Event.TaskCreated> { goodHandlerCalled = true }
 
-            bus.publish(taskEvent("evt-crash-1"))
+            // Use API to persist then publish
+            val api = AgentEventApiFactory(eventRepository, bus).create("agent-A")
+            api.publish(taskEvent("evt-crash-1"))
 
             // allow time for handler execution
             delay(200)
@@ -137,19 +141,19 @@ class EventBusIntegrationTest {
     @Test
     fun `concurrent publishing is safe and persists all events`() {
         runBlocking {
-            val bus = eventBusFactory.create(eventRepository)
+            val bus = eventBusFactory.create()
 
             val n = 25
             coroutineScope {
                 (1..n).map { i ->
-                    async { bus.publish(taskEvent("evt-conc-$i")) }
+                    async { AgentEventApiFactory(eventRepository, bus).create("agent-A").publish(taskEvent("evt-conc-$i")) }
                 }.awaitAll()
             }
 
             // Give some time for async dispatch
             delay(200)
 
-            val history = bus.getEventHistory(eventType = Event.TaskCreated.EVENT_TYPE)
+            val history = AgentEventApiFactory(eventRepository, bus).create("agent-A").getEventHistory(eventType = Event.TaskCreated.EVENT_TYPE)
             assertEquals(n, history.size)
         }
     }

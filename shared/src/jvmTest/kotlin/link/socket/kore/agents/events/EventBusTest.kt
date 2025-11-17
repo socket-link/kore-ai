@@ -58,7 +58,7 @@ class EventBusTest {
     @Test
     fun `subscriber receives only matching events`() {
         runBlocking {
-            val bus = EventBus(scope, eventRepository)
+            val bus = EventBus(scope)
             val receivedTask = CompletableDeferred<Event.TaskCreated>()
             var nonMatchingCalled: Boolean
 
@@ -86,7 +86,7 @@ class EventBusTest {
     @Test
     fun `multiple subscribers receive event`() {
         runBlocking {
-            val bus = EventBus(scope, eventRepository)
+            val bus = EventBus(scope)
             val s1 = CompletableDeferred<Boolean>()
             val s2 = CompletableDeferred<Boolean>()
 
@@ -109,7 +109,7 @@ class EventBusTest {
         runBlocking {
             var count = 0
 
-            val bus = EventBus(scope, eventRepository)
+            val bus = EventBus(scope)
             val token = bus.subscribe<Event.TaskCreated> { count += 1 }
 
             // First publish should deliver

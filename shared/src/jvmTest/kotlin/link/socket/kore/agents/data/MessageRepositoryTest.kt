@@ -85,7 +85,7 @@ class MessageRepositoryTest {
 
             repo.saveThread(thread)
 
-            val fetched = repo.findThreadById(stubThreadId)
+            val fetched = repo.findThreadById(stubThreadId).getOrNull()
             assertNotNull(fetched)
             assertEquals(1, fetched.participants.size)
             assertEquals(1, fetched.messages.size)
@@ -121,7 +121,7 @@ class MessageRepositoryTest {
             )
             repo.addMessageToThread(stubThreadId2, msg1)
 
-            val fetched = repo.findThreadById(stubThreadId2)
+            val fetched = repo.findThreadById(stubThreadId2).getOrNull()
             assertNotNull(fetched)
             assertEquals(2, fetched.participants.size)
             assertEquals(2, fetched.messages.size)
@@ -141,13 +141,13 @@ class MessageRepositoryTest {
             repo.saveThread(thread)
 
             repo.updateStatus(stubThreadId3, MessageThreadStatus.WAITING_FOR_HUMAN)
-            val updated = repo.findThreadById(stubThreadId3)
+            val updated = repo.findThreadById(stubThreadId3).getOrNull()
             assertNotNull(updated)
             assertEquals(MessageThreadStatus.WAITING_FOR_HUMAN, updated.status)
 
             // now delete conversation, ensure cascade removes messages/participants
             repo.delete(stubThreadId3)
-            val deleted = repo.findThreadById(stubThreadId3)
+            val deleted = repo.findThreadById(stubThreadId3).getOrNull()
             assertNull(deleted)
         }
     }

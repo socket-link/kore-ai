@@ -33,8 +33,8 @@ class AgentEventBusIntegrationTest {
         val database = Database(driver)
 
         eventRepository = EventRepository(json, scope, database)
-        eventBus = eventBusFactory.create(eventRepository)
-        agentEventApiFactory = AgentEventApiFactory(eventBus)
+        eventBus = eventBusFactory.create()
+        agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBus)
     }
 
     @AfterTest

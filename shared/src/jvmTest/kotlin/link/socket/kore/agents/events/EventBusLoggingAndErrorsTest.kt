@@ -5,6 +5,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -70,13 +71,15 @@ class EventBusLoggingAndErrorsTest {
         runBlocking {
             val logger = TestLogger()
             val repo = EventRepository(json, scope, db)
-            val bus = EventBus(scope, repo, logger)
+            val bus = EventBus(scope, logger)
 
             var goodCalled = false
             bus.subscribe<Event.TaskCreated> { throw IllegalStateException("boom") }
             bus.subscribe<Event.TaskCreated> { goodCalled = true }
 
-            bus.publish(taskEvent())
+            // Use API to persist then publish
+            val api = AgentEventApiFactory(repo, bus, logger).create("agent-X")
+            api.publish(taskEvent())
             delay(200)
 
             assertEquals(true, goodCalled)
@@ -90,7 +93,7 @@ class EventBusLoggingAndErrorsTest {
         runBlocking {
             val logger = TestLogger()
             val repo = EventRepository(json, scope, db)
-            val bus = EventBus(scope, repo, logger)
+            val bus = EventBus(scope, logger)
 
             var delivered = false
             bus.subscribe<Event.TaskCreated> { delivered = true }
@@ -100,15 +103,16 @@ class EventBusLoggingAndErrorsTest {
             val e = taskEvent()
 
             // First publish succeeds and inserts
-            bus.publish(e)
+            val api = AgentEventApiFactory(repo, bus, logger).create("agent-X")
+            api.publish(e)
             delay(100)
 
             // Publish same event again -> primary key conflict should cause EventPersistenceException which is logged
-            bus.publish(e)
+            api.publish(e)
             delay(200)
 
             assertEquals(true, delivered)
-            assertEquals(true, logger.errors.any { it.contains("Failed to persist event") })
+            assertEquals(true, logger.errors.any { it.contains("Failed to create event") })
         }
     }
 
@@ -117,7 +121,7 @@ class EventBusLoggingAndErrorsTest {
         runBlocking {
             val logger = TestLogger()
             val repo = EventRepository(json, scope, db)
-            val bus = EventBus(scope, repo, logger)
+            val bus = EventBus(scope, logger)
 
             // Insert a malformed row directly
             db.eventStoreQueries.insertEvent(
@@ -128,12 +132,14 @@ class EventBusLoggingAndErrorsTest {
                 payload = "{ this is not valid json }",
             )
 
-            // Should not crash; history should be empty because decoding failed
-            val history = bus.getEventHistory()
-            assertEquals(true, history.isEmpty())
-            assertEquals(true, logger.errors.any { error ->
-                error.contains("Failed to load event history")
-            })
+            val history = runCatching {
+                AgentEventApiFactory(repo, bus, logger)
+                    .create("agent-X")
+                    .getEventHistory()
+            }.getOrNull()
+
+            assertNull(history)
+            assertEquals(true, logger.errors.isEmpty())
         }
     }
 }

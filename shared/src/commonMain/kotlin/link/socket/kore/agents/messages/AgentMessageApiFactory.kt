@@ -13,8 +13,8 @@ class AgentMessageApiFactory(
      */
     fun create(agentId: AgentId): AgentMessageApi =
         AgentMessageApi(
-            repository = messageRepository,
-            eventBus = eventBus,
             agentId = agentId,
+            messageRepository = messageRepository,
+            eventBus = eventBus,
         )
 }

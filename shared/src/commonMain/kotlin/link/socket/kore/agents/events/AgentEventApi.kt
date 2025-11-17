@@ -3,6 +3,7 @@ package link.socket.kore.agents.events
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import link.socket.kore.agents.core.AgentId
+import link.socket.kore.data.EventRepository
 
 /**
  * Expect declaration for generating globally-unique event IDs per platform.
@@ -22,9 +23,26 @@ val AgentEventApi.taskAssignedToMeFilter
  * methods that agents can call directly.
  */
 class AgentEventApi(
-    private val eventBus: EventBus,
     val agentId: AgentId,
+    private val eventRepository: EventRepository,
+    private val eventBus: EventBus,
+    private val logger: EventLogger = ConsoleEventLogger(),
 ) {
+
+    /** Persist and publish a pre-constructed event. */
+    suspend fun publish(event: Event) {
+        eventRepository.saveEvent(event)
+            .onSuccess {
+                eventBus.publish(event)
+            }
+            .onFailure { throwable ->
+                logger.logError(
+                    message = "Failed to create event ${event.eventType} id=${event.eventId}",
+                    throwable = throwable,
+                )
+            }
+    }
+
     /** Publish a TaskCreated event with auto-generated ID and current timestamp. */
     suspend fun publishTaskCreated(
         taskId: String,
@@ -39,7 +57,8 @@ class AgentEventApi(
             description = description,
             assignedTo = assignedTo,
         )
-        eventBus.publish(event)
+
+        publish(event)
     }
 
     /** Publish a QuestionRaised event with auto-generated ID and current timestamp. */
@@ -56,7 +75,8 @@ class AgentEventApi(
             context = context,
             urgency = urgency,
         )
-        eventBus.publish(event)
+
+        publish(event)
     }
 
     /** Publish a CodeSubmitted event with auto-generated ID and current timestamp. */
@@ -73,7 +93,8 @@ class AgentEventApi(
             changeDescription = changeDescription,
             reviewRequired = reviewRequired,
         )
-        eventBus.publish(event)
+
+        publish(event)
     }
 
     /** Subscribe to TaskCreated events. */
@@ -115,7 +136,48 @@ class AgentEventApi(
             }
         }
 
-    /** Retrieve all events since the provided epoch millis. */
-    fun getRecentEvents(since: Instant?): List<Event> =
-        eventBus.getEventHistory(since = since)
+    /** Retrieve all events since the provided timestamp, or all if null. */
+    suspend fun getRecentEvents(since: Instant?): List<Event> {
+        val result = if (since != null) {
+            eventRepository.getEventsSince(since)
+        } else {
+            eventRepository.getAllEvents()
+        }
+
+        return result.onFailure { th ->
+            logger.logError(
+                message = "Failed to load recent events since=$since",
+                throwable = th,
+            )
+        }.getOrElse { emptyList() }
+    }
+
+    /** Retrieve historical events with optional type filter and since timestamp. */
+    suspend fun getEventHistory(eventType: String? = null, since: Instant? = null): List<Event> {
+        val result: Result<List<Event>> = when {
+            eventType != null && since != null -> {
+                eventRepository
+                    .getEventsByType(eventType)
+                    .map { list -> list.filter { it.timestamp >= since } }
+            }
+            eventType != null -> eventRepository.getEventsByType(eventType)
+            since != null -> eventRepository.getEventsSince(since)
+            else -> eventRepository.getAllEvents()
+        }
+
+        return result.onFailure { th ->
+            logger.logError(
+                message = "Failed to load event history (type=$eventType since=$since)",
+                throwable = th,
+            )
+        }.getOrElse { emptyList() }
+    }
+
+    /** Replay past events by publishing them to current subscribers. */
+    suspend fun replayEvents(since: Instant?) {
+        val events = getRecentEvents(since)
+        for (e in events) {
+            eventBus.publish(e)
+        }
+    }
 }

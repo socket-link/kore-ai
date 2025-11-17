@@ -1,13 +1,15 @@
 package link.socket.kore.data
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import link.socket.kore.agents.events.Database
 import link.socket.kore.agents.events.Event
 import link.socket.kore.agents.events.EventId
-import link.socket.kore.agents.events.EventPersistenceException
 import link.socket.kore.agents.events.EventSerializationException
 import link.socket.kore.agents.events.EventStoreQueries
 
@@ -18,6 +20,7 @@ import link.socket.kore.agents.events.EventStoreQueries
  * providing a platform-specific SQLDelight [SqlDriver] to construct the generated [link.socket.kore.agents.events.Database]
  * instance and then pass it into this repository.
  */
+// TODO: Remove duplication
 class EventRepository(
     override val json: Json,
     override val scope: CoroutineScope,
@@ -32,79 +35,102 @@ class EventRepository(
     /**
      * Persist the given [event] by serializing it to JSON and inserting into the event_store table.
      */
-    fun saveEvent(event: Event) {
-        saveEventResult(event).getOrThrow()
-    }
+    suspend fun saveEvent(event: Event): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val eventPayload: String = encode(event)
 
-    /** Safe variant that wraps errors in [Result]. */
-    fun saveEventResult(event: Event): Result<Unit> = runCatching {
-        val payload: String = encode(event)
-        runCatching {
-            queries.insertEvent(
-                event_id = event.eventId,
-                event_type = event.eventType,
-                source_id = event.eventSource.getIdentifier(),
-                timestamp = event.timestamp.toEpochMilliseconds(),
-                payload = payload
-            )
-        }.getOrElse { t ->
-            throw EventPersistenceException("Failed to insert event ${event.eventId}", t)
+                queries.insertEvent(
+                    event_id = event.eventId,
+                    event_type = event.eventType,
+                    source_id = event.eventSource.getIdentifier(),
+                    timestamp = event.timestamp.toEpochMilliseconds(),
+                    payload = eventPayload,
+                )
+            }.map { }
         }
-    }
 
     /**
      * Retrieve all events in reverse chronological order (newest first).
      */
-    fun getAllEvents(): List<Event> = getAllEventsResult().getOrThrow()
-
-    fun getAllEventsResult(): Result<List<Event>> = runCatching {
-        val rows = runCatching { queries.getAllEvents().executeAsList() }
-            .getOrElse { t -> throw EventPersistenceException("Failed to query all events", t) }
-        rows.map { row -> decode(row.payload) }
-    }
+    suspend fun getAllEvents(): Result<List<Event>> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                queries
+                    .getAllEvents()
+                    .executeAsList()
+            }.map { rows ->
+                rows.map { row ->
+                    decode(row.payload)
+                }
+            }
+        }
 
     /**
      * Retrieve all events since the given epoch millis [timestamp], ascending by time.
      */
-    fun getEventsSince(timestamp: Instant): List<Event> = getEventsSinceResult(timestamp).getOrThrow()
-
-    fun getEventsSinceResult(timestamp: Instant): Result<List<Event>> = runCatching {
-        val rows = runCatching { queries.getEventsSince(timestamp.toEpochMilliseconds()).executeAsList() }
-            .getOrElse { t -> throw EventPersistenceException("Failed to query events since $timestamp", t) }
-        rows.map { row -> decode(row.payload) }
-    }
+    suspend fun getEventsSince(timestamp: Instant): Result<List<Event>> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                queries
+                    .getEventsSince(timestamp.toEpochMilliseconds())
+                    .executeAsList()
+            }.map { rows ->
+                rows.map { row ->
+                    decode(row.payload)
+                }
+            }
+        }
 
     /**
      * Retrieve all events filtered by [eventType] (e.g., "TaskCreatedEvent"), newest first.
      */
-    fun getEventsByType(eventType: String): List<Event> = getEventsByTypeResult(eventType).getOrThrow()
-
-    fun getEventsByTypeResult(eventType: String): Result<List<Event>> = runCatching {
-        val rows = runCatching { queries.getEventsByType(eventType).executeAsList() }
-            .getOrElse { t -> throw EventPersistenceException("Failed to query events by type $eventType", t) }
-        rows.map { row -> decode(row.payload) }
-    }
+    suspend fun getEventsByType(eventType: String): Result<List<Event>> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                queries
+                    .getEventsByType(eventType)
+                    .executeAsList()
+            }.map { rows ->
+                rows.map { row ->
+                    decode(row.payload)
+                }
+            }
+        }
 
     /**
      * Retrieve an event by its [eventId], or null if not present.
      */
-    fun getEventById(eventId: EventId): Event? = getEventByIdResult(eventId).getOrThrow()
-
-    fun getEventByIdResult(eventId: EventId): Result<Event?> = runCatching {
-        val row = runCatching { queries.getEventById(eventId).executeAsOneOrNull() }
-            .getOrElse { t -> throw EventPersistenceException("Failed to query event by id $eventId", t) }
-        row?.let { decode(it.payload) }
-    }
+    suspend fun getEventById(eventId: EventId): Result<Event?> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                queries
+                    .getEventById(eventId)
+                    .executeAsOneOrNull()
+            }.map { row ->
+                if (row == null) {
+                    null
+                } else {
+                    decode(row.payload)
+                }
+            }
+        }
 
     private fun encode(event: Event): String = try {
         json.encodeToString(
             serializer = Event.serializer(),
             value = event,
         )
-    } catch (se: SerializationException) {
-        throw EventSerializationException("Failed to serialize event ${event.eventId}", se)
-    } catch (t: Throwable) {
-        throw EventSerializationException("Failed to serialize event ${event.eventId}", t)
+    } catch (throwable: SerializationException) {
+        throw EventSerializationException(
+            message = "Failed to serialize event ${event.eventId}",
+            cause = throwable,
+        )
+    } catch (throwable: Throwable) {
+        throw EventSerializationException(
+            message = "Failed to serialize event ${event.eventId}",
+            cause = throwable,
+        )
     }
 
     private fun decode(payload: String): Event = try {
@@ -112,9 +138,15 @@ class EventRepository(
             deserializer = Event.serializer(),
             string = payload,
         )
-    } catch (se: SerializationException) {
-        throw EventSerializationException("Failed to deserialize event payload", se)
-    } catch (t: Throwable) {
-        throw EventSerializationException("Failed to deserialize event payload", t)
+    } catch (throwable: SerializationException) {
+        throw EventSerializationException(
+            message = "Failed to deserialize event payload",
+            cause = throwable,
+        )
+    } catch (throwable: Throwable) {
+        throw EventSerializationException(
+            message = "Failed to deserialize event payload",
+            cause = throwable,
+        )
     }
 }
