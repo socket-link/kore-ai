@@ -30,6 +30,7 @@ sealed interface MessageEvent : Event {
         }
     }
 
+    @Serializable
     data class MessagePosted(
         override val eventId: EventId,
         override val messageThreadId: MessageThreadId,
@@ -46,6 +47,7 @@ sealed interface MessageEvent : Event {
         }
     }
 
+    @Serializable
     data class ThreadStatusChanged(
         override val eventId: EventId,
         override val timestamp: Instant,
@@ -62,6 +64,7 @@ sealed interface MessageEvent : Event {
         }
     }
 
+    @Serializable
     data class EscalationRequested(
         override val eventId: EventId,
         override val timestamp: Instant,

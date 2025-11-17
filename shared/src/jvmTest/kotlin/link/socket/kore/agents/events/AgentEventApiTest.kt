@@ -20,18 +20,26 @@ import link.socket.kore.data.EventRepository
 @OptIn(ExperimentalCoroutinesApi::class)
 class AgentEventApiTest {
 
+    private val stubAgentId = "agent-A"
+    private val stubAgentId2 = "agent-B"
     private val json = DEFAULT_JSON
     private val scope = TestScope(UnconfinedTestDispatcher())
     private val eventBusFactory = EventBusFactory(scope)
 
     private lateinit var driver: JdbcSqliteDriver
     private lateinit var eventRepository: EventRepository
+    private lateinit var eventBus: EventBus
+    private lateinit var agentEventApiFactory: AgentEventApiFactory
 
     @BeforeTest
     fun setUp() {
         driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         Database.Schema.create(driver)
-        eventRepository = EventRepository(json, scope, Database(driver))
+        val database = Database(driver)
+
+        eventRepository = EventRepository(json, scope, database)
+        eventBus = eventBusFactory.create(eventRepository)
+        agentEventApiFactory = AgentEventApiFactory(eventBus)
     }
 
     @AfterTest
@@ -42,15 +50,17 @@ class AgentEventApiTest {
     @Test
     fun `agent can publish and subscribe to TaskCreated`() {
         runBlocking {
-            val agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBusFactory)
-            val api = agentEventApiFactory.create("agent-1")
+            val api = agentEventApiFactory.create(stubAgentId)
 
             val received = CompletableDeferred<Event.TaskCreated>()
             api.onTaskCreated { received.complete(it) }
-            api.publishTaskCreated(taskId = "task-123", description = "Implement feature X")
+            api.publishTaskCreated(
+                taskId = "task-123",
+                description = "Implement feature X",
+            )
 
             val event = received.await()
-            assertEquals("agent-1", event.eventSource.getIdentifier())
+            assertEquals(stubAgentId, event.eventSource.getIdentifier())
             assertEquals("task-123", event.taskId)
             assertEquals(true, event.eventId.isNotBlank())
         }
@@ -59,15 +69,17 @@ class AgentEventApiTest {
     @Test
     fun `multiple subscribers receive same event`() {
         runBlocking {
-            val agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBusFactory)
-            val api = agentEventApiFactory.create("agent-1")
+            val api = agentEventApiFactory.create(stubAgentId)
 
             var c1 = 0
             var c2 = 0
 
             api.onTaskCreated { c1++ }
             api.onTaskCreated { c2++ }
-            api.publishTaskCreated(taskId = "t1", description = "desc")
+            api.publishTaskCreated(
+                taskId = "t1",
+                description = "desc",
+            )
 
             delay(200)
             assertEquals(1, c1)
@@ -78,8 +90,7 @@ class AgentEventApiTest {
     @Test
     fun `events persist and can be queried historically`() {
         runBlocking {
-            val agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBusFactory)
-            val api = agentEventApiFactory.create("agent-1")
+            val api = agentEventApiFactory.create(stubAgentId)
 
             val since = Clock.System.now()
             delay(5)
@@ -100,9 +111,7 @@ class AgentEventApiTest {
     @Test
     fun `multiple AgentEventApi instances can coexist and observe their own agentId's events`() {
         runBlocking {
-            val agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBusFactory)
-
-            val api1 = agentEventApiFactory.create("agent-A")
+            val api1 = agentEventApiFactory.create(stubAgentId)
             val receivedA = CompletableDeferred<Event.TaskCreated>()
             api1.onTaskCreated(
                 api1.eventCreatedByMeFilter,
@@ -110,7 +119,7 @@ class AgentEventApiTest {
                 receivedA.complete(e)
             }
 
-            val api2 = agentEventApiFactory.create("agent-B")
+            val api2 = agentEventApiFactory.create(stubAgentId2)
             val receivedB = CompletableDeferred<Event.TaskCreated>()
             api2.onTaskCreated(
                 api2.eventCreatedByMeFilter,
@@ -123,8 +132,8 @@ class AgentEventApiTest {
 
             val eA = receivedA.await()
             val eB = receivedB.await()
-            assertEquals("agent-A", eA.eventSource.getIdentifier())
-            assertEquals("agent-B", eB.eventSource.getIdentifier())
+            assertEquals(stubAgentId, eA.eventSource.getIdentifier())
+            assertEquals(stubAgentId2, eB.eventSource.getIdentifier())
             assertNotEquals(eA.eventId, eB.eventId)
         }
     }
@@ -132,12 +141,15 @@ class AgentEventApiTest {
     @Test
     fun `code submitted event can be published and subscribed`() {
         runBlocking {
-            val agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBusFactory)
-            val api = agentEventApiFactory.create("agent-1")
+            val api = agentEventApiFactory.create(stubAgentId)
             val received = CompletableDeferred<Event.CodeSubmitted>()
 
             api.onCodeSubmitted { received.complete(it) }
-            api.publishCodeSubmitted(filePath = "/tmp/a.kt", changeDescription = "Add feature", reviewRequired = true)
+            api.publishCodeSubmitted(
+                filePath = "/tmp/a.kt",
+                changeDescription = "Add feature",
+                reviewRequired = true,
+            )
 
             val e = received.await()
             assertIs<Event.CodeSubmitted>(e)

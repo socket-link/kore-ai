@@ -156,10 +156,13 @@ class MessageRepository(
                     json.encodeToString(metadata)
                 },
             )
-            queries.insertParticipant(
-                threadId = threadId,
-                participantId = message.sender.getIdentifier(),
-            )
+            // Ensure participant exists; ignore if already present (unique constraint)
+            runCatching {
+                queries.insertParticipant(
+                    threadId = threadId,
+                    participantId = message.sender.getIdentifier(),
+                )
+            }
             queries.updateMessageThreadStatus(
                 id = threadId,
                 status = MessageThreadStatus.OPEN.name, // keep status unless external change; OPEN ensures active

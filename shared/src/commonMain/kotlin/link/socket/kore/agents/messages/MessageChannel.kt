@@ -1,22 +1,34 @@
 package link.socket.kore.agents.messages
 
+import kotlinx.serialization.Serializable
+
 typealias MessageChannelId = String
 
+@Serializable
 sealed interface MessageChannel {
 
+    @Serializable
     sealed class Public(
         val id: MessageChannelId,
     ) : MessageChannel {
+
+        @Serializable
         data object Engineering : Public("#engineering")
+
+        @Serializable
         data object Design : Public("#design")
+
+        @Serializable
         data object Product : Public("#product")
 
         override fun getIdentifier(): String = id
     }
 
+    @Serializable
     data class Direct(
         val sender: MessageSender.Agent,
     ) : MessageChannel {
+
         override fun getIdentifier(): String =
             "${sender.agentId}@me"
     }

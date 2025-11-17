@@ -23,12 +23,18 @@ class AgentEventBusIntegrationTest {
 
     private lateinit var driver: JdbcSqliteDriver
     private lateinit var eventRepository: EventRepository
+    private lateinit var eventBus: EventBus
+    private lateinit var agentEventApiFactory: AgentEventApiFactory
 
     @BeforeTest
     fun setUp() {
         driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         Database.Schema.create(driver)
-        eventRepository = EventRepository(json, scope, Database(driver))
+        val database = Database(driver)
+
+        eventRepository = EventRepository(json, scope, database)
+        eventBus = eventBusFactory.create(eventRepository)
+        agentEventApiFactory = AgentEventApiFactory(eventBus)
     }
 
     @AfterTest
@@ -39,8 +45,6 @@ class AgentEventBusIntegrationTest {
     @Test
     fun `complete agent communication flow`() {
         runBlocking {
-            val agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBusFactory)
-
             // Setup: Three agents with one shared event bus
             val api1 = agentEventApiFactory.create("code-writer")
             val api2 = agentEventApiFactory.create("code-reviewer")
