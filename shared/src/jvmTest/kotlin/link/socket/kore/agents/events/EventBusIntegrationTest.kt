@@ -19,6 +19,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.withTimeout
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import link.socket.kore.data.DEFAULT_JSON
 import link.socket.kore.data.EventRepository
 
@@ -46,11 +48,11 @@ class EventBusIntegrationTest {
 
     private fun taskEvent(
         id: String,
-        ts: Long = System.currentTimeMillis(),
-    ) = TaskCreatedEvent(
+        ts: Instant = Clock.System.now(),
+    ) = Event.TaskCreated(
         eventId = id,
         timestamp = ts,
-        sourceAgentId = "agent-A",
+        eventSource = EventSource.Agent("agent-A"),
         taskId = "task-123",
         description = "Persisted Task",
         assignedTo = "agent-B",
@@ -58,11 +60,11 @@ class EventBusIntegrationTest {
 
     private fun questionEvent(
         id: String,
-        ts: Long = System.currentTimeMillis(),
-    ) = QuestionRaisedEvent(
+        ts: Instant = Clock.System.now(),
+    ) = Event.QuestionRaised(
         eventId = id,
         timestamp = ts,
-        sourceAgentId = "agent-Q",
+        eventSource = EventSource.Agent("agent-Q"),
         questionText = "What happened?",
         context = "IntegrationTest",
         urgency = Urgency.LOW,
@@ -79,8 +81,8 @@ class EventBusIntegrationTest {
             Database.Schema.create(driver1)
             val bus1 = eventBusFactory.create(eventRepository)
 
-            val e1 = taskEvent("evt-bus-1", ts = 10_000)
-            val e2 = questionEvent("evt-bus-2", ts = 20_000)
+            val e1 = taskEvent("evt-bus-1", ts = Instant.fromEpochSeconds((10_000)))
+            val e2 = questionEvent("evt-bus-2", ts = Instant.fromEpochSeconds(20_000))
             bus1.publish(e1)
             bus1.publish(e2)
 
@@ -93,15 +95,15 @@ class EventBusIntegrationTest {
             // History query
             val history = bus2.getEventHistory()
             assertEquals(2, history.size)
-            assertIs<TaskCreatedEvent>(history.first { it.eventId == "evt-bus-1" })
+            assertIs<Event.TaskCreated>(history.first { it.eventId == "evt-bus-1" })
 
             // Subscribe fresh handler and replay events since 0
             val received = CompletableDeferred<List<String>>()
             val acc = mutableListOf<String>()
-            bus2.subscribe<TaskCreatedEvent> { acc += it.eventId }
-            bus2.subscribe<QuestionRaisedEvent> { acc += it.eventId }
+            bus2.subscribe<Event.TaskCreated> { acc += it.eventId }
+            bus2.subscribe<Event.QuestionRaised> { acc += it.eventId }
 
-            bus2.replayEvents(since = 0L)
+            bus2.replayEvents(since = Instant.fromEpochSeconds(0L))
 
             withTimeout(2_000) {
                 // small delay to allow async handlers to process
@@ -121,8 +123,8 @@ class EventBusIntegrationTest {
             val bus = eventBusFactory.create(eventRepository)
 
             var goodHandlerCalled = false
-            bus.subscribe<TaskCreatedEvent> { throw IllegalStateException("boom") }
-            bus.subscribe<TaskCreatedEvent> { goodHandlerCalled = true }
+            bus.subscribe<Event.TaskCreated> { throw IllegalStateException("boom") }
+            bus.subscribe<Event.TaskCreated> { goodHandlerCalled = true }
 
             bus.publish(taskEvent("evt-crash-1"))
 
@@ -135,8 +137,6 @@ class EventBusIntegrationTest {
     @Test
     fun `concurrent publishing is safe and persists all events`() {
         runBlocking {
-            val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-            Database.Schema.create(driver)
             val bus = eventBusFactory.create(eventRepository)
 
             val n = 25
@@ -149,9 +149,8 @@ class EventBusIntegrationTest {
             // Give some time for async dispatch
             delay(200)
 
-            val history = bus.getEventHistory(eventType = "TaskCreatedEvent")
+            val history = bus.getEventHistory(eventType = Event.TaskCreated.EVENT_TYPE)
             assertEquals(n, history.size)
-            driver.close()
         }
     }
 }

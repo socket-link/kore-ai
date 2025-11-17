@@ -22,11 +22,14 @@ class RepositoryFactory(
     }
 
     inline fun <reified T : Repository<*, *>> createRepository(): T = when (T::class) {
-        ConversationRepository::class -> {
-            ConversationRepository(json, scope) as T
-        }
         EventRepository::class -> {
             EventRepository(json, scope, database) as T
+        }
+        MessageRepository::class -> {
+            MessageRepository(json, scope, database) as T
+        }
+        UserConversationRepository::class -> {
+            UserConversationRepository(json, scope) as T
         }
         else -> {
             throw IllegalArgumentException("No repository found for type ${T::class}")

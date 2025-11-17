@@ -5,6 +5,11 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import link.socket.kore.agents.messages.Message
+import link.socket.kore.agents.messages.MessageChannel
+import link.socket.kore.agents.messages.MessageSender
+import link.socket.kore.agents.messages.MessageThread
+import link.socket.kore.agents.messages.MessageThreadStatus
 
 class ConversationModelsTest {
 
@@ -13,31 +18,32 @@ class ConversationModelsTest {
         val ts: Instant = Clock.System.now()
         val msg = Message(
             id = "m1",
-            sender = Sender.Agent("agent-1"),
+            threadId = "t1",
+            sender = MessageSender.Agent("agent-1"),
             content = "Hello",
             timestamp = ts,
         )
 
-        val convo = Thread.create(
+        val convo = MessageThread.create(
             id = "c1",
-            channel = Channel.Public.Engineering,
+            channel = MessageChannel.Public.Engineering,
             initialMessage = msg,
         )
 
         assertEquals("c1", convo.id)
         assertEquals(listOf(msg), convo.messages)
-        assertEquals(ThreadStatus.OPEN, convo.status)
+        assertEquals(MessageThreadStatus.OPEN, convo.status)
         assertEquals(ts, convo.createdAt)
         assertEquals(ts, convo.updatedAt)
-        assertEquals("#engineering", convo.channel.toDisplayString())
+        assertEquals("#engineering", convo.channel.getIdentifier())
     }
 
     @Test
     fun `ThreadStatus prevents invalid transition from RESOLVED to OPEN`() {
-        val resolvedToOpen = ThreadStatus.RESOLVED.canTransitionTo(ThreadStatus.OPEN)
+        val resolvedToOpen = MessageThreadStatus.RESOLVED.canTransitionTo(MessageThreadStatus.OPEN)
         assertEquals(false, resolvedToOpen)
 
-        val openToResolved = ThreadStatus.OPEN.canTransitionTo(ThreadStatus.RESOLVED)
+        val openToResolved = MessageThreadStatus.OPEN.canTransitionTo(MessageThreadStatus.RESOLVED)
         assertEquals(true, openToResolved)
     }
 
@@ -48,20 +54,22 @@ class ConversationModelsTest {
 
         val m1 = Message(
             id = "m1",
-            sender = Sender.Agent("agent-1"),
+            threadId = "t1",
+            sender = MessageSender.Agent("agent-1"),
             content = "Start",
             timestamp = t1,
         )
 
-        val convo1 = Thread.create(
+        val convo1 = MessageThread.create(
             id = "c1",
-            channel = Channel.Public.Product,
+            channel = MessageChannel.Public.Product,
             initialMessage = m1,
         )
 
         val m2 = Message(
             id = "m2",
-            sender = Sender.Agent("agent-2"),
+            threadId = "t1",
+            sender = MessageSender.Agent("agent-2"),
             content = "Reply",
             timestamp = t2,
         )

@@ -17,10 +17,11 @@ import androidx.compose.ui.Modifier
 import app.cash.sqldelight.db.SqlDriver
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import link.socket.kore.data.ConversationRepository
 import link.socket.kore.data.DEFAULT_JSON
 import link.socket.kore.data.EventRepository
+import link.socket.kore.data.MessageRepository
 import link.socket.kore.data.RepositoryFactory
+import link.socket.kore.data.UserConversationRepository
 import link.socket.kore.domain.agent.KoreAgent
 import link.socket.kore.domain.agent.KoreAgentFactory
 import link.socket.kore.domain.agent.bundled.AgentDefinition
@@ -59,20 +60,24 @@ fun App(
         RepositoryFactory(scope, databaseDriver, json)
     }
 
-    val conversationRepository = remember(repositoryFactory) {
-        repositoryFactory.createRepository<ConversationRepository>()
+    val userConversationRepository = remember(repositoryFactory) {
+        repositoryFactory.createRepository<UserConversationRepository>()
     }
 
-    val eventRepository = remember(repositoryFactory) {
+    val agentEventRepository = remember(repositoryFactory) {
         repositoryFactory.createRepository<EventRepository>()
     }
 
-    val agentFactory = remember(conversationRepository, scope) {
-        KoreAgentFactory(conversationRepository, scope)
+    val agentMessageRepository = remember(repositoryFactory) {
+        repositoryFactory.createRepository<MessageRepository>()
     }
 
-    val allConversations: State<Map<ConversationId, Conversation>> =
-        conversationRepository
+    val agentFactory = remember(userConversationRepository, scope) {
+        KoreAgentFactory(userConversationRepository, scope)
+    }
+
+    val allUserConversations: State<Map<ConversationId, Conversation>> =
+        userConversationRepository
             .observeValues()
             .collectAsState()
 
@@ -87,7 +92,7 @@ fun App(
 
         val selectedConversationValue: State<Conversation?> =
             selectedConversationId.value?.let { id ->
-                conversationRepository
+                userConversationRepository
                     .observeValue(id)
                     .collectAsState(null)
             } ?: mutableStateOf(null)
@@ -114,7 +119,7 @@ fun App(
             val conversationId = selectedConversationId.value
             if (conversationId != null) {
                 scope.launch {
-                    val conversation = conversationRepository.getValue(conversationId)
+                    val conversation = userConversationRepository.getValue(conversationId)
                     val lastIndex = conversation?.getChats()?.lastIndex ?: 0
 
                     delay(500)
@@ -129,13 +134,13 @@ fun App(
         }
 
         val onNewConversation: (KoreAgent) -> Unit = { agent ->
-            val newId = conversationRepository.createConversation(agent)
+            val newId = userConversationRepository.createConversation(agent)
             onConversationSelected(newId)
 
             scope.launch {
                 onExecutingConversation()
 
-                conversationRepository.runConversation(
+                userConversationRepository.runConversation(
                     conversationId = selectedConversationId.value!!,
                 )
 
@@ -162,7 +167,7 @@ fun App(
                     HomeScreen(
                         modifier = Modifier
                             .fillMaxSize(),
-                        agentConversationsList = allConversations.value.values.toList(),
+                        agentConversationsList = allUserConversations.value.values.toList(),
                         onCreateConversationSelected = {
                             selectedScreen.value = Screen.AGENT_SELECTION
                         },
@@ -214,7 +219,7 @@ fun App(
                                 selectedConversationId.value?.let { conversationId ->
                                     scope.launch {
                                         onExecutingConversation()
-                                        conversationRepository.addUserChat(conversationId, input)
+                                        userConversationRepository.addUserChat(conversationId, input)
                                         onConversationFinishedExecuting()
                                     }
                                 }

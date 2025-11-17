@@ -17,7 +17,11 @@ enum class Urgency {
 /** Source of an event, either an agent or a human. */
 @Serializable
 sealed class EventSource {
+
+    @Serializable
     data class Agent(val agentId: AgentId) : EventSource()
+
+    @Serializable
     data object Human : EventSource()
 
     fun getIdentifier(): String = when (this) {
@@ -45,11 +49,9 @@ sealed interface Event {
     val eventSource: EventSource
 
     /**
-     * A type discriminator for the event, derived from the implementing class name.
-     * Implementations inherit this default, but may override to customize.
+     * A type discriminator for the event.
      */
     val eventType: String
-        get() = this::class.simpleName ?: "Event"
 
     /** Event emitted when a new task is created in the system. */
     @Serializable
@@ -60,7 +62,14 @@ sealed interface Event {
         val taskId: String,
         val description: String,
         val assignedTo: AgentId?,
-    ) : Event
+    ) : Event {
+
+        override val eventType: String = EVENT_TYPE
+
+        companion object {
+            const val EVENT_TYPE = "TaskCreated"
+        }
+    }
 
     /** Event emitted when an agent raises a question needing attention. */
     @Serializable
@@ -71,7 +80,14 @@ sealed interface Event {
         val questionText: String,
         val context: String,
         val urgency: Urgency,
-    ) : Event
+    ) : Event {
+
+        override val eventType: String = EVENT_TYPE
+
+        companion object {
+            const val EVENT_TYPE = "QuestionRaised"
+        }
+    }
 
     /** Event emitted when code is submitted by an agent for review or integration. */
     @Serializable
@@ -82,5 +98,12 @@ sealed interface Event {
         val filePath: String,
         val changeDescription: String,
         val reviewRequired: Boolean,
-    ) : Event
+    ) : Event {
+
+        override val eventType: String = EVENT_TYPE
+
+        companion object {
+            const val EVENT_TYPE = "CodeSubmitted"
+        }
+    }
 }

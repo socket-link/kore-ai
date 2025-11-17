@@ -1,0 +1,57 @@
+CREATE TABLE MessageThreadStore (
+    id TEXT NOT NULL PRIMARY KEY,
+    channelId TEXT NOT NULL,
+    createdById TEXT NOT NULL,
+    status TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+);
+
+CREATE TABLE MessageThreadParticipantStore (
+    threadId TEXT NOT NULL,
+    participantId TEXT NOT NULL,
+    PRIMARY KEY (threadId, participantId),
+    FOREIGN KEY (threadId) REFERENCES MessageThreadStore(id) ON DELETE CASCADE
+);
+
+CREATE TABLE MessageStore (
+    id TEXT NOT NULL PRIMARY KEY,
+    threadId TEXT NOT NULL,
+    senderId TEXT NOT NULL,
+    content TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    metadata TEXT,
+    FOREIGN KEY (threadId) REFERENCES MessageThreadStore(id) ON DELETE CASCADE
+);
+
+-- Queries
+
+selectMessageThreadById:
+SELECT * FROM MessageThreadStore WHERE id = ?;
+
+selectAllMessageThreads:
+SELECT * FROM MessageThreadStore ORDER BY updatedAt DESC;
+
+selectParticipantsByThreadId:
+SELECT participantId FROM MessageThreadParticipantStore WHERE threadId = ?;
+
+selectMessagesByThreadId:
+SELECT * FROM MessageStore WHERE threadId = ? ORDER BY timestamp ASC;
+
+insertConversation:
+INSERT INTO MessageThreadStore(id, channelId, createdById, status, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?);
+
+insertParticipant:
+INSERT INTO MessageThreadParticipantStore(threadId, participantId)
+VALUES (?, ?);
+
+insertMessage:
+INSERT INTO MessageStore(id, threadId, senderId, content, timestamp, metadata)
+VALUES (?, ?, ?, ?, ?, ?);
+
+updateMessageThreadStatus:
+UPDATE MessageThreadStore SET status = ?, updatedAt = ? WHERE id = ?;
+
+deleteMessageThread:
+DELETE FROM MessageThreadStore WHERE id = ?;

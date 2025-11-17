@@ -12,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.withTimeout
+import kotlinx.datetime.Clock
 import link.socket.kore.data.DEFAULT_JSON
 import link.socket.kore.data.EventRepository
 
@@ -36,19 +37,19 @@ class EventBusTest {
         driver.close()
     }
 
-    private fun taskEvent(): TaskCreatedEvent = TaskCreatedEvent(
+    private fun taskEvent(): Event.TaskCreated = Event.TaskCreated(
         eventId = "evt-1",
-        timestamp = System.currentTimeMillis(),
-        sourceAgentId = "agent-A",
+        timestamp = Clock.System.now(),
+        eventSource = EventSource.Agent("agent-A"),
         taskId = "task-123",
         description = "Do something important",
         assignedTo = "agent-B",
     )
 
-    private fun questionEvent(): QuestionRaisedEvent = QuestionRaisedEvent(
+    private fun questionEvent(): Event.QuestionRaised = Event.QuestionRaised(
         eventId = "evt-2",
-        timestamp = System.currentTimeMillis(),
-        sourceAgentId = "agent-C",
+        timestamp = Clock.System.now(),
+        eventSource = EventSource.Agent("agent-C"),
         questionText = "Why?",
         context = "Testing context",
         urgency = Urgency.MEDIUM,
@@ -58,10 +59,10 @@ class EventBusTest {
     fun `subscriber receives only matching events`() {
         runBlocking {
             val bus = EventBus(scope, eventRepository)
-            val receivedTask = CompletableDeferred<TaskCreatedEvent>()
+            val receivedTask = CompletableDeferred<Event.TaskCreated>()
             var nonMatchingCalled: Boolean
 
-            bus.subscribe<TaskCreatedEvent> { event ->
+            bus.subscribe<Event.TaskCreated> { event ->
                 receivedTask.complete(event)
             }
 
@@ -89,8 +90,8 @@ class EventBusTest {
             val s1 = CompletableDeferred<Boolean>()
             val s2 = CompletableDeferred<Boolean>()
 
-            bus.subscribe<TaskCreatedEvent> { s1.complete(true) }
-            bus.subscribe<TaskCreatedEvent> { s2.complete(true) }
+            bus.subscribe<Event.TaskCreated> { s1.complete(true) }
+            bus.subscribe<Event.TaskCreated> { s2.complete(true) }
 
             bus.publish(taskEvent())
 
@@ -109,7 +110,7 @@ class EventBusTest {
             var count = 0
 
             val bus = EventBus(scope, eventRepository)
-            val token = bus.subscribe<TaskCreatedEvent> { count += 1 }
+            val token = bus.subscribe<Event.TaskCreated> { count += 1 }
 
             // First publish should deliver
             bus.publish(taskEvent())

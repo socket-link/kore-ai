@@ -98,19 +98,28 @@ class AgentEventApiTest {
     }
 
     @Test
-    fun `multiple AgentEventApi instances can coexist and stamp agentId`() {
+    fun `multiple AgentEventApi instances can coexist and observe their own agentId's events`() {
         runBlocking {
             val agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBusFactory)
-            val a1 = agentEventApiFactory.create("agent-A")
-            val a2 = agentEventApiFactory.create("agent-B")
 
+            val api1 = agentEventApiFactory.create("agent-A")
             val receivedA = CompletableDeferred<Event.TaskCreated>()
-            val receivedB = CompletableDeferred<Event.TaskCreated>()
-            a1.onTaskCreated { receivedA.complete(it) }
-            a2.onTaskCreated { receivedB.complete(it) }
+            api1.onTaskCreated(
+                api1.eventCreatedByMeFilter,
+            ) { e ->
+                receivedA.complete(e)
+            }
 
-            a1.publishTaskCreated("tA", "from A")
-            a2.publishTaskCreated("tB", "from B")
+            val api2 = agentEventApiFactory.create("agent-B")
+            val receivedB = CompletableDeferred<Event.TaskCreated>()
+            api2.onTaskCreated(
+                api2.eventCreatedByMeFilter,
+            ) { e ->
+                receivedB.complete(e)
+            }
+
+            api1.publishTaskCreated("tA", "from A")
+            api2.publishTaskCreated("tB", "from B")
 
             val eA = receivedA.await()
             val eB = receivedB.await()

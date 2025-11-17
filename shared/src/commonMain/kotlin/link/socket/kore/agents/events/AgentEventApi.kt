@@ -9,6 +9,12 @@ import link.socket.kore.agents.core.AgentId
  */
 expect fun generateEventId(): String
 
+val AgentEventApi.eventCreatedByMeFilter
+    get() = { event: Event -> event.eventSource.getIdentifier() == agentId }
+
+val AgentEventApi.taskAssignedToMeFilter
+    get() = { event: Event.TaskCreated -> event.assignedTo == agentId }
+
 /**
  * High-level, agent-friendly API for interacting with the EventBus.
  *
@@ -17,7 +23,7 @@ expect fun generateEventId(): String
  */
 class AgentEventApi(
     private val eventBus: EventBus,
-    private val agentId: AgentId,
+    val agentId: AgentId,
 ) {
     /** Publish a TaskCreated event with auto-generated ID and current timestamp. */
     suspend fun publishTaskCreated(
@@ -71,16 +77,43 @@ class AgentEventApi(
     }
 
     /** Subscribe to TaskCreated events. */
-    fun onTaskCreated(handler: suspend (Event.TaskCreated) -> Unit): SubscriptionToken =
-        eventBus.subscribe(Event.TaskCreated::class, handler)
+    fun onTaskCreated(
+        filter: (Event.TaskCreated) -> Boolean = { true },
+        handler: suspend (Event.TaskCreated) -> Unit,
+    ): SubscriptionToken =
+        eventBus.subscribe(
+            eventClass = Event.TaskCreated::class,
+        ) { event ->
+            if (filter(event)) {
+                handler(event)
+            }
+        }
 
     /** Subscribe to QuestionRaised events. */
-    fun onQuestionRaised(handler: suspend (Event.QuestionRaised) -> Unit): SubscriptionToken =
-        eventBus.subscribe(Event.QuestionRaised::class, handler)
+    fun onQuestionRaised(
+        filter: (Event.QuestionRaised) -> Boolean = { true },
+        handler: suspend (Event.QuestionRaised) -> Unit,
+    ): SubscriptionToken =
+        eventBus.subscribe(
+            eventClass = Event.QuestionRaised::class,
+        ) { event ->
+            if (filter(event)) {
+                handler(event)
+            }
+        }
 
     /** Subscribe to CodeSubmitted events. */
-    fun onCodeSubmitted(handler: suspend (Event.CodeSubmitted) -> Unit): SubscriptionToken =
-        eventBus.subscribe(Event.CodeSubmitted::class, handler)
+    fun onCodeSubmitted(
+        filter: (Event.CodeSubmitted) -> Boolean = { true },
+        handler: suspend (Event.CodeSubmitted) -> Unit,
+    ): SubscriptionToken =
+        eventBus.subscribe(
+            eventClass = Event.CodeSubmitted::class,
+        ) { event ->
+            if (filter(event)) {
+                handler(event)
+            }
+        }
 
     /** Retrieve all events since the provided epoch millis. */
     fun getRecentEvents(since: Instant?): List<Event> =

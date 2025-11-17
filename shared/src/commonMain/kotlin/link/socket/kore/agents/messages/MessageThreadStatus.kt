@@ -1,12 +1,12 @@
-package link.socket.kore.agents.conversation.model
+package link.socket.kore.agents.messages
 
-enum class ThreadStatus {
+enum class MessageThreadStatus {
     OPEN,
     WAITING_FOR_HUMAN,
     RESOLVED;
 
     // Validation function to check if ThreadStatus transition is valid
-    fun canTransitionTo(newStatus: ThreadStatus): Boolean = when (this) {
+    fun canTransitionTo(newStatus: MessageThreadStatus): Boolean = when (this) {
         OPEN -> when (newStatus) {
             OPEN, WAITING_FOR_HUMAN, RESOLVED -> true
         }

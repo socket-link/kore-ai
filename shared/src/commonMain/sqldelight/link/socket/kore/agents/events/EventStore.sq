@@ -1,40 +1,39 @@
-CREATE TABLE event_store (
+CREATE TABLE EventStore (
   event_id TEXT PRIMARY KEY NOT NULL,
   event_type TEXT NOT NULL,
   source_id TEXT NOT NULL,
   timestamp INTEGER NOT NULL,
-  payload TEXT NOT NULL,
-  created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+  payload TEXT NOT NULL
 );
 
-CREATE INDEX idx_event_type ON event_store(event_type);
-CREATE INDEX idx_timestamp ON event_store(timestamp);
+CREATE INDEX idx_event_type ON EventStore(event_type);
+CREATE INDEX idx_timestamp ON EventStore(timestamp);
 
 -- Queries
 
 insertEvent:
-INSERT INTO event_store(event_id, event_type, source_id, timestamp, payload)
+INSERT INTO EventStore(event_id, event_type, source_id, timestamp, payload)
 VALUES (?, ?, ?, ?, ?);
 
 getAllEvents:
 SELECT event_id, event_type, source_id, timestamp, payload
-FROM event_store
+FROM EventStore
 ORDER BY timestamp DESC;
 
 getEventsByType:
 SELECT event_id, event_type, source_id, timestamp, payload
-FROM event_store
+FROM EventStore
 WHERE event_type = ?
 ORDER BY timestamp DESC;
 
 getEventsSince:
 SELECT event_id, event_type, source_id, timestamp, payload
-FROM event_store
+FROM EventStore
 WHERE timestamp >= ?
 ORDER BY timestamp ASC;
 
 getEventById:
 SELECT event_id, event_type, source_id, timestamp, payload
-FROM event_store
+FROM EventStore
 WHERE event_id = ?
 LIMIT 1;

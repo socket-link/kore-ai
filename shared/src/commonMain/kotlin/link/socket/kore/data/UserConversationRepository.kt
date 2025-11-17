@@ -14,7 +14,7 @@ import link.socket.kore.util.randomUUID
  *
  * @property scope - CoroutineScope for managing coroutines
  */
-class ConversationRepository(
+class UserConversationRepository(
     override val json: Json,
     override val scope: CoroutineScope,
 ) : Repository<ConversationId, Conversation>(json, scope) {

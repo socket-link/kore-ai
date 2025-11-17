@@ -2,7 +2,7 @@ package link.socket.kore.domain.agent
 
 import co.touchlab.kermit.Logger.Companion.tag
 import kotlinx.coroutines.CoroutineScope
-import link.socket.kore.data.ConversationRepository
+import link.socket.kore.data.UserConversationRepository
 import link.socket.kore.domain.agent.bundled.AgentDefinition
 import link.socket.kore.domain.agent.bundled.getAgentDefinition
 import link.socket.kore.domain.ai.configuration.AIConfiguration
@@ -19,7 +19,7 @@ data class PromptSubAgentParams(
 )
 
 class KoreAgentFactory(
-    private val conversationRepository: ConversationRepository,
+    private val conversationRepository: UserConversationRepository,
     private val coroutineScope: CoroutineScope,
 ) {
     val promptSubAgent: suspend (PromptSubAgentParams) -> String
