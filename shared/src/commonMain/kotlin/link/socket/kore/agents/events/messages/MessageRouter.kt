@@ -4,9 +4,11 @@ import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.events.EventBus
 import link.socket.kore.agents.events.MessageSubscription
 import link.socket.kore.agents.events.NotificationEvent
+import link.socket.kore.agents.events.messages.escalation.EscalationEventHandler
 
 class MessageRouter(
     private val messageApi: AgentMessageApi,
+    private val escalationEventHandler: EscalationEventHandler,
     private val eventBus: EventBus,
 ) {
     private val messagesByChannelsSubscriptions = mutableMapOf<AgentId, MessageSubscription.ByChannels>()
@@ -42,6 +44,10 @@ class MessageRouter(
                     }
                 }
             }
+
+        messageApi.onEscalationRequested { event, subscription ->
+            escalationEventHandler.invoke(event, subscription)
+        }
     }
 
     fun subscribeToChannel(
