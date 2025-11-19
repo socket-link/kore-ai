@@ -15,14 +15,14 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import link.socket.kore.agents.events.Database
-import link.socket.kore.agents.messages.Message
-import link.socket.kore.agents.messages.MessageChannel
-import link.socket.kore.agents.messages.MessageId
-import link.socket.kore.agents.messages.MessageSender
-import link.socket.kore.agents.messages.MessageSenderId
-import link.socket.kore.agents.messages.MessageThread
-import link.socket.kore.agents.messages.MessageThreadId
-import link.socket.kore.agents.messages.MessageThreadStatus
+import link.socket.kore.agents.events.EventStatus
+import link.socket.kore.agents.events.messages.Message
+import link.socket.kore.agents.events.messages.MessageChannel
+import link.socket.kore.agents.events.messages.MessageId
+import link.socket.kore.agents.events.messages.MessageSender
+import link.socket.kore.agents.events.messages.MessageSenderId
+import link.socket.kore.agents.events.messages.MessageThread
+import link.socket.kore.agents.events.messages.MessageThreadId
 import link.socket.kore.data.DEFAULT_JSON
 import link.socket.kore.data.MessageRepository
 
@@ -140,10 +140,10 @@ class MessageRepositoryTest {
             )
             repo.saveThread(thread)
 
-            repo.updateStatus(stubThreadId3, MessageThreadStatus.WAITING_FOR_HUMAN)
+            repo.updateStatus(stubThreadId3, EventStatus.WAITING_FOR_HUMAN)
             val updated = repo.findThreadById(stubThreadId3).getOrNull()
             assertNotNull(updated)
-            assertEquals(MessageThreadStatus.WAITING_FOR_HUMAN, updated.status)
+            assertEquals(EventStatus.WAITING_FOR_HUMAN, updated.status)
 
             // now delete conversation, ensure cascade removes messages/participants
             repo.delete(stubThreadId3)

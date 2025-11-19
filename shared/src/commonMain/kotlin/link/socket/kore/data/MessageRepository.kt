@@ -8,14 +8,14 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import link.socket.kore.agents.events.Database
-import link.socket.kore.agents.messages.Message
-import link.socket.kore.agents.messages.MessageChannel
-import link.socket.kore.agents.messages.MessageId
-import link.socket.kore.agents.messages.MessageSender
+import link.socket.kore.agents.events.EventStatus
+import link.socket.kore.agents.events.messages.Message
+import link.socket.kore.agents.events.messages.MessageChannel
+import link.socket.kore.agents.events.messages.MessageId
+import link.socket.kore.agents.events.messages.MessageSender
 import link.socket.kore.agents.messages.MessageStoreQueries
-import link.socket.kore.agents.messages.MessageThread
-import link.socket.kore.agents.messages.MessageThreadId
-import link.socket.kore.agents.messages.MessageThreadStatus
+import link.socket.kore.agents.events.messages.MessageThread
+import link.socket.kore.agents.events.messages.MessageThreadId
 
 /**
  * Repository responsible for persisting and querying Messages using SQLDelight.
@@ -105,9 +105,9 @@ class MessageRepository(
                     createdBy = MessageSender.fromSenderId(messageThread.createdById),
                     participants = participants.map { participantId ->
                         MessageSender.fromSenderId(participantId)
-                    },
+                    }.toSet(),
                     messages = messages,
-                    status = MessageThreadStatus.valueOf(messageThread.status),
+                    status = EventStatus.valueOf(messageThread.status),
                     createdAt = Instant.fromEpochMilliseconds(messageThread.createdAt),
                     updatedAt = Instant.fromEpochMilliseconds(messageThread.updatedAt),
                 )
@@ -147,9 +147,9 @@ class MessageRepository(
                             createdBy = MessageSender.fromSenderId(messageThread.createdById),
                             participants = participants.map { participantId ->
                                 MessageSender.fromSenderId(participantId)
-                            },
+                            }.toSet(),
                             messages = messages,
-                            status = MessageThreadStatus.valueOf(messageThread.status),
+                            status = EventStatus.valueOf(messageThread.status),
                             createdAt = Instant.fromEpochMilliseconds(messageThread.createdAt),
                             updatedAt = Instant.fromEpochMilliseconds(messageThread.updatedAt),
                         )
@@ -181,13 +181,13 @@ class MessageRepository(
 
                 queries.updateMessageThreadStatus(
                     id = threadId,
-                    status = MessageThreadStatus.OPEN.name, // keep status unless external change; OPEN ensures active
+                    status = EventStatus.OPEN.name, // keep status unless external change; OPEN ensures active
                     updatedAt = message.timestamp.toEpochMilliseconds(),
                 )
             }.map {  }
         }
 
-    suspend fun updateStatus(threadId: MessageThreadId, newStatus: MessageThreadStatus): Result<Unit> =
+    suspend fun updateStatus(threadId: MessageThreadId, newStatus: EventStatus): Result<Unit> =
         withContext(Dispatchers.IO) {
             runCatching {
                 queries.updateMessageThreadStatus(

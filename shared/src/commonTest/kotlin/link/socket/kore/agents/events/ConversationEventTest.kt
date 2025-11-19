@@ -4,12 +4,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.datetime.Clock
-import link.socket.kore.agents.messages.Message
-import link.socket.kore.agents.messages.MessageChannel
-import link.socket.kore.agents.messages.MessageSender
-import link.socket.kore.agents.messages.MessageThread
-import link.socket.kore.agents.messages.MessageThreadStatus
-import link.socket.kore.agents.messages.toEventSource
+import link.socket.kore.agents.events.messages.Message
+import link.socket.kore.agents.events.messages.MessageChannel
+import link.socket.kore.agents.events.messages.MessageSender
+import link.socket.kore.agents.events.messages.MessageThread
+import link.socket.kore.agents.events.messages.toEventSource
 
 class ConversationEventTest {
 
@@ -46,7 +45,7 @@ class ConversationEventTest {
 
         val posted = MessageEvent.MessagePosted(
             eventId = "22222222-2222-2222-2222-222222222222",
-            messageThreadId = stubThreadId,
+            threadId = stubThreadId,
             channel = stubChannel,
             message = followupMessage,
         )
@@ -55,25 +54,25 @@ class ConversationEventTest {
             eventId = "33333333-3333-3333-3333-333333333333",
             timestamp = now + 2.seconds,
             eventSource = stubSenderA.toEventSource(),
-            messageThreadId = stubThreadId,
-            oldStatus = MessageThreadStatus.OPEN,
-            newStatus = MessageThreadStatus.WAITING_FOR_HUMAN,
+            threadId = stubThreadId,
+            oldStatus = EventStatus.OPEN,
+            newStatus = EventStatus.WAITING_FOR_HUMAN,
         )
 
         val escalation = MessageEvent.EscalationRequested(
             eventId = "44444444-4444-4444-4444-444444444444",
             timestamp = now + 3.seconds,
             eventSource = stubSenderA.toEventSource(),
-            messageThreadId = stubThreadId,
+            threadId = stubThreadId,
             reason = "Needs human input",
             context = mapOf("priority" to "high"),
         )
 
         // Basic property checks
-        assertEquals("t1", created.messageThreadId)
+        assertEquals("t1", created.threadId)
         assertEquals(initialMessage, created.thread.messages.first())
         assertEquals(MessageChannel.Public.Engineering, posted.channel)
-        assertEquals(MessageThreadStatus.OPEN, statusChanged.oldStatus)
+        assertEquals(EventStatus.OPEN, statusChanged.oldStatus)
         assertEquals("agentA", escalation.eventSource.getIdentifier())
 
         // Exhaustive when expression over sealed interface

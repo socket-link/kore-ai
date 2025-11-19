@@ -1,4 +1,4 @@
-package link.socket.kore.agents.messages
+package link.socket.kore.agents.events.messages
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable

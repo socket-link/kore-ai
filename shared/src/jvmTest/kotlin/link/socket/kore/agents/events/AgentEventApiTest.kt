@@ -53,9 +53,14 @@ class AgentEventApiTest {
             val api = agentEventApiFactory.create(stubAgentId)
 
             val received = CompletableDeferred<Event.TaskCreated>()
-            api.onTaskCreated { received.complete(it) }
+
+            val subscription = api.onTaskCreated { event, _ ->
+                received.complete(event)
+            }
+
             api.publishTaskCreated(
                 taskId = "task-123",
+                urgency = Urgency.HIGH,
                 description = "Implement feature X",
             )
 
@@ -63,21 +68,25 @@ class AgentEventApiTest {
             assertEquals(stubAgentId, event.eventSource.getIdentifier())
             assertEquals("task-123", event.taskId)
             assertEquals(true, event.eventId.isNotBlank())
+
+            //** TODO: Test [subscription] can be unsubscribed from. */
         }
     }
 
     @Test
     fun `multiple subscribers receive same event`() {
         runBlocking {
-            val api = agentEventApiFactory.create(stubAgentId)
+            val api1 = agentEventApiFactory.create(stubAgentId)
+            val api2 = agentEventApiFactory.create(stubAgentId2)
 
             var c1 = 0
             var c2 = 0
 
-            api.onTaskCreated { c1++ }
-            api.onTaskCreated { c2++ }
-            api.publishTaskCreated(
+            api1.onTaskCreated { _, _ -> c1++ }
+            api2.onTaskCreated { _, _ -> c2++ }
+            api1.publishTaskCreated(
                 taskId = "t1",
+                urgency = Urgency.HIGH,
                 description = "desc",
             )
 
@@ -113,28 +122,33 @@ class AgentEventApiTest {
         runBlocking {
             val api1 = agentEventApiFactory.create(stubAgentId)
             val receivedA = CompletableDeferred<Event.TaskCreated>()
-            api1.onTaskCreated(
-                api1.eventCreatedByMeFilter,
-            ) { e ->
-                receivedA.complete(e)
-            }
 
             val api2 = agentEventApiFactory.create(stubAgentId2)
-            val receivedB = CompletableDeferred<Event.TaskCreated>()
-            api2.onTaskCreated(
-                api2.eventCreatedByMeFilter,
-            ) { e ->
-                receivedB.complete(e)
+            val received2 = CompletableDeferred<Event.TaskCreated>()
+
+            val subscription1 = api1.onTaskCreated(
+                api1.filterForEventsCreatedByMe(),
+            ) { event, _ ->
+                receivedA.complete(event)
             }
 
-            api1.publishTaskCreated("tA", "from A")
-            api2.publishTaskCreated("tB", "from B")
+            val subscription2 = api2.onTaskCreated(
+                filter = api2.filterForEventsCreatedByMe()
+            ) { event, _ ->
+                received2.complete(event)
+            }
 
-            val eA = receivedA.await()
-            val eB = receivedB.await()
-            assertEquals(stubAgentId, eA.eventSource.getIdentifier())
-            assertEquals(stubAgentId2, eB.eventSource.getIdentifier())
-            assertNotEquals(eA.eventId, eB.eventId)
+            api1.publishTaskCreated("t1", Urgency.HIGH, "from 1")
+            api2.publishTaskCreated("t2", Urgency.HIGH, "from 2")
+
+            val e1 = receivedA.await()
+            val e2 = received2.await()
+
+            assertEquals(stubAgentId, e1.eventSource.getIdentifier())
+            assertEquals(stubAgentId2, e2.eventSource.getIdentifier())
+            assertNotEquals(e1.eventId, e2.eventId)
+
+            //** TODO: Test [subscription1] and [subscription2] can be unsubscribed from. */
         }
     }
 
@@ -144,8 +158,11 @@ class AgentEventApiTest {
             val api = agentEventApiFactory.create(stubAgentId)
             val received = CompletableDeferred<Event.CodeSubmitted>()
 
-            api.onCodeSubmitted { received.complete(it) }
+            val subscription = api.onCodeSubmitted { event, _ ->
+                received.complete(event)
+            }
             api.publishCodeSubmitted(
+                urgency = Urgency.HIGH,
                 filePath = "/tmp/a.kt",
                 changeDescription = "Add feature",
                 reviewRequired = true,
@@ -155,6 +172,8 @@ class AgentEventApiTest {
             assertIs<Event.CodeSubmitted>(e)
             assertEquals("/tmp/a.kt", e.filePath)
             assertEquals(true, e.reviewRequired)
+
+            //** TODO: Test [subscription] can be unsubscribed from. */
         }
     }
 }

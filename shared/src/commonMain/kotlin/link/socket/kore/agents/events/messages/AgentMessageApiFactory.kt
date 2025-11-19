@@ -1,4 +1,4 @@
-package link.socket.kore.agents.messages
+package link.socket.kore.agents.events.messages
 
 import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.events.EventBus

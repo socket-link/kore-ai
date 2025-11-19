@@ -52,11 +52,12 @@ class AgentEventBusIntegrationTest {
 
             // Code writer subscribes to tasks before any are published
             val received = CompletableDeferred<Event.TaskCreated>()
-            api1.onTaskCreated { received.complete(it) }
+            api1.onTaskCreated { event, _ -> received.complete(event) }
 
             // Scenario: Task manager creates task (after subscription is in place)
             api3.publishTaskCreated(
                 taskId = "TASK-001",
+                urgency = Urgency.HIGH,
                 description = "Implement event bus",
                 assignedTo = "code-writer"
             )
@@ -68,10 +69,11 @@ class AgentEventBusIntegrationTest {
 
             // Code reviewer subscribes before code is submitted
             val codeSubmissions = mutableListOf<Event.CodeSubmitted>()
-            api2.onCodeSubmitted { codeSubmissions.add(it) }
+            api2.onCodeSubmitted { event, _ -> codeSubmissions.add(event) }
 
             // Code writer submits code (after reviewer subscription)
             api1.publishCodeSubmitted(
+                urgency = Urgency.HIGH,
                 filePath = "EventBus.kt",
                 changeDescription = "Initial implementation",
                 reviewRequired = true

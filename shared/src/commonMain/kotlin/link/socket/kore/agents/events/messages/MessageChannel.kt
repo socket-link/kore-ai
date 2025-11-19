@@ -1,4 +1,4 @@
-package link.socket.kore.agents.messages
+package link.socket.kore.agents.events.messages
 
 import kotlinx.serialization.Serializable
 
@@ -37,6 +37,12 @@ sealed interface MessageChannel {
     fun getIdentifier(): String
 
     companion object {
+        val ALL_PUBLIC_CHANNELS = listOf(
+            Public.Engineering,
+            Public.Design,
+            Public.Product,
+        )
+
         fun fromMessageChannelId(id: MessageChannelId): MessageChannel = when (id) {
             Public.Engineering.id -> {
                 Public.Engineering

@@ -7,8 +7,11 @@ interface EventLogger {
     /** Called whenever an event is published. */
     fun logPublish(event: Event)
 
-    /** Called when a subscription (or unsubscription) occurs. */
-    fun logSubscription(eventType: String, subscriberId: String)
+    /** Called when a subscription occurs. */
+    fun logSubscription(eventClassType: EventClassType, subscription: Subscription)
+
+    /** Called when an unsubscription occurs. */
+    fun logUnsubscription(eventClassType: EventClassType, subscription: Subscription)
 
     /** Log an error without crashing the app. */
     fun logError(message: String, throwable: Throwable? = null)
@@ -18,12 +21,17 @@ interface EventLogger {
  * Basic console logger that prints structured messages.
  */
 class ConsoleEventLogger : EventLogger {
+
     override fun logPublish(event: Event) {
-        println("[EventBus][PUBLISH] type=${event.eventType} id=${event.eventId} ts=${event.timestamp} src=${event.eventSource.getIdentifier()}")
+        println("[EventBus][PUBLISH] type=${event.eventClassType} id=${event.eventId} ts=${event.timestamp} src=${event.eventSource.getIdentifier()}")
     }
 
-    override fun logSubscription(eventType: String, subscriberId: String) {
-        println("[EventBus][SUBSCRIPTION] type=$eventType subscriber=$subscriberId")
+    override fun logSubscription(eventClassType: EventClassType, subscription: Subscription) {
+        println("[EventBus][SUBSCRIPTION] type=$eventClassType subscription=$subscription")
+    }
+
+    override fun logUnsubscription(eventClassType: EventClassType, subscription: Subscription) {
+        println("[EventBus][UNSUBSCRIPTION] type=$eventClassType subscription=$subscription")
     }
 
     override fun logError(message: String, throwable: Throwable?) {

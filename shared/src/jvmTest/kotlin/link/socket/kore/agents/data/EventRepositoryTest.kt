@@ -52,6 +52,7 @@ class EventRepositoryTest {
         ts: Instant = Clock.System.now(),
     ) = Event.TaskCreated(
         eventId = id,
+        urgency = Urgency.LOW,
         timestamp = ts,
         eventSource = stubEventSourceA,
         taskId = "task-123",
@@ -92,7 +93,7 @@ class EventRepositoryTest {
             repo.saveEvent(t1)
             repo.saveEvent(q1)
 
-            val tasks = repo.getEventsByType(Event.TaskCreated.EVENT_TYPE).getOrNull()
+            val tasks = repo.getEventsByType(Event.TaskCreated.EVENT_CLASS_TYPE).getOrNull()
             assertNotNull(tasks)
             assertEquals(1, tasks.size)
             assertIs<Event.TaskCreated>(tasks.first())

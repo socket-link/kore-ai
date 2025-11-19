@@ -1,19 +1,14 @@
 package link.socket.kore.agents.events
 
-import kotlin.random.Random
-import kotlin.reflect.KClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import link.socket.kore.agents.core.AgentId
 
-typealias EventExecutionMap = MutableMap<String, suspend (Event) -> Unit>
-
-/**
- * Token returned by [EventBus.subscribe] used to cancel a subscription via [EventBus.unsubscribe].
- */
-data class SubscriptionToken(val id: String)
+typealias HandlerMap = MutableMap<EventClassType, List<EventHandler<Event, Subscription>>>
+typealias SubscriptionMap = MutableMap<EventClassType, Subscription>
 
 /**
  * Type-safe event bus for publish-subscribe communication between agents with optional persistence.
@@ -26,11 +21,11 @@ class EventBus(
     private val scope: CoroutineScope,
     private val logger: EventLogger = ConsoleEventLogger(),
 ) {
-    // Map event KClass -> (tokenId -> handler)
-    private val subscribers: MutableMap<KClass<out Event>, EventExecutionMap> = mutableMapOf()
+    // Map event from EventClassType -> (subscriptionId, eventHandler)
+    private val handlerMap: HandlerMap = mutableMapOf()
 
-    // Map tokenId -> event KClass (to efficiently locate the handler on unsubscribe)
-    private val tokenIndex: MutableMap<String, KClass<out Event>> = mutableMapOf()
+    // Map from subscriptionId -> EventClassType (to efficiently locate the handler on unsubscribe)
+    private val subscriptionMap: SubscriptionMap = mutableMapOf()
 
     private val mutex = Mutex()
 
@@ -41,8 +36,8 @@ class EventBus(
      */
     suspend fun publish(event: Event) {
         // Snapshot handlers under lock to maintain ordering and thread-safety
-        val handlers: List<suspend (Event) -> Unit> = mutex.withLock {
-            subscribers[event::class]?.values?.toList().orEmpty()
+        val handlers: List<EventHandler<Event, Subscription>> = mutex.withLock {
+            handlerMap[event.eventClassType].orEmpty()
         }
 
         if (handlers.isEmpty()) {
@@ -54,12 +49,13 @@ class EventBus(
         for (handler in handlers) {
             scope.launch {
                 try {
-                    handler(event)
-                } catch (t: Throwable) {
-                    // Swallow exceptions from handlers to avoid impacting other subscribers, but log them.
+                    val subscription = subscriptionMap[event.eventClassType]
+                    handler.execute(event, subscription)
+                } catch (throwable: Throwable) {
+                    // Swallow exceptions from handlers to avoid impacting other subscribers, but still log them.
                     logger.logError(
-                        message = "Subscriber handler failure for ${event.eventType} id=${event.eventId}",
-                        throwable = t,
+                        message = "Subscriber handler failure for ${event.eventClassType}(id=${event.eventId})",
+                        throwable = throwable,
                     )
                 }
             }
@@ -67,55 +63,49 @@ class EventBus(
     }
 
     /**
-     * Subscribe to events of [eventClass]. Returns a [SubscriptionToken] that can be used to
+     * Subscribe to events of [eventClassType]. Returns a [EventSubscription] that can be used to
      * [unsubscribe]. The [handler] runs asynchronously for each matching event.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Event> subscribe(
-        eventClass: KClass<T>,
-        handler: suspend (T) -> Unit
-    ): SubscriptionToken {
-        val token = SubscriptionToken(id = generateTokenId())
-        val upcast: suspend (Event) -> Unit = { e -> handler(e as T) }
+    fun subscribe(
+        agentId: AgentId,
+        eventClassType: EventClassType,
+        handler: EventHandler<Event, Subscription>,
+    ): Subscription {
+        val subscription = EventSubscription.ByEventClassType(
+            agentIdOverride = agentId,
+            eventClassTypes = setOf(eventClassType),
+        )
+
+        val eventHandler: EventHandler<Event, Subscription> = EventHandler { event, subscription ->
+            handler.execute(event, subscription)
+        }
 
         // Register handler under lock
         runBlockingLock {
-            val map: EventExecutionMap =
-                subscribers.getOrPut(eventClass) { mutableMapOf() }
-
-            map[token.id] = upcast
-            tokenIndex[token.id] = eventClass
+            val existing = handlerMap[eventClassType]
+            val updated = if (existing == null) listOf(eventHandler) else existing + eventHandler
+            handlerMap[eventClassType] = updated
+            subscriptionMap.getOrPut(eventClassType) { subscription }
         }
 
         // Log subscription
-        logger.logSubscription(eventClass.simpleName ?: "Event", token.id)
+        logger.logSubscription(eventClassType, subscription)
 
-        return token
+        return subscription
     }
 
-    /**
-     * Cancel the subscription associated with [token]. Safe to call multiple times.
-     */
-    fun unsubscribe(token: SubscriptionToken) {
-        var eventClassForLog: String? = null
+    fun unsubscribe(eventClassType: EventClassType) {
         runBlockingLock {
-            val kClass: KClass<out Event> =
-                tokenIndex.remove(token.id) ?: return@runBlockingLock
+            // TODO: Potentially cancel subscription before removing
+            val subscription = subscriptionMap[eventClassType] ?: return@runBlockingLock
 
-            val map: EventExecutionMap =
-                subscribers[kClass] ?: return@runBlockingLock
+            subscriptionMap.remove(eventClassType)
+            handlerMap.remove(eventClassType)
 
-            map.remove(token.id)
-
-            if (map.isEmpty()) {
-                subscribers.remove(kClass)
-            }
-
-            eventClassForLog = kClass.simpleName
+            // Log unsubscription
+            logger.logUnsubscription(eventClassType, subscription)
         }
-
-        // Log unsubscription
-        logger.logSubscription("${eventClassForLog ?: "Event"}#unsubscribe", token.id)
     }
 
     // Helper to reuse the same locking pattern in non-suspending API without exposing Mutex.
@@ -125,17 +115,19 @@ class EventBus(
         // Fast-path tryLock not used to keep logic simple and deterministic.
         mutex.withLock { block() }
     }
-
-    private fun generateTokenId(): String =
-        Random.nextLong().toString(16)
 }
 
 /**
  * Inline reified helper for ergonomic subscriptions.
  */
-inline fun <reified T : Event> EventBus.subscribe(
-    noinline handler: suspend (T) -> Unit,
-): SubscriptionToken = subscribe(
-    eventClass = T::class,
-    handler = handler,
+inline fun <reified E : Event, reified S : Subscription> EventBus.subscribe(
+    agentId: AgentId,
+    eventClassType: EventClassType,
+    noinline handler: suspend (E, S?) -> Unit,
+): Subscription = subscribe(
+    agentId = agentId,
+    eventClassType = eventClassType,
+    handler = EventHandler { event, subscription ->
+        handler(event as E, subscription as S?)
+    },
 )

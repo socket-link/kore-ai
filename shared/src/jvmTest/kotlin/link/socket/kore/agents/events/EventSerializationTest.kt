@@ -21,6 +21,7 @@ class EventSerializationTest {
     fun `serialize and deserialize task created event as concrete`() {
         val original = Event.TaskCreated(
             eventId = "11111111-1111-1111-1111-111111111111",
+            urgency = Urgency.LOW,
             timestamp = stubTimestamp,
             eventSource = stubEventSource,
             taskId = "T-001",
@@ -53,11 +54,13 @@ class EventSerializationTest {
     fun `serialize and deserialize code submitted event as concrete`() {
         val original = Event.CodeSubmitted(
             eventId = "33333333-3333-3333-3333-333333333333",
+            urgency = Urgency.MEDIUM,
             timestamp = stubTimestamp,
             eventSource = stubEventSource,
             filePath = "shared/src/commonMain/kotlin/EventBus.kt",
             changeDescription = "Initial commit",
             reviewRequired = true,
+            assignedTo = null,
         )
         val text = json.encodeToString(original)
         val decoded = json.decodeFromString<Event.CodeSubmitted>(text)

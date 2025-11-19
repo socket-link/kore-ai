@@ -5,16 +5,25 @@ import kotlinx.datetime.Instant
 import link.socket.kore.agents.core.AgentId
 import link.socket.kore.data.EventRepository
 
+class EventHandler<E : Event, S : Subscription>(
+    val execute: suspend (E, S?) -> Unit,
+)
+
+class EventFilter<E : Event>(
+    val execute: (E) -> Boolean,
+)  {
+    companion object {
+        fun <E : Event> noFilter(): EventFilter<E> =
+            EventFilter(
+                execute = { _: E -> true },
+            )
+    }
+}
+
 /**
  * Expect declaration for generating globally-unique event IDs per platform.
  */
-expect fun generateEventId(): String
-
-val AgentEventApi.eventCreatedByMeFilter
-    get() = { event: Event -> event.eventSource.getIdentifier() == agentId }
-
-val AgentEventApi.taskAssignedToMeFilter
-    get() = { event: Event.TaskCreated -> event.assignedTo == agentId }
+expect fun generateEventId(agentId: AgentId): String
 
 /**
  * High-level, agent-friendly API for interacting with the EventBus.
@@ -37,7 +46,7 @@ class AgentEventApi(
             }
             .onFailure { throwable ->
                 logger.logError(
-                    message = "Failed to create event ${event.eventType} id=${event.eventId}",
+                    message = "Failed to create event ${event.eventClassType} id=${event.eventId}",
                     throwable = throwable,
                 )
             }
@@ -46,11 +55,13 @@ class AgentEventApi(
     /** Publish a TaskCreated event with auto-generated ID and current timestamp. */
     suspend fun publishTaskCreated(
         taskId: String,
+        urgency: Urgency,
         description: String,
         assignedTo: AgentId? = null,
     ) {
         val event = Event.TaskCreated(
-            eventId = generateEventId(),
+            eventId = generateEventId(agentId),
+            urgency = urgency,
             timestamp = Clock.System.now(),
             eventSource = EventSource.Agent(agentId),
             taskId = taskId,
@@ -63,17 +74,17 @@ class AgentEventApi(
 
     /** Publish a QuestionRaised event with auto-generated ID and current timestamp. */
     suspend fun publishQuestionRaised(
+        urgency: Urgency,
         questionText: String,
         context: String,
-        urgency: Urgency = Urgency.MEDIUM,
     ) {
         val event = Event.QuestionRaised(
-            eventId = generateEventId(),
+            eventId = generateEventId(agentId),
+            urgency = urgency,
             timestamp = Clock.System.now(),
             eventSource = EventSource.Agent(agentId),
             questionText = questionText,
             context = context,
-            urgency = urgency,
         )
 
         publish(event)
@@ -81,17 +92,21 @@ class AgentEventApi(
 
     /** Publish a CodeSubmitted event with auto-generated ID and current timestamp. */
     suspend fun publishCodeSubmitted(
+        urgency: Urgency,
         filePath: String,
         changeDescription: String,
         reviewRequired: Boolean = false,
+        assignedTo: AgentId? = null,
     ) {
         val event = Event.CodeSubmitted(
-            eventId = generateEventId(),
+            eventId = generateEventId(agentId),
+            urgency = urgency,
             timestamp = Clock.System.now(),
             eventSource = EventSource.Agent(agentId),
             filePath = filePath,
             changeDescription = changeDescription,
             reviewRequired = reviewRequired,
+            assignedTo = assignedTo,
         )
 
         publish(event)
@@ -99,85 +114,137 @@ class AgentEventApi(
 
     /** Subscribe to TaskCreated events. */
     fun onTaskCreated(
-        filter: (Event.TaskCreated) -> Boolean = { true },
-        handler: suspend (Event.TaskCreated) -> Unit,
-    ): SubscriptionToken =
-        eventBus.subscribe(
-            eventClass = Event.TaskCreated::class,
-        ) { event ->
-            if (filter(event)) {
-                handler(event)
+        filter: EventFilter<Event.TaskCreated> = EventFilter.noFilter(),
+        handler: suspend (Event.TaskCreated, Subscription?) -> Unit,
+    ): Subscription =
+        eventBus.subscribe<Event.TaskCreated, EventSubscription.ByEventClassType>(
+            agentId = agentId,
+            eventClassType = Event.TaskCreated.EVENT_CLASS_TYPE,
+        ) { event, subscription ->
+            if (filter.execute(event)) {
+                handler(event, subscription)
             }
         }
 
     /** Subscribe to QuestionRaised events. */
     fun onQuestionRaised(
-        filter: (Event.QuestionRaised) -> Boolean = { true },
-        handler: suspend (Event.QuestionRaised) -> Unit,
-    ): SubscriptionToken =
-        eventBus.subscribe(
-            eventClass = Event.QuestionRaised::class,
-        ) { event ->
-            if (filter(event)) {
-                handler(event)
+        filter: EventFilter<Event.QuestionRaised> = EventFilter.noFilter(),
+        handler: suspend (Event.QuestionRaised, Subscription?) -> Unit,
+    ): Subscription =
+        eventBus.subscribe<Event.QuestionRaised, EventSubscription.ByEventClassType>(
+            agentId = agentId,
+            eventClassType = Event.QuestionRaised.EVENT_CLASS_TYPE,
+        ) { event, subscription ->
+            if (filter.execute(event)) {
+                handler(event, subscription)
             }
         }
 
     /** Subscribe to CodeSubmitted events. */
     fun onCodeSubmitted(
-        filter: (Event.CodeSubmitted) -> Boolean = { true },
-        handler: suspend (Event.CodeSubmitted) -> Unit,
-    ): SubscriptionToken =
-        eventBus.subscribe(
-            eventClass = Event.CodeSubmitted::class,
-        ) { event ->
-            if (filter(event)) {
-                handler(event)
+        filter: EventFilter<Event.CodeSubmitted> = EventFilter.noFilter(),
+        handler: suspend (Event.CodeSubmitted, Subscription?) -> Unit,
+    ): Subscription =
+        eventBus.subscribe<Event.CodeSubmitted, EventSubscription.ByEventClassType>(
+            agentId = agentId,
+            eventClassType = Event.CodeSubmitted.EVENT_CLASS_TYPE,
+        ) { event, subscription  ->
+            if (filter.execute(event)) {
+                handler(event, subscription)
             }
         }
 
     /** Retrieve all events since the provided timestamp, or all if null. */
-    suspend fun getRecentEvents(since: Instant?): List<Event> {
+    suspend fun getRecentEvents(
+        since: Instant?,
+        eventClassType: EventClassType? = null,
+    ): List<Event> {
         val result = if (since != null) {
             eventRepository.getEventsSince(since)
         } else {
             eventRepository.getAllEvents()
         }
 
-        return result.onFailure { th ->
+        result.onFailure { throwable ->
             logger.logError(
                 message = "Failed to load recent events since=$since",
-                throwable = th,
+                throwable = throwable,
             )
-        }.getOrElse { emptyList() }
+        }
+
+        return result.getOrNull()?.let { events ->
+            if (eventClassType != null) {
+                events.filter { event ->
+                    event.eventClassType == eventClassType
+                }
+            } else {
+                events
+            }
+        } ?: emptyList()
     }
 
     /** Retrieve historical events with optional type filter and since timestamp. */
-    suspend fun getEventHistory(eventType: String? = null, since: Instant? = null): List<Event> {
+    suspend fun getEventHistory(
+        since: Instant? = null,
+        eventClassType: EventClassType? = null,
+    ): List<Event> {
         val result: Result<List<Event>> = when {
-            eventType != null && since != null -> {
+            eventClassType != null && since != null -> {
                 eventRepository
-                    .getEventsByType(eventType)
+                    .getEventsByType(eventClassType)
                     .map { list -> list.filter { it.timestamp >= since } }
             }
-            eventType != null -> eventRepository.getEventsByType(eventType)
+            eventClassType != null -> eventRepository.getEventsByType(eventClassType)
             since != null -> eventRepository.getEventsSince(since)
             else -> eventRepository.getAllEvents()
         }
 
-        return result.onFailure { th ->
+        return result.onFailure { throwable ->
             logger.logError(
-                message = "Failed to load event history (type=$eventType since=$since)",
-                throwable = th,
+                message = "Failed to load event history (eventClassType=$eventClassType since=$since)",
+                throwable = throwable,
             )
         }.getOrElse { emptyList() }
     }
 
     /** Replay past events by publishing them to current subscribers. */
-    suspend fun replayEvents(since: Instant?) {
-        val events = getRecentEvents(since)
-        for (e in events) {
-            eventBus.publish(e)
+    suspend fun replayEvents(
+        since: Instant?,
+        eventClassType: EventClassType? = null,
+    ) {
+        val events = getRecentEvents(since, eventClassType)
+        for (event in events) {
+            eventBus.publish(event)
         }
     }
 }
+
+fun <E : Event> AgentEventApi.filterForEventsCreatedByMe(): EventFilter<E> =
+    EventFilter { event: Event ->
+        event.eventSource.getIdentifier() == agentId
+    }
+
+fun AgentEventApi.filterForTasksAssignedToMe(): EventFilter<Event.TaskCreated> =
+    EventFilter { event: Event.TaskCreated ->
+        event.assignedTo == agentId
+    }
+
+fun AgentEventApi.filterForQuestionsRaisedByMe(): EventFilter<Event.QuestionRaised> =
+    EventFilter { event: Event.QuestionRaised ->
+        event.questionText.contains(agentId)
+    }
+
+fun AgentEventApi.filterForCodeSubmittedByMe(): EventFilter<Event.CodeSubmitted> =
+    EventFilter { event: Event.CodeSubmitted ->
+        event.reviewRequired && event.eventSource.getIdentifier() == agentId
+    }
+
+fun AgentEventApi.filterForCodeAssignedToMe(): EventFilter<Event.CodeSubmitted> =
+    EventFilter { event: Event.CodeSubmitted ->
+        event.reviewRequired && event.assignedTo == agentId
+    }
+
+fun AgentEventApi.filterForEventClassType(eventClassType: EventClassType): EventFilter<Event> =
+    EventFilter { event: Event ->
+        event.eventClassType == eventClassType
+    }

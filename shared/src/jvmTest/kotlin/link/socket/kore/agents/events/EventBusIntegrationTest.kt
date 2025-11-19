@@ -51,6 +51,7 @@ class EventBusIntegrationTest {
         ts: Instant = Clock.System.now(),
     ) = Event.TaskCreated(
         eventId = id,
+        urgency = Urgency.LOW,
         timestamp = ts,
         eventSource = EventSource.Agent("agent-A"),
         taskId = "task-123",
@@ -63,11 +64,11 @@ class EventBusIntegrationTest {
         ts: Instant = Clock.System.now(),
     ) = Event.QuestionRaised(
         eventId = id,
+        urgency = Urgency.LOW,
         timestamp = ts,
         eventSource = EventSource.Agent("agent-Q"),
         questionText = "What happened?",
         context = "IntegrationTest",
-        urgency = Urgency.LOW,
     )
 
     @Test
@@ -102,8 +103,16 @@ class EventBusIntegrationTest {
             // Subscribe fresh handler and replay events since 0
             val received = CompletableDeferred<List<String>>()
             val acc = mutableListOf<String>()
-            bus2.subscribe<Event.TaskCreated> { acc += it.eventId }
-            bus2.subscribe<Event.QuestionRaised> { acc += it.eventId }
+
+            bus2.subscribe<Event.TaskCreated, EventSubscription.ByEventClassType>(
+                agentId = "agent-A",
+                eventClassType = Event.TaskCreated.EVENT_CLASS_TYPE,
+            ) { event, _ -> acc += event.eventId }
+
+            bus2.subscribe<Event.QuestionRaised, EventSubscription.ByEventClassType>(
+                agentId = "agent-B",
+                eventClassType = Event.QuestionRaised.EVENT_CLASS_TYPE,
+            ) { event, _ -> acc += event.eventId }
 
             api2.replayEvents(since = Instant.fromEpochSeconds(0L))
 
@@ -125,8 +134,15 @@ class EventBusIntegrationTest {
             val bus = eventBusFactory.create()
 
             var goodHandlerCalled = false
-            bus.subscribe<Event.TaskCreated> { throw IllegalStateException("boom") }
-            bus.subscribe<Event.TaskCreated> { goodHandlerCalled = true }
+            bus.subscribe<Event.TaskCreated, EventSubscription.ByEventClassType>(
+                agentId = "agent-A",
+                eventClassType = Event.TaskCreated.EVENT_CLASS_TYPE,
+            ) { _, _ -> throw IllegalStateException("boom") }
+
+            bus.subscribe<Event.TaskCreated, EventSubscription.ByEventClassType>(
+                agentId = "agent-A",
+                eventClassType = Event.TaskCreated.EVENT_CLASS_TYPE,
+            ) { _, _ -> goodHandlerCalled = true }
 
             // Use API to persist then publish
             val api = AgentEventApiFactory(eventRepository, bus).create("agent-A")
@@ -146,14 +162,21 @@ class EventBusIntegrationTest {
             val n = 25
             coroutineScope {
                 (1..n).map { i ->
-                    async { AgentEventApiFactory(eventRepository, bus).create("agent-A").publish(taskEvent("evt-conc-$i")) }
+                    async {
+                        AgentEventApiFactory(eventRepository, bus)
+                            .create("agent-A")
+                            .publish(taskEvent("evt-conc-$i"))
+                    }
                 }.awaitAll()
             }
 
             // Give some time for async dispatch
             delay(200)
 
-            val history = AgentEventApiFactory(eventRepository, bus).create("agent-A").getEventHistory(eventType = Event.TaskCreated.EVENT_TYPE)
+            val history = AgentEventApiFactory(eventRepository, bus)
+                .create("agent-A")
+                .getEventHistory(eventClassType = Event.TaskCreated.EVENT_CLASS_TYPE)
+
             assertEquals(n, history.size)
         }
     }

@@ -1,12 +1,16 @@
-package link.socket.kore.agents.messages
+package link.socket.kore.agents.events.messages
 
 import kotlinx.datetime.Clock
 import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.events.ConsoleEventLogger
 import link.socket.kore.agents.events.EventBus
+import link.socket.kore.agents.events.EventFilter
+import link.socket.kore.agents.events.EventHandler
 import link.socket.kore.agents.events.EventLogger
 import link.socket.kore.agents.events.EventSource
+import link.socket.kore.agents.events.EventStatus
 import link.socket.kore.agents.events.MessageEvent
+import link.socket.kore.agents.events.Subscription
 import link.socket.kore.data.MessageRepository
 import link.socket.kore.util.randomUUID
 
@@ -23,7 +27,7 @@ class AgentMessageApi(
 
     /** Create a new message thread with an initial message and publish events. */
     suspend fun createThread(
-        participants: List<MessageSenderId>,
+        participants: Set<MessageSenderId>,
         channel: MessageChannel,
         initialMessageContent: String,
     ): MessageThread {
@@ -47,12 +51,17 @@ class AgentMessageApi(
             initialMessage = message,
         )
 
-        // merge provided participants (if any)
+        // merge and update for provided participants (if any)
         if (participants.isNotEmpty()) {
-            val extraParticipants = participants.map { participant ->
-                MessageSender.fromSenderId(participant)
-            }
-            val merged = (thread.participants + extraParticipants).distinctBy { it.getIdentifier() }
+            val extraParticipants = participants
+                .map { participant ->
+                    MessageSender.fromSenderId(participant)
+                }.toSet()
+
+            val merged = (thread.participants + extraParticipants)
+                .distinctBy { it.getIdentifier() }
+                .toSet()
+
             thread = thread.copy(participants = merged)
         }
 
@@ -70,7 +79,7 @@ class AgentMessageApi(
                 eventBus.publish(
                     MessageEvent.MessagePosted(
                         eventId = randomUUID(),
-                        messageThreadId = thread.id,
+                        threadId = thread.id,
                         channel = thread.channel,
                         message = message,
                     ),
@@ -103,7 +112,7 @@ class AgentMessageApi(
             .getOrNull()
 
         requireNotNull(thread)
-        require(thread.status != MessageThreadStatus.WAITING_FOR_HUMAN) {
+        require(thread.status != EventStatus.WAITING_FOR_HUMAN) {
             "Cannot post message while thread is waiting for human intervention"
         }
 
@@ -123,7 +132,7 @@ class AgentMessageApi(
                 eventBus.publish(
                     MessageEvent.MessagePosted(
                         eventId = randomUUID(),
-                        messageThreadId = threadId,
+                        threadId = threadId,
                         channel = thread.channel,
                         message = message,
                     ),
@@ -157,12 +166,12 @@ class AgentMessageApi(
             .getOrNull()
 
         requireNotNull(thread)
-        require(thread.status != MessageThreadStatus.RESOLVED) {
+        require(thread.status != EventStatus.RESOLVED) {
             "Cannot escalate a resolved thread"
         }
 
         val oldStatus = thread.status
-        val newStatus = MessageThreadStatus.WAITING_FOR_HUMAN
+        val newStatus = EventStatus.WAITING_FOR_HUMAN
 
         messageRepository
             .updateStatus(threadId, newStatus)
@@ -174,7 +183,7 @@ class AgentMessageApi(
                         eventId = randomUUID(),
                         timestamp = now,
                         eventSource = EventSource.Agent(agentId),
-                        messageThreadId = threadId,
+                        threadId = threadId,
                         reason = reason,
                         context = context,
                     ),
@@ -185,7 +194,7 @@ class AgentMessageApi(
                         eventId = randomUUID(),
                         timestamp = now,
                         eventSource = EventSource.Agent(agentId),
-                        messageThreadId = threadId,
+                        threadId = threadId,
                         oldStatus = oldStatus,
                         newStatus = newStatus,
                     ),
@@ -215,8 +224,8 @@ class AgentMessageApi(
             .getOrNull()
 
         requireNotNull(thread)
-        val oldStatus = thread.status
-        val newStatus = MessageThreadStatus.RESOLVED
+        val oldStatus: EventStatus = thread.status
+        val newStatus = EventStatus.RESOLVED
 
         messageRepository
             .updateStatus(threadId, newStatus)
@@ -226,7 +235,7 @@ class AgentMessageApi(
                         eventId = randomUUID(),
                         timestamp = Clock.System.now(),
                         eventSource = EventSource.Agent(agentId),
-                        messageThreadId = threadId,
+                        threadId = threadId,
                         oldStatus = oldStatus,
                         newStatus = newStatus,
                     ),
@@ -239,6 +248,87 @@ class AgentMessageApi(
                 )
             }
     }
+
+    /** Subscribe to thread creation events. */
+    fun onThreadCreated(
+        filter: EventFilter<MessageEvent.ThreadCreated> = EventFilter.noFilter(),
+        handler: suspend (MessageEvent.ThreadCreated, Subscription?) -> Unit,
+    ): Subscription =
+        eventBus.subscribe(
+            agentId = agentId,
+            eventClassType = MessageEvent.ThreadCreated.EVENT_CLASS_TYPE,
+            handler = EventHandler { event, subscription ->
+                val messageEvent = event as MessageEvent.ThreadCreated
+                if (filter.execute(messageEvent)) {
+                    handler(event, subscription)
+                }
+            }
+        )
+
+    /** Subscribe to message posted events in channel. */
+    fun onChannelMessagePosted(
+        channel: MessageChannel,
+        filter: EventFilter<MessageEvent.MessagePosted> = EventFilter.noFilter(),
+        handler: suspend (MessageEvent.MessagePosted, Subscription?) -> Unit,
+    ): Subscription =
+        eventBus.subscribe(
+            agentId = agentId,
+            eventClassType = MessageEvent.MessagePosted.EVENT_CLASS_TYPE,
+            handler = EventHandler { event, subscription ->
+                val messageEvent = event as MessageEvent.MessagePosted
+                if (messageEvent.channel == channel && filter.execute(messageEvent)) {
+                    handler(messageEvent, subscription)
+                }
+            }
+        )
+
+    /** Subscribe to message posted event in thread. */
+    fun onThreadMessagePosted(
+        threadId: MessageThreadId,
+        filter: (MessageEvent.MessagePosted) -> Boolean = { true },
+        handler: suspend (MessageEvent.MessagePosted, Subscription?) -> Unit,
+    ): Subscription =
+        eventBus.subscribe(
+            agentId = agentId,
+            eventClassType = MessageEvent.MessagePosted.EVENT_CLASS_TYPE,
+            handler = EventHandler { event, subscription ->
+                val messageEvent = event as MessageEvent.MessagePosted
+                if (messageEvent.threadId == threadId && filter(messageEvent)) {
+                    handler(messageEvent, subscription)
+                }
+            }
+        )
+
+    /** Subscribe to thread status changed events. */
+    fun onThreadStatusChanged(
+        filter: (MessageEvent.ThreadStatusChanged) -> Boolean = { true },
+        handler: suspend (MessageEvent.ThreadStatusChanged, Subscription?) -> Unit,
+    ): Subscription =
+        eventBus.subscribe(
+            agentId = agentId,
+            eventClassType = MessageEvent.ThreadStatusChanged.EVENT_CLASS_TYPE,
+            handler = EventHandler { event, subscription ->
+                if (filter(event as MessageEvent.ThreadStatusChanged)) {
+                    handler(event, subscription)
+                }
+            },
+        )
+
+    /** Subscribe to escalation requested events. */
+    fun onEscalationRequested(
+        filter: (MessageEvent.EscalationRequested) -> Boolean = { true },
+        handler: suspend (MessageEvent.EscalationRequested, Subscription?) -> Unit,
+    ): Subscription =
+        eventBus.subscribe(
+            agentId = agentId,
+            eventClassType = MessageEvent.EscalationRequested.EVENT_CLASS_TYPE,
+            handler = EventHandler { event, subscription ->
+                if (filter(event as MessageEvent.EscalationRequested)) {
+                    handler(event, subscription)
+                }
+            },
+        )
+
 
     /** Retrieve a thread by id. */
     suspend fun getThread(threadId: MessageThreadId): Result<MessageThread> =

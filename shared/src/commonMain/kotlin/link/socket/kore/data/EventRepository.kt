@@ -9,6 +9,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import link.socket.kore.agents.events.Database
 import link.socket.kore.agents.events.Event
+import link.socket.kore.agents.events.EventClassType
 import link.socket.kore.agents.events.EventId
 import link.socket.kore.agents.events.EventSerializationException
 import link.socket.kore.agents.events.EventStoreQueries
@@ -42,7 +43,7 @@ class EventRepository(
 
                 queries.insertEvent(
                     event_id = event.eventId,
-                    event_type = event.eventType,
+                    event_type = event.eventClassType.second,
                     source_id = event.eventSource.getIdentifier(),
                     timestamp = event.timestamp.toEpochMilliseconds(),
                     payload = eventPayload,
@@ -85,11 +86,13 @@ class EventRepository(
     /**
      * Retrieve all events filtered by [eventType] (e.g., "TaskCreatedEvent"), newest first.
      */
-    suspend fun getEventsByType(eventType: String): Result<List<Event>> =
+    suspend fun getEventsByType(eventClassType: EventClassType): Result<List<Event>> =
         withContext(Dispatchers.IO) {
             runCatching {
                 queries
-                    .getEventsByType(eventType)
+                    .getEventsByType(
+                        event_type = eventClassType.second,
+                    )
                     .executeAsList()
             }.map { rows ->
                 rows.map { row ->

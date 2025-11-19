@@ -5,11 +5,11 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import link.socket.kore.agents.messages.Message
-import link.socket.kore.agents.messages.MessageChannel
-import link.socket.kore.agents.messages.MessageSender
-import link.socket.kore.agents.messages.MessageThread
-import link.socket.kore.agents.messages.MessageThreadStatus
+import link.socket.kore.agents.events.EventStatus
+import link.socket.kore.agents.events.messages.Message
+import link.socket.kore.agents.events.messages.MessageChannel
+import link.socket.kore.agents.events.messages.MessageSender
+import link.socket.kore.agents.events.messages.MessageThread
 
 class ConversationModelsTest {
 
@@ -32,7 +32,7 @@ class ConversationModelsTest {
 
         assertEquals("c1", convo.id)
         assertEquals(listOf(msg), convo.messages)
-        assertEquals(MessageThreadStatus.OPEN, convo.status)
+        assertEquals(EventStatus.OPEN, convo.status)
         assertEquals(ts, convo.createdAt)
         assertEquals(ts, convo.updatedAt)
         assertEquals("#engineering", convo.channel.getIdentifier())
@@ -40,10 +40,10 @@ class ConversationModelsTest {
 
     @Test
     fun `ThreadStatus prevents invalid transition from RESOLVED to OPEN`() {
-        val resolvedToOpen = MessageThreadStatus.RESOLVED.canTransitionTo(MessageThreadStatus.OPEN)
+        val resolvedToOpen = EventStatus.RESOLVED.canTransitionTo(EventStatus.OPEN)
         assertEquals(false, resolvedToOpen)
 
-        val openToResolved = MessageThreadStatus.OPEN.canTransitionTo(MessageThreadStatus.RESOLVED)
+        val openToResolved = EventStatus.OPEN.canTransitionTo(EventStatus.RESOLVED)
         assertEquals(true, openToResolved)
     }
 

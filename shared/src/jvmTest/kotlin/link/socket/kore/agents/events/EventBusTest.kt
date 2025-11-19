@@ -39,6 +39,7 @@ class EventBusTest {
 
     private fun taskEvent(): Event.TaskCreated = Event.TaskCreated(
         eventId = "evt-1",
+        urgency = Urgency.HIGH,
         timestamp = Clock.System.now(),
         eventSource = EventSource.Agent("agent-A"),
         taskId = "task-123",
@@ -62,7 +63,10 @@ class EventBusTest {
             val receivedTask = CompletableDeferred<Event.TaskCreated>()
             var nonMatchingCalled: Boolean
 
-            bus.subscribe<Event.TaskCreated> { event ->
+            bus.subscribe<Event.TaskCreated, EventSubscription.ByEventClassType>(
+                agentId = "agent-X",
+                eventClassType = Event.TaskCreated.EVENT_CLASS_TYPE,
+            ) { event, _ ->
                 receivedTask.complete(event)
             }
 
@@ -90,8 +94,15 @@ class EventBusTest {
             val s1 = CompletableDeferred<Boolean>()
             val s2 = CompletableDeferred<Boolean>()
 
-            bus.subscribe<Event.TaskCreated> { s1.complete(true) }
-            bus.subscribe<Event.TaskCreated> { s2.complete(true) }
+            bus.subscribe<Event.TaskCreated, EventSubscription.ByEventClassType>(
+                agentId = "agent-X",
+                eventClassType = Event.TaskCreated.EVENT_CLASS_TYPE,
+            ) { _, _ -> s1.complete(true) }
+
+            bus.subscribe<Event.TaskCreated, EventSubscription.ByEventClassType>(
+                agentId = "agent-Y",
+                eventClassType = Event.TaskCreated.EVENT_CLASS_TYPE,
+            ) { _, _ -> s2.complete(true) }
 
             bus.publish(taskEvent())
 
@@ -110,7 +121,10 @@ class EventBusTest {
             var count = 0
 
             val bus = EventBus(scope)
-            val token = bus.subscribe<Event.TaskCreated> { count += 1 }
+            val subscription = bus.subscribe<Event.TaskCreated, EventSubscription.ByEventClassType>(
+                agentId = "agent-X",
+                eventClassType = Event.TaskCreated.EVENT_CLASS_TYPE,
+            ) { _, _ -> count += 1 }
 
             // First publish should deliver
             bus.publish(taskEvent())
@@ -118,7 +132,7 @@ class EventBusTest {
             assertEquals(1, count)
 
             // Now unsubscribe and publish again
-            bus.unsubscribe(token)
+            bus.unsubscribe(Event.TaskCreated.EVENT_CLASS_TYPE)
             bus.publish(taskEvent())
             delay(200)
             assertEquals(1, count)

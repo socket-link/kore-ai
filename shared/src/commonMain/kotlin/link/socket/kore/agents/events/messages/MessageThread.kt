@@ -1,8 +1,9 @@
-package link.socket.kore.agents.messages
+package link.socket.kore.agents.events.messages
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import link.socket.kore.agents.events.EventStatus
 
 typealias MessageThreadId = String
 
@@ -11,13 +12,13 @@ data class MessageThread(
     val id: MessageThreadId,
     val channel: MessageChannel,
     val createdBy: MessageSender,
-    val participants: List<MessageSender>,
+    val participants: Set<MessageSender>,
     val messages: List<Message>,
-    val status: MessageThreadStatus,
+    val status: EventStatus,
     val createdAt: Instant,
     val updatedAt: Instant,
 ) {
-    // Function to create a new conversation thread with an initial message
+    //** Function to create a new conversation thread with an initial message and participant. */
     companion object Companion {
         fun create(
             id: String,
@@ -25,7 +26,7 @@ data class MessageThread(
             initialMessage: Message,
         ): MessageThread {
             val now = initialMessage.timestamp
-            val initialParticipants = listOf(initialMessage.sender)
+            val initialParticipants = setOf(initialMessage.sender)
 
             return MessageThread(
                 id = id,
@@ -33,30 +34,41 @@ data class MessageThread(
                 createdBy = initialMessage.sender,
                 participants = initialParticipants,
                 messages = listOf(initialMessage),
-                status = MessageThreadStatus.OPEN,
+                status = EventStatus.OPEN,
                 createdAt = now,
                 updatedAt = now,
             )
         }
     }
 
-    // Function to add a message and return the updated conversation
-    fun addMessage(message: Message): MessageThread {
-        val updatedParticipants = if (message.sender !in participants) {
-            participants + message.sender
-        } else {
-            participants
-        }
+    //** Function to add a participant to the thread. */
+    fun addParticipant(participant: MessageSender): MessageThread =
+        copy(
+            participants = participants + participant,
+            updatedAt = Clock.System.now(),
+        )
 
-        return copy(
-            participants = updatedParticipants,
+    //** Function to remove a participant from the thread. */
+    fun removeParticipant(participant: MessageSender): MessageThread =
+        copy(
+            participants = participants - participant,
+        )
+
+    //** Function to clear all participants, usually after a thread has ended. */
+    fun removeAllParticipants(): MessageThread =
+        copy(
+            participants = emptySet(),
+        )
+
+    fun addMessage(message: Message): MessageThread =
+        copy(
+            participants = participants + message.sender,
             messages = this.messages + message,
             updatedAt = message.timestamp,
         )
-    }
 
-    // Function to update status after first checking validation
-    fun updateStatus(newStatus: MessageThreadStatus): MessageThread {
+    //** Function to update status after first checking that it's a valid status transition. */
+    fun updateStatus(newStatus: EventStatus): MessageThread {
         val validStatusTransition = status.canTransitionTo(newStatus)
 
         require(validStatusTransition) {
