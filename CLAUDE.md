@@ -52,40 +52,139 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## High-Level Architecture
 
-KoreAI is a Kotlin Multiplatform library for creating AI Agents and Assistants that can interact with OpenAI's models. The architecture follows a layered approach:
+KoreAI is a Kotlin Multiplatform library for creating AI Agents and Assistants with multi-provider support. The architecture follows a layered approach:
 
-### Core Model Layer (`model/`)
+### AI Provider Layer (`domain/ai/`)
+Multi-provider AI support with three providers:
+- **OpenAI**: GPT-5, GPT-5-mini, GPT-5-nano, GPT-4.1, GPT-4.1-mini, GPT-4o, GPT-4o-mini, o4-mini, o3, o3-mini
+- **Anthropic (Claude)**: Opus 4.1, Opus 4, Sonnet 4, Sonnet 3.7, Haiku 3.5, Haiku 3
+- **Google (Gemini)**: Multiple Gemini models
+
+Key components:
+- `AIConfiguration`: Interface with default and backup implementations
+- `AIModelFeatures`: Defines available tools, reasoning level, speed, supported inputs
+- `ModelLimits`: Token limits and rate limits per tier
+- `RateLimits`: Tier-based rate limiting (Free, Tier1-5)
+
+### Agent Layer (`domain/agent/` & `agents/`)
 - **Agents**: Specialized AI chatbots defined by `AgentDefinition` classes with domain-specific prompts
-  - `LLMAgent`: Interface for OpenAI interaction with function calling support
+  - `LLMAgent`: Interface for AI interaction with function calling support
   - `KoreAgent`: Concrete implementation managing conversations and tool execution
-  - **Bundled Agents**: Pre-built agents in `bundled/` (general, code, prompt, reasoning categories)
+  - `MinimalAutonomousAgent`: Contract with perceive/reason/act/signal methods
 
-- **Conversations**: Chat session management
-  - `Conversation`: Container for agent + chat history
-  - `ConversationHistory`: Manages chat message sequences
-  - `Chat`: Message types (Text, CSV, System)
+- **Bundled Agents** (`domain/agent/bundled/`): 24+ pre-built agents organized in categories:
+  - **Code**: APIDesignAgent, CleanJsonAgent, DocumentationAgent, PerformanceOptimizationAgent, PlatformCompatibilityAgent, QATestingAgent, ReleaseManagementAgent, SecurityReviewAgent, WriteCodeAgent
+  - **General**: BusinessAgent, CareerAgent, CookingAgent, DIYAgent, EmailAgent, FinancialAgent, HealthAgent, LanguageAgent, MediaAgent, StudyAgent, TechAgent, TravelAgent
+  - **Prompt**: ComparePromptsAgent, TestAgentAgent, WritePromptAgent
+  - **Reasoning**: DelegateTasksAgent, ReActAgent
 
-- **Capabilities**: Modular tool system
-  - `AgentCapability`: Agent spawning and delegation
-  - `IOCapability`: File operations and CSV parsing
-  - `FunctionProvider`: Defines available tools for agents
+### Event System (`agents/events/`)
+Enterprise event-driven architecture:
+- **AgentEventApi**: High-level API for publishing/subscribing to events
+- **Event Types**:
+  - `TaskCreated`: Tasks created in the system
+  - `QuestionRaised`: Questions needing attention
+  - `CodeSubmitted`: Code reviews with optional requirement flags
+- **EventBus**: Central event broker with pub/sub pattern
+- **EventRouter**: Routes events between subscribed agents
+- **EventRepository**: SQLDelight-backed persistence
+- **EventLogger**: Logging interface with console implementation
+
+### Message System (`agents/events/messages/`)
+Complete messaging infrastructure:
+- **MessageChannel**: Public channels (#engineering, #design, #product) and Direct messages
+- **MessageThread**: Thread-based conversations with participants and status tracking
+- **Message**: Individual messages with sender, timestamp, and metadata
+- **MessageRouter**: Routes messages between agents and channels
+- **MessageRepository**: SQLDelight persistence for messages
+- **AgentMessageApi**: High-level API for message operations
+- **Status tracking**: OPEN, WAITING_FOR_HUMAN, RESOLVED
+
+### Meeting System (`agents/meetings/`)
+Complete meeting management:
+- **Meeting Types**: Standup, SprintPlanning, CodeReview, AdHoc
+- **Meeting Statuses**: Scheduled, Delayed, InProgress, Completed, Canceled
+- **Meeting Outcomes**: BlockerRaised, GoalCreated, DecisionMade, ActionItem
+- **Tasks/AgendaItems**: With status tracking (Pending, InProgress, Blocked, Completed, Deferred)
+
+### Escalation System (`agents/events/messages/escalation/`)
+- **EscalationEventHandler**: Listens for escalation events and notifies humans
+- **Notifier**: Interface for human notification system
+
+### Capabilities & Tools (`domain/capability/` & `agents/tools/`)
+Modular tool system:
+- `AgentCapability`: Agent spawning and delegation
+- `IOCapability`: File operations and CSV parsing
+- `FunctionProvider`: Defines available tools for agents
+- **Specific Tools**:
+  - `WriteCodeFileTool`: Write code to files
+  - `RunTestsTool`: Execute tests
+  - `ReadCodebaseTool`: Analyze codebase
+  - `AskHumanTool`: Request human input
+- **Provider-specific tools**: AITool_Claude, AITool_OpenAI, AITool_Gemini
+
+### Conversations (`domain/chat/`)
+Chat session management:
+- `Conversation`: Container for agent + chat history
+- `ConversationHistory`: Manages chat message sequences
+- `Chat`: Message types (Text, CSV, System)
 
 ### UI Layer (`ui/`)
-- **Compose Multiplatform** UI with three main screens:
-  - `HomeScreen`: List existing conversations or create new ones
-  - `AgentSelectionScreen`: Choose and configure agent types
-  - `ConversationScreen`: Active chat interface with agent
+**Compose Multiplatform** UI with screens and components:
+- `HomeScreen`: List existing conversations or create new ones
+- `AgentSelectionScreen`: Choose agent types
+- `AgentSetupScreen`: Configure agent with inputs
+- `ConversationScreen`: Active chat interface with agent
+- `ModelSelectionBottomSheet`: Model selection UI with detailed info
 
-- **State Management**: Uses `ConversationRepository` for persistent chat storage
+**Model Display Components**:
+- ModelDetailsSection, ModelFeaturesSection, ModelLimitsSection
+- ModelRateLimitsSection, TokenUsageInfo, RateLimitChart
+- PerformanceChip, SuggestedModelsSection, ModelFiltersSection
+
+**State Management**: Uses repositories for persistent storage
 
 ### Data Layer (`data/`)
-- **Repository Pattern**: Generic `Repository<K,V>` with observable state
-- **ConversationRepository**: Specialized for managing agent conversations
+Repository pattern with SQLDelight persistence:
+- **Repository<K,V>**: Generic repository with observable state
+- **ConversationRepository**: Managing agent conversations
+- **EventRepository**: Event persistence and querying
+- **MessageRepository**: Message/thread persistence
+- **UserConversationRepository**: Enhanced conversation management
 
 ### Platform Targets
 - **Android**: Native Android app in `androidApp/`
 - **Desktop/JVM**: Desktop app in `desktopApp/`
 - **iOS**: iOS app in `iosApp/` (Xcode project)
+
+## Directory Structure
+
+```
+shared/src/commonMain/kotlin/link/socket/kore/
+├── domain/
+│   ├── ai/
+│   │   ├── provider/          # AI providers (OpenAI, Anthropic, Google)
+│   │   ├── model/             # Model definitions and features
+│   │   └── configuration/     # AI configuration with backups
+│   ├── agent/
+│   │   └── bundled/           # 24+ pre-built agents
+│   ├── assistant/             # KoreAssistant implementation
+│   ├── capability/            # IOCapability, AgentCapability
+│   ├── chat/                  # Conversation management
+│   ├── tool/                  # Tool definitions
+│   ├── koog/                  # KoogAgentFactory integration
+│   ├── util/                  # Utilities
+│   └── limits/                # Token/Rate limits
+├── agents/
+│   ├── core/                  # Core agent types and interfaces
+│   ├── events/                # Event system and routing
+│   │   └── messages/          # Message system
+│   │       └── escalation/    # Human escalation
+│   ├── meetings/              # Meeting types and management
+│   └── tools/                 # Specific tool implementations
+├── data/                      # Repositories and persistence
+└── ui/                        # Compose Multiplatform UI
+```
 
 ## Key Patterns
 
@@ -100,21 +199,45 @@ Agents are defined by extending `AgentDefinition` with:
 Agents can be equipped with tools via `FunctionProvider`:
 - `FunctionDefinition.StringReturn`: Text-based functions
 - `FunctionDefinition.CSVReturn`: Structured data functions
-- Tools are automatically exposed to OpenAI for function calling
+- Tools are automatically exposed to AI providers for function calling
+
+### Event-Driven Architecture
+- Events published via `AgentEventApi.publish()`
+- Agents subscribe to specific event types
+- `EventRouter` handles routing between subscribers
+- Events persisted via SQLDelight for durability
+
+### Message Routing
+- Messages sent to channels or direct conversations
+- `MessageRouter` handles routing based on channel/thread
+- Status transitions track conversation state
+- Escalation to humans when needed
 
 ### Multiplatform Structure
 - `commonMain`: Shared business logic and UI
-- `androidMain`: Android-specific implementations
-- `jvmMain`: Desktop-specific implementations  
-- `iosMain`: iOS-specific implementations
+- `androidMain`: Android-specific implementations (SQL driver)
+- `jvmMain`: Desktop-specific implementations (SQL driver)
+- `iosMain`: iOS-specific implementations (SQL driver)
 
 ## Important Dependencies
-- **OpenAI Kotlin**: `openai-kotlin` for LLM integration
-- **Turtle**: Shell script execution capabilities
+
+### Core
+- **OpenAI Kotlin**: `openai-kotlin` for OpenAI LLM integration
+- **KOOG Agents**: `ai.koog:koog-agents:0.4.1` for external agent framework
 - **Compose Multiplatform**: UI framework
-- **Ktor**: HTTP client for different platforms
+- **Ktor**: `ktor-client-*:3.2.2` HTTP client for different platforms
+
+### Persistence
+- **SQLDelight**: `app.cash.sqldelight:*:2.2.1` for database persistence
+
+### Utilities
+- **Turtle**: Shell script execution capabilities
+- **Kermit**: `co.touchlab:kermit:2.0.6` for logging
+- **Multiplatform Markdown**: `com.mikepenz:multiplatform-markdown-renderer:0.33.0`
 
 ## Configuration
-- OpenAI API credentials configured via `local.properties`
+- AI API credentials configured via `local.properties`
+- Supports multiple providers with fallback configurations
 - ktlint formatting uses IntelliJ IDEA code style
-- Gradle 8.2.1 with Kotlin Multiplatform plugin
+- Gradle with Kotlin Multiplatform plugin
+- SQLDelight for cross-platform database
