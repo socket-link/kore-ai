@@ -306,6 +306,42 @@ class MeetingRepository(
             }.map { }
         }
 
+    /**
+     * Get all agenda items for a meeting.
+     */
+    suspend fun getAgendaItemsForMeeting(meetingId: MeetingId): Result<List<AgendaItem>> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                queries.getAgendaItemsForMeeting(meetingId)
+                    .executeAsList()
+                    .map { row ->
+                        AgendaItem(
+                            id = row.id,
+                            topic = row.topic,
+                            status = decodeTaskStatus(row.status, row.statusPayload),
+                            assignedTo = row.assignedTo?.let { AssignedTo.Agent(it) },
+                        )
+                    }
+            }
+        }
+
+    /**
+     * Update the status of an agenda item.
+     */
+    suspend fun updateAgendaItemStatus(
+        agendaItemId: AgendaItemId,
+        status: Task.Status,
+    ): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                queries.updateAgendaItemStatus(
+                    status = getTaskStatusName(status),
+                    statusPayload = encodeTaskStatus(status),
+                    id = agendaItemId,
+                )
+            }.map { }
+        }
+
     // ==================== Encoding Helpers ====================
 
     private fun encodeType(type: MeetingType): String = try {
