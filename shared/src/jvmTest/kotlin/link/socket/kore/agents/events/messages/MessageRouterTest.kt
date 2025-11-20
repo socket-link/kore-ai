@@ -4,25 +4,27 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.events.AgentEventApiFactory
 import link.socket.kore.agents.events.Database
 import link.socket.kore.agents.events.EventBus
 import link.socket.kore.agents.events.EventBusFactory
 import link.socket.kore.agents.events.EventSource
+import link.socket.kore.agents.events.MessageEvent
 import link.socket.kore.agents.events.NotificationEvent
 import link.socket.kore.agents.events.Subscription
+import link.socket.kore.agents.events.messages.escalation.EscalationEventHandler
+import link.socket.kore.agents.events.messages.escalation.Notifier
 import link.socket.kore.agents.events.subscribe
-import link.socket.kore.agents.events.MessageEvent
+import link.socket.kore.data.DEFAULT_JSON
 import link.socket.kore.data.EventRepository
 import link.socket.kore.data.MessageRepository
-import link.socket.kore.data.DEFAULT_JSON
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MessageRouterTest {
@@ -36,6 +38,21 @@ class MessageRouterTest {
     private lateinit var messageRepository: MessageRepository
     private lateinit var agentMessageApiFactory: AgentMessageApiFactory
     private lateinit var agentEventApiFactory: AgentEventApiFactory
+
+    // TODO: Test this functionality
+    private val fakeHumanNotifier = object : Notifier.Human() {
+        override suspend fun notifyEscalation(
+            threadId: MessageThreadId,
+            agentId: AgentId,
+            reason: String,
+            context: Map<String, String>?
+        ) {
+            TODO("Not yet implemented")
+        }
+    }
+
+    private val escalationEventHandler =
+        EscalationEventHandler(fakeHumanNotifier)
 
     @BeforeTest
     fun setup() {
@@ -55,46 +72,48 @@ class MessageRouterTest {
     }
 
     @Test
-    fun `routes thread and channel events to subscribed agents`() = runBlocking {
-        val routerApi = agentMessageApiFactory.create("router-agent")
-        val router = MessageRouter(routerApi, eventBus)
+    fun `routes thread and channel events to subscribed agents`() {
+        runBlocking {
+            val routerApi = agentMessageApiFactory.create("router-agent")
+            val router = MessageRouter(routerApi, escalationEventHandler, eventBus)
 
-        val targetAgent = "agent-subscriber"
-        val channel = MessageChannel.Public.Engineering
-        router.subscribeToChannel(targetAgent, channel)
+            val targetAgent = "agent-subscriber"
+            val channel = MessageChannel.Public.Engineering
+            router.subscribeToChannel(targetAgent, channel)
 
-        // Capture notifications to agents
-        val notifications = mutableListOf<NotificationEvent.ToAgent<*>>()
-        eventBus.subscribe<NotificationEvent.ToAgent<*>, Subscription>(
-            agentId = "observer",
-            eventClassType = NotificationEvent.ToAgent.EVENT_CLASS_TYPE,
-        ) { event, _ ->
-            notifications += event
+            // Capture notifications to agents
+            val notifications = mutableListOf<NotificationEvent.ToAgent<*>>()
+            eventBus.subscribe<NotificationEvent.ToAgent<*>, Subscription>(
+                agentId = "observer",
+                eventClassType = NotificationEvent.ToAgent.EVENT_CLASS_TYPE,
+            ) { event, _ ->
+                notifications += event
+            }
+
+            router.startRouting()
+
+            // Use a producer to create a thread in the channel and post a follow-up message
+            val producer = agentMessageApiFactory.create("producer-A")
+            val thread = producer.createThread(
+                participants = setOf("someone"),
+                channel = channel,
+                initialMessageContent = "Kickoff",
+            )
+
+            // Post a message in the same thread to trigger channel message posted routing
+            producer.postMessage(thread.id, "Follow-up")
+
+            // Allow async dispatch
+            delay(250)
+
+            // At least two notifications: thread created and message posted
+            assertTrue(notifications.size >= 2)
+            // All notifications should target the subscribed agent
+            assertTrue(notifications.all { (it.eventSource as EventSource.Agent).agentId == targetAgent })
+            // Ensure we have at least one notification for a thread-related event
+            assertTrue(notifications.any { it.event.eventClassType == MessageEvent.ThreadCreated.EVENT_CLASS_TYPE })
+            // And one for a message posted in the channel
+            assertTrue(notifications.any { it.event.eventClassType == MessageEvent.MessagePosted.EVENT_CLASS_TYPE })
         }
-
-        router.startRouting()
-
-        // Use a producer to create a thread in the channel and post a follow-up message
-        val producer = agentMessageApiFactory.create("producer-A")
-        val thread = producer.createThread(
-            participants = setOf("someone"),
-            channel = channel,
-            initialMessageContent = "Kickoff",
-        )
-
-        // Post a message in the same thread to trigger channel message posted routing
-        producer.postMessage(thread.id, "Follow-up")
-
-        // Allow async dispatch
-        delay(250)
-
-        // At least two notifications: thread created and message posted
-        assertTrue(notifications.size >= 2)
-        // All notifications should target the subscribed agent
-        assertTrue(notifications.all { (it.eventSource as EventSource.Agent).agentId == targetAgent })
-        // Ensure we have at least one notification for a thread-related event
-        assertTrue(notifications.any { it.event.eventClassType == MessageEvent.ThreadCreated.EVENT_CLASS_TYPE })
-        // And one for a message posted in the channel
-        assertTrue(notifications.any { it.event.eventClassType == MessageEvent.MessagePosted.EVENT_CLASS_TYPE })
     }
 }

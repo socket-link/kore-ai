@@ -50,7 +50,7 @@ class EventBus(
             scope.launch {
                 try {
                     val subscription = subscriptionMap[event.eventClassType]
-                    handler.execute(event, subscription)
+                    handler(event, subscription)
                 } catch (throwable: Throwable) {
                     // Swallow exceptions from handlers to avoid impacting other subscribers, but still log them.
                     logger.logError(
@@ -78,7 +78,7 @@ class EventBus(
         )
 
         val eventHandler: EventHandler<Event, Subscription> = EventHandler { event, subscription ->
-            handler.execute(event, subscription)
+            handler(event, subscription)
         }
 
         // Register handler under lock

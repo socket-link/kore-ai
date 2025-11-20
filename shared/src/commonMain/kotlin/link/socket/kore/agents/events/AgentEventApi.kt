@@ -5,7 +5,7 @@ import kotlinx.datetime.Instant
 import link.socket.kore.agents.core.AgentId
 import link.socket.kore.data.EventRepository
 
-abstract class EventHandler<E : Event, S : Subscription>(
+open class EventHandler<E : Event, S : Subscription>(
     private val executeOverride: (suspend (E, S?) -> Unit)? = null,
 ) {
     open suspend operator fun invoke(event: E, subscription: S?) {

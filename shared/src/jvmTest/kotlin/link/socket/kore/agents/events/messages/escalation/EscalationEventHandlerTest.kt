@@ -9,16 +9,17 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import link.socket.kore.agents.events.Database
 import link.socket.kore.agents.events.EventBus
 import link.socket.kore.agents.events.EventBusFactory
-import link.socket.kore.agents.events.EventSource
 import link.socket.kore.agents.events.MessageEvent
 import link.socket.kore.agents.events.messages.AgentMessageApi
 import link.socket.kore.agents.events.messages.AgentMessageApiFactory
 import link.socket.kore.agents.events.messages.MessageChannel
+import link.socket.kore.agents.events.messages.MessageRouter
 import link.socket.kore.agents.events.messages.MessageThread
 import link.socket.kore.agents.events.messages.MessageThreadId
 import link.socket.kore.data.DEFAULT_JSON
@@ -38,23 +39,6 @@ class EscalationEventHandlerTest {
     private lateinit var messageRepository: MessageRepository
     private lateinit var eventBus: EventBus
     private lateinit var apiFactory: AgentMessageApiFactory
-
-    @BeforeTest
-    fun setup() {
-        driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        Database.Schema.create(driver)
-
-        database = Database(driver)
-        eventRepository = EventRepository(DEFAULT_JSON, scope, database)
-        messageRepository = MessageRepository(DEFAULT_JSON, scope, database)
-        eventBus = eventBusFactory.create()
-        apiFactory = AgentMessageApiFactory(messageRepository, eventBus)
-    }
-
-    @AfterTest
-    fun tearDown() {
-        driver.close()
-    }
 
     private class FakeHumanNotifier : Notifier.Human() {
 
@@ -77,66 +61,101 @@ class EscalationEventHandlerTest {
         }
     }
 
-    @Test
-    fun `notifier reacts to escalation event and forwards to human`() = kotlinx.coroutines.runBlocking {
-        val agentId = "notifier-agent"
-        val api: AgentMessageApi = apiFactory.create(agentId)
-        val thread: MessageThread = api.createThread(
-            participants = emptySet(),
-            channel = MessageChannel.Public.Engineering,
-            initialMessageContent = "Hello",
-        )
+    private val humanNotifier = FakeHumanNotifier()
+    private val eventHandler = EscalationEventHandler(humanNotifier)
 
-        val human = FakeHumanNotifier()
-        val notifier = EscalationEventHandler(
-            messageApi = api,
-            humanNotifier = human,
-            scope = scope,
-        )
-        notifier.start()
+    private fun getMessageRouter(
+        api: AgentMessageApi,
+    ) = MessageRouter(
+        messageApi = api,
+        escalationEventHandler = eventHandler,
+        eventBus = eventBus,
+    )
 
-        val reason = "Need human approval"
-        val ctx = mapOf("key" to "value")
-        api.escalateToHuman(thread.id, reason = reason, context = ctx)
+    @BeforeTest
+    fun setup() {
+        driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+        Database.Schema.create(driver)
 
-        // let async handlers run
-        delay(200)
+        database = Database(driver)
+        eventRepository = EventRepository(DEFAULT_JSON, scope, database)
+        messageRepository = MessageRepository(DEFAULT_JSON, scope, database)
+        eventBus = eventBusFactory.create()
+        apiFactory = AgentMessageApiFactory(messageRepository, eventBus)
+    }
 
-        val call = human.lastCall
-        assertNotNull(call)
-        assertEquals(thread.id, call.threadId)
-        assertEquals(agentId, call.agentId)
-        assertEquals(reason, call.reason)
-        assertEquals(ctx, call.context)
+    @AfterTest
+    fun tearDown() {
+        humanNotifier.lastCall = null
+        driver.close()
     }
 
     @Test
-    fun `no thread found leads to no human notification`() = kotlinx.coroutines.runBlocking {
-        val agentId = "notifier-agent"
-        val api: AgentMessageApi = apiFactory.create(agentId)
+    fun `notifier reacts to escalation event and forwards to human`() {
+        runBlocking {
+            val agentId = "notifier-agent"
+            val api: AgentMessageApi = apiFactory.create(agentId)
+            val messageRouter = getMessageRouter(api)
+            messageRouter.startRouting()
 
-        val human = FakeHumanNotifier()
-        val notifier = EscalationEventHandler(
-            humanNotifier = human,
-        )
+            val thread: MessageThread = api.createThread(
+                participants = emptySet(),
+                channel = MessageChannel.Public.Engineering,
+                initialMessageContent = "Hello",
+            )
 
-        // Publish an escalation for a non-existent threadId
-        val fakeThreadId = randomUUID()
-        eventBus.publish(
-            MessageEvent.EscalationRequested(
-                eventId = randomUUID(),
-                timestamp = kotlinx.datetime.Clock.System.now(),
-                eventSource = EventSource.Agent(agentId),
+            val reason = "Need human approval"
+            val ctx = mapOf("key" to "value")
+
+            messageRouter.subscribeToMessageType(
+                agentId = agentId,
+                messageType = MessageEvent.EscalationRequested.EVENT_CLASS_TYPE,
+            )
+
+            api.escalateToHuman(
+                threadId = thread.id,
+                reason = reason,
+                context = ctx,
+            )
+
+            // let async handlers run
+            delay(200)
+
+            val call = humanNotifier.lastCall
+            assertNotNull(call)
+            assertEquals(thread.id, call.threadId)
+            assertEquals(agentId, call.agentId)
+            assertEquals(reason, call.reason)
+            assertEquals(ctx, call.context)
+        }
+    }
+
+    @Test
+    fun `no thread found leads to no human notification`() {
+        runBlocking {
+            val agentId = "notifier-agent"
+            val api: AgentMessageApi = apiFactory.create(agentId)
+            val messageRouter = getMessageRouter(api)
+            messageRouter.startRouting()
+
+            // Publish an escalation for a non-existent threadId
+            val fakeThreadId = randomUUID()
+
+            messageRouter.subscribeToMessageType(
+                agentId = agentId,
+                messageType = MessageEvent.EscalationRequested.EVENT_CLASS_TYPE,
+            )
+
+            api.escalateToHuman(
                 threadId = fakeThreadId,
                 reason = "Missing thread",
-                context = emptyMap(),
             )
-        )
 
-        // let async handlers run; exceptions inside handler are swallowed by EventBus
-        delay(200)
+            // let async handlers run; exceptions inside handler are swallowed by EventBus
+            delay(200)
 
-        // Since the thread lookup fails, the notifier should not be called
-        assertNull(human.lastCall)
+            // Since the thread lookup fails, the notifier should not be called
+            assertNull(humanNotifier.lastCall)
+        }
     }
 }

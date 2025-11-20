@@ -14,6 +14,16 @@ sealed class MessageSubscription(
 ) : Subscription {
 
     @Serializable
+    data class ByType(
+        val agentIdOverride: AgentId,
+        val types: Set<EventClassType>,
+    ) : MessageSubscription(agentIdOverride) {
+
+        override val subscriptionId: String =
+            types.joinToString(",") + "/$agentId"
+    }
+
+    @Serializable
     data class ByChannels(
         val agentIdOverride: AgentId,
         val channels: Set<MessageChannel>,

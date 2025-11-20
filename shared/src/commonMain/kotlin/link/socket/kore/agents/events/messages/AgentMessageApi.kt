@@ -161,11 +161,16 @@ class AgentMessageApi(
                     message = "Failed to find thread with id $threadId",
                     throwable = throwable,
                 )
-                throw IllegalArgumentException("Thread not found: $threadId")
             }
             .getOrNull()
 
-        requireNotNull(thread)
+        if (thread == null) {
+            logger.logError(
+                message = "Thread not found: $threadId",
+            )
+            return
+        }
+
         require(thread.status != EventStatus.RESOLVED) {
             "Cannot escalate a resolved thread"
         }
