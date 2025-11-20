@@ -6,6 +6,15 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.datetime.Clock
 import link.socket.kore.agents.core.AssignedTo
 import link.socket.kore.agents.events.EventSource
+import link.socket.kore.agents.events.meetings.AgendaItem
+import link.socket.kore.agents.events.meetings.Meeting
+import link.socket.kore.agents.events.meetings.MeetingInvitation
+import link.socket.kore.agents.events.meetings.MeetingMessagingDetails
+import link.socket.kore.agents.events.meetings.MeetingOutcome
+import link.socket.kore.agents.events.meetings.MeetingOutcomeRequirements
+import link.socket.kore.agents.events.meetings.MeetingStatus
+import link.socket.kore.agents.events.meetings.MeetingType
+import link.socket.kore.agents.events.meetings.Task
 
 class MeetingModelsTest {
 

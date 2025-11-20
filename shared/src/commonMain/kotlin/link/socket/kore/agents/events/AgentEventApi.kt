@@ -27,7 +27,7 @@ class EventFilter<E : Event>(
 /**
  * Expect declaration for generating globally-unique event IDs per platform.
  */
-expect fun generateEventId(agentId: AgentId): String
+expect fun generateEventId(agentId: AgentId): EventId
 
 /**
  * High-level, agent-friendly API for interacting with the EventBus.

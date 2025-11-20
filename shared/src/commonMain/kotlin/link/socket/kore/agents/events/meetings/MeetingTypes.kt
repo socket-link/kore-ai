@@ -1,4 +1,4 @@
-package link.socket.kore.agents.meetings
+package link.socket.kore.agents.events.meetings
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
@@ -9,7 +9,7 @@ import link.socket.kore.agents.core.TeamId
 import link.socket.kore.agents.events.EventSource
 import link.socket.kore.agents.events.messages.MessageChannelId
 import link.socket.kore.agents.events.messages.MessageThreadId
-import link.socket.kore.agents.meetings.Task.Status
+import link.socket.kore.agents.events.meetings.Task.Status
 
 typealias MeetingId = String
 typealias AgendaItemId = String

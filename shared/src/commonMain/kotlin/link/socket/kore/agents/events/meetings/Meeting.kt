@@ -1,4 +1,4 @@
-package link.socket.kore.agents.meetings
+package link.socket.kore.agents.events.meetings
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
