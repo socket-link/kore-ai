@@ -1,6 +1,7 @@
 package link.socket.kore.agents.events
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -27,6 +28,9 @@ class EventBus(
     // Map from subscriptionId -> EventClassType (to efficiently locate the handler on unsubscribe)
     private val subscriptionMap: SubscriptionMap = mutableMapOf()
 
+    // Map from EventClassType -> active handler Jobs for cancellation on unsubscribe
+    private val activeJobs: MutableMap<EventClassType, MutableList<Job>> = mutableMapOf()
+
     private val mutex = Mutex()
 
     /**
@@ -47,7 +51,7 @@ class EventBus(
         logger.logPublish(event)
 
         for (handler in handlers) {
-            scope.launch {
+            val job = scope.launch {
                 try {
                     val subscription = subscriptionMap[event.eventClassType]
                     handler.execute(event, subscription)
@@ -57,6 +61,20 @@ class EventBus(
                         message = "Subscriber handler failure for ${event.eventClassType}(id=${event.eventId})",
                         throwable = throwable,
                     )
+                }
+            }
+
+            // Track job for potential cancellation on unsubscribe
+            mutex.withLock {
+                activeJobs.getOrPut(event.eventClassType) { mutableListOf() }.add(job)
+            }
+
+            // Clean up completed jobs
+            job.invokeOnCompletion {
+                runBlocking {
+                    mutex.withLock {
+                        activeJobs[event.eventClassType]?.remove(job)
+                    }
                 }
             }
         }
@@ -97,8 +115,13 @@ class EventBus(
 
     fun unsubscribe(eventClassType: EventClassType) {
         runBlockingLock {
-            // TODO: Potentially cancel subscription before removing
             val subscription = subscriptionMap[eventClassType] ?: return@runBlockingLock
+
+            // Cancel any in-flight handlers for this subscription
+            activeJobs[eventClassType]?.forEach { job ->
+                job.cancel()
+            }
+            activeJobs.remove(eventClassType)
 
             subscriptionMap.remove(eventClassType)
             handlerMap.remove(eventClassType)

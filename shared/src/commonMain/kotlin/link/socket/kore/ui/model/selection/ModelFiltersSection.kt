@@ -75,12 +75,12 @@ fun ModelFiltersSection(
 
         Spacer(Modifier.requiredHeight(12.dp))
 
-        // TODO: Change to discrete steps, rather than a continuous range
         FilterSlider(
             title = "Reasoning",
             emoji = "🧠",
             value = state.minReasoning,
             valueRange = 0f..100f,
+            steps = 9, // 10 discrete values: 0, 10, 20, ..., 100
             onChange = {
                 onStateChange(state.copy(minReasoning = it))
             },
@@ -89,10 +89,12 @@ fun ModelFiltersSection(
         Spacer(Modifier.requiredHeight(4.dp))
 
         FilterSlider(
-            title = "Speed (ms / run)",
+            title = "Speed",
             emoji = "⏳",
+            subtitle = "ms / run",
             value = state.maxLatencyMs,
             valueRange = 50f..3000f,
+            steps = 58, // Steps of ~50ms intervals
             onChange = {
                 onStateChange(state.copy(maxLatencyMs = it))
             },
@@ -101,11 +103,13 @@ fun ModelFiltersSection(
         Spacer(Modifier.requiredHeight(4.dp))
 
         FilterSlider(
-            title = "Cost ($ / 100 runs)",
+            title = "Cost",
             emoji = "💵",
+            subtitle = "$ / 100 runs",
             prefix = "$",
             value = state.maxCost,
             valueRange = 0.01f..10f,
+            steps = 19, // 20 discrete values from $0.01 to $10
             onChange = {
                 onStateChange(state.copy(maxCost = it))
             },
@@ -153,16 +157,18 @@ fun ModelFiltersSection(
     }
 }
 
-// TODO: Add toggle, hide slider and units when disabled
-// TODO: Move units to subtitle
 @Composable
 private fun FilterSlider(
     title: String,
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
     onChange: (Float) -> Unit,
+    steps: Int = 0,
     prefix: String? = null,
     emoji: String? = null,
+    subtitle: String? = null,
+    enabled: Boolean = true,
+    onEnabledChange: ((Boolean) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val colors = themeColors()
@@ -177,46 +183,71 @@ private fun FilterSlider(
             .padding(16.dp)
     ) {
         Row(
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (emoji != null) {
-                Text(
-                    modifier = Modifier
-                        .padding(end = 8.dp),
-                    text = emoji,
-                )
-            }
-
-            Text(
-                style = typography.subtitle1,
-                fontWeight = FontWeight.Medium,
-                text = title,
-            )
-        }
-
-        Slider(
-            value = value,
-            valueRange = valueRange,
-            onValueChange = onChange,
-            colors = SliderDefaults.colors(
-                thumbColor = colors.primary,
-            ),
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(
-                style = typography.caption,
-                text = formatValue(valueRange.start, prefix),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (emoji != null) {
+                    Text(
+                        modifier = Modifier
+                            .padding(end = 8.dp),
+                        text = emoji,
+                    )
+                }
+
+                Column {
+                    Text(
+                        style = typography.subtitle1,
+                        fontWeight = FontWeight.Medium,
+                        text = title,
+                    )
+                    if (subtitle != null) {
+                        Text(
+                            style = typography.caption,
+                            color = Color(0xFF9CA3AF),
+                            text = subtitle,
+                        )
+                    }
+                }
+            }
+
+            if (onEnabledChange != null) {
+                Checkbox(
+                    checked = enabled,
+                    onCheckedChange = onEnabledChange,
+                )
+            }
+        }
+
+        if (enabled) {
+            Slider(
+                value = value,
+                valueRange = valueRange,
+                steps = steps,
+                onValueChange = onChange,
+                colors = SliderDefaults.colors(
+                    thumbColor = colors.primary,
+                ),
             )
 
-            Text(
-                style = typography.caption,
-                text = formatValue(valueRange.endInclusive, prefix),
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    style = typography.caption,
+                    text = formatValue(valueRange.start, prefix),
+                )
+
+                Text(
+                    style = typography.caption,
+                    text = formatValue(valueRange.endInclusive, prefix),
+                )
+            }
         }
     }
 }
@@ -310,26 +341,21 @@ private fun formatValue(
     value: Float,
     prefix: String?,
 ): String {
-    val base: String = if (value >= 1000f) {
-        "${(value/1000f).toInt()}k"
-    } else {
-        toTwoDecimals(value)
+    val base: String = when {
+        value >= 1000f -> "${(value / 1000f).toInt()}k"
+        value == value.toLong().toFloat() -> value.toInt().toString()
+        else -> {
+            // Round to 2 decimal places and format
+            val scaled = round(value * 100f) / 100f
+            val intPart = scaled.toInt()
+            val decimalPart = ((scaled - intPart) * 100).toInt()
+            when {
+                decimalPart == 0 -> intPart.toString()
+                decimalPart % 10 == 0 -> "$intPart.${decimalPart / 10}"
+                else -> "$intPart.${decimalPart.toString().padStart(2, '0')}"
+            }
+        }
     }
 
     return (prefix ?: "") + base
-}
-
-// TODO: Remove after improving `formatValue`
-private fun toTwoDecimals(v: Float): String {
-    val scaled = round(v * 100f) / 100f
-    val text = scaled.toString()
-
-    return if (!text.contains('.')) {
-        "$text.00"
-    } else {
-        val length: Int = text.indexOf('.') + 3
-        val padChar = '0'
-
-        text.padEnd(length, padChar)
-    }
 }

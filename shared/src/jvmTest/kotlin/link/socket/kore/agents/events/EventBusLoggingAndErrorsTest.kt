@@ -7,7 +7,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -93,13 +92,13 @@ class EventBusLoggingAndErrorsTest {
             // Use API to persist then publish
             val api = AgentEventApiFactory(repo, bus, logger).create("agent-X")
             api.publish(taskEvent())
-            delay(200)
+
+            // Advance TestScope scheduler to process all launched coroutines
+            scope.testScheduler.advanceUntilIdle()
 
             assertEquals(true, goodCalled)
             assertEquals(true, logger.publishes.contains("evt-log-1"))
-
-            // TODO: Figure out why error isn't logged
-            // assertEquals(true, logger.errors.any { it.contains("Subscriber handler failure") })
+            assertEquals(true, logger.errors.any { it.contains("Subscriber handler failure") })
         }
     }
 
@@ -123,11 +122,15 @@ class EventBusLoggingAndErrorsTest {
             // First publish succeeds and inserts
             val api = AgentEventApiFactory(repo, bus, logger).create("agent-X")
             api.publish(e)
-            delay(100)
+
+            // Advance TestScope scheduler to process all launched coroutines
+            scope.testScheduler.advanceUntilIdle()
 
             // Publish same event again -> primary key conflict should cause EventPersistenceException which is logged
             api.publish(e)
-            delay(200)
+
+            // Advance TestScope scheduler to process all launched coroutines
+            scope.testScheduler.advanceUntilIdle()
 
             assertEquals(true, delivered)
             assertEquals(true, logger.errors.any { it.contains("Failed to create event") })
