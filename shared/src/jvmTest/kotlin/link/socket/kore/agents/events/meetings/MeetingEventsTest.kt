@@ -1,4 +1,4 @@
-package link.socket.kore.agents.meetings
+package link.socket.kore.agents.events.meetings
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -6,7 +6,7 @@ import kotlinx.datetime.Clock
 import link.socket.kore.agents.core.AssignedTo
 import link.socket.kore.agents.events.Event
 import link.socket.kore.agents.events.EventSource
-import link.socket.kore.agents.events.MeetingEvent
+import link.socket.kore.agents.events.MeetingEvents
 import link.socket.kore.agents.events.meetings.AgendaItem
 import link.socket.kore.agents.events.meetings.Meeting
 import link.socket.kore.agents.events.meetings.MeetingInvitation
@@ -41,13 +41,13 @@ class MeetingEventsTest {
         val now = Clock.System.now()
         val meeting = sampleMeeting()
 
-        val scheduled: Event = MeetingEvent.MeetingScheduled(
+        val scheduled: Event = MeetingEvents.MeetingScheduled(
             eventId = "e-1",
             meeting = meeting,
             scheduledBy = stubEventSource,
         )
 
-        val started: Event = MeetingEvent.MeetingStarted(
+        val started: Event = MeetingEvents.MeetingStarted(
             eventId = "e-2",
             meetingId = meeting.id,
             threadId = "thread-1",
@@ -55,7 +55,7 @@ class MeetingEventsTest {
             startedBy = stubEventSource2,
         )
 
-        val itemStarted: Event = MeetingEvent.AgendaItemStarted(
+        val itemStarted: Event = MeetingEvents.AgendaItemStarted(
             eventId = "e-3",
             meetingId = meeting.id,
             agendaItem = meeting.invitation.agenda.first(),
@@ -63,7 +63,7 @@ class MeetingEventsTest {
             startedBy = stubEventSource2,
         )
 
-        val itemCompleted: Event = MeetingEvent.AgendaItemCompleted(
+        val itemCompleted: Event = MeetingEvents.AgendaItemCompleted(
             eventId = "e-4",
             meetingId = meeting.id,
             agendaItemId = meeting.invitation.agenda.first().id,
@@ -71,7 +71,7 @@ class MeetingEventsTest {
             completedBy = stubEventSource,
         )
 
-        val completed: Event = MeetingEvent.MeetingCompleted(
+        val completed: Event = MeetingEvents.MeetingCompleted(
             eventId = "e-5",
             meetingId = meeting.id,
             outcomes = listOf(
@@ -81,7 +81,7 @@ class MeetingEventsTest {
             completedBy = stubEventSource,
         )
 
-        val cancelled: Event = MeetingEvent.MeetingCanceled(
+        val cancelled: Event = MeetingEvents.MeetingCanceled(
             eventId = "e-6",
             meetingId = meeting.id,
             reason = "No quorum",
@@ -90,11 +90,11 @@ class MeetingEventsTest {
         )
 
         // Basic assertions that eventClassType discriminators are set
-        assertEquals(MeetingEvent.MeetingScheduled.EVENT_CLASS_TYPE, scheduled.eventClassType)
-        assertEquals(MeetingEvent.MeetingStarted.EVENT_CLASS_TYPE, started.eventClassType)
-        assertEquals(MeetingEvent.AgendaItemStarted.EVENT_CLASS_TYPE, itemStarted.eventClassType)
-        assertEquals(MeetingEvent.AgendaItemCompleted.EVENT_CLASS_TYPE, itemCompleted.eventClassType)
-        assertEquals(MeetingEvent.MeetingCompleted.EVENT_CLASS_TYPE, completed.eventClassType)
-        assertEquals(MeetingEvent.MeetingCanceled.EVENT_CLASS_TYPE, cancelled.eventClassType)
+        assertEquals(MeetingEvents.MeetingScheduled.EVENT_CLASS_TYPE, scheduled.eventClassType)
+        assertEquals(MeetingEvents.MeetingStarted.EVENT_CLASS_TYPE, started.eventClassType)
+        assertEquals(MeetingEvents.AgendaItemStarted.EVENT_CLASS_TYPE, itemStarted.eventClassType)
+        assertEquals(MeetingEvents.AgendaItemCompleted.EVENT_CLASS_TYPE, itemCompleted.eventClassType)
+        assertEquals(MeetingEvents.MeetingCompleted.EVENT_CLASS_TYPE, completed.eventClassType)
+        assertEquals(MeetingEvents.MeetingCanceled.EVENT_CLASS_TYPE, cancelled.eventClassType)
     }
 }

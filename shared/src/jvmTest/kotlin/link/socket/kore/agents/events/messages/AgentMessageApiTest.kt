@@ -1,4 +1,4 @@
-package link.socket.kore.agents.messages
+package link.socket.kore.agents.events.messages
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import kotlin.test.AfterTest
@@ -17,8 +17,6 @@ import link.socket.kore.agents.events.EventBus
 import link.socket.kore.agents.events.EventBusFactory
 import link.socket.kore.agents.events.EventStatus
 import link.socket.kore.agents.events.MessageEvent
-import link.socket.kore.agents.events.messages.AgentMessageApiFactory
-import link.socket.kore.agents.events.messages.MessageChannel
 import link.socket.kore.data.DEFAULT_JSON
 import link.socket.kore.data.EventRepository
 import link.socket.kore.data.MessageRepository
@@ -42,7 +40,7 @@ class AgentMessageApiTest {
     fun setup() {
         driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         Database.Schema.create(driver)
-        val database = Database(driver)
+        val database = Database.Companion(driver)
 
         eventRepository = EventRepository(json, scope, database)
         messageRepository = MessageRepository(json, scope, database)

@@ -1,5 +1,7 @@
 package link.socket.kore.agents.events.meetings
 
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -9,8 +11,6 @@ import kotlinx.datetime.Clock
 import link.socket.kore.agents.events.ConsoleEventLogger
 import link.socket.kore.agents.events.EventLogger
 import link.socket.kore.data.MeetingRepository
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * Service that periodically checks for scheduled meetings that should start
@@ -70,7 +70,8 @@ class MeetingScheduler(
     /**
      * Check if the scheduler is currently running.
      */
-    fun isRunning(): Boolean = schedulerJob?.isActive == true
+    fun isRunning(): Boolean =
+        schedulerJob?.isActive == true
 
     /**
      * Manually check for and start any scheduled meetings that are past their start time.

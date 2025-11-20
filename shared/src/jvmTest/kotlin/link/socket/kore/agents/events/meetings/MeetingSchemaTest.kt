@@ -1,4 +1,4 @@
-package link.socket.kore.agents.meetings
+package link.socket.kore.agents.events.meetings
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import kotlin.test.AfterTest

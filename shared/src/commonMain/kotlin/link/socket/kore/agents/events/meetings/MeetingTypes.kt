@@ -7,9 +7,9 @@ import link.socket.kore.agents.core.PRId
 import link.socket.kore.agents.core.SprintId
 import link.socket.kore.agents.core.TeamId
 import link.socket.kore.agents.events.EventSource
+import link.socket.kore.agents.events.meetings.Task.Status
 import link.socket.kore.agents.events.messages.MessageChannelId
 import link.socket.kore.agents.events.messages.MessageThreadId
-import link.socket.kore.agents.events.meetings.Task.Status
 
 typealias MeetingId = String
 typealias AgendaItemId = String
@@ -181,38 +181,43 @@ data class MeetingOutcomeRequirements(
 
 /** Lifecycle status for a meeting. */
 @Serializable
-sealed interface MeetingStatus : MeetingProperty {
+sealed class MeetingStatus(
+    val scheduledFor: Instant?,
+) : MeetingProperty {
 
     @Serializable
     data class Scheduled(
-        val scheduledFor: Instant,
-    ) : MeetingStatus
+        val scheduledForOverride: Instant,
+    ) : MeetingStatus(scheduledForOverride)
 
     @Serializable
     data class Delayed(
         val reason: String,
-        val scheduledFor: Instant? = null,
-    ) : MeetingStatus
+        val scheduledForOverride: Instant? = null,
+    ) : MeetingStatus(scheduledForOverride)
 
     @Serializable
     data class InProgress(
         val startedAt: Instant,
         val messagingDetails: MeetingMessagingDetails,
-    ) : MeetingStatus
+        val scheduledForOverride: Instant? = null,
+    ) : MeetingStatus(scheduledForOverride)
 
     @Serializable
     data class Completed(
         val completedAt: Instant,
         val attendedBy: List<EventSource>,
         val messagingDetails: MeetingMessagingDetails,
+        val scheduledForOverride: Instant? = null,
         val outcomes: List<MeetingOutcome>? = null,
-    ) : MeetingStatus
+    ) : MeetingStatus(scheduledForOverride)
 
     @Serializable
     data class Canceled(
         val reason: String,
         val canceledAt: Instant,
         val messagingDetails: MeetingMessagingDetails,
+        val scheduledForOverride: Instant? = null,
         val outcomes: List<MeetingOutcome>? = null,
-    ) : MeetingStatus
+    ) : MeetingStatus(scheduledForOverride)
 }

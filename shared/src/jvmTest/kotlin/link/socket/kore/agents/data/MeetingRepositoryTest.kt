@@ -83,7 +83,7 @@ class MeetingRepositoryTest {
             sprintId = "sprint-1",
         ),
         status = MeetingStatus.Scheduled(
-            scheduledFor = scheduledFor,
+            scheduledForOverride = scheduledFor,
         ),
         invitation = MeetingInvitation(
             title = title,
@@ -142,7 +142,7 @@ class MeetingRepositoryTest {
     fun `create and retrieve meeting by id`() { runBlocking {
         val meeting = createScheduledMeeting()
 
-        val saveResult = repo.createMeeting(meeting)
+        val saveResult = repo.saveMeeting(meeting)
         assertTrue(saveResult.isSuccess, "Failed to save meeting: ${saveResult.exceptionOrNull()}")
 
         val loaded = repo.getMeeting(meeting.id).getOrNull()
@@ -158,7 +158,7 @@ class MeetingRepositoryTest {
         val meeting = createScheduledMeeting(
             optionalParticipants = listOf(AssignedTo.Human),
         )
-        repo.createMeeting(meeting)
+        repo.saveMeeting(meeting)
 
         val loaded = repo.getMeeting(meeting.id).getOrNull()
         assertNotNull(loaded)
@@ -176,7 +176,7 @@ class MeetingRepositoryTest {
     @Test
     fun `retrieve meeting with agenda item assignments`() { runBlocking {
         val meeting = createScheduledMeeting()
-        repo.createMeeting(meeting)
+        repo.saveMeeting(meeting)
 
         val loaded = repo.getMeeting(meeting.id).getOrNull()
         assertNotNull(loaded)
@@ -193,7 +193,7 @@ class MeetingRepositoryTest {
     @Test
     fun `create and retrieve completed meeting with outcomes`() { runBlocking {
         val meeting = createCompletedMeeting()
-        repo.createMeeting(meeting)
+        repo.saveMeeting(meeting)
 
         val loaded = repo.getMeeting(meeting.id).getOrNull()
         assertNotNull(loaded)
@@ -210,7 +210,7 @@ class MeetingRepositoryTest {
     @Test
     fun `update meeting status from scheduled to in_progress`() { runBlocking {
         val meeting = createScheduledMeeting()
-        repo.createMeeting(meeting)
+        repo.saveMeeting(meeting)
 
         val newStatus = MeetingStatus.InProgress(
             startedAt = Clock.System.now(),
@@ -234,7 +234,7 @@ class MeetingRepositoryTest {
     @Test
     fun `update meeting status to completed with outcomes and attendees`() { runBlocking {
         val meeting = createScheduledMeeting()
-        repo.createMeeting(meeting)
+        repo.saveMeeting(meeting)
 
         val completedStatus = MeetingStatus.Completed(
             completedAt = Clock.System.now(),
@@ -271,7 +271,7 @@ class MeetingRepositoryTest {
     @Test
     fun `add outcome to meeting`() { runBlocking {
         val meeting = createScheduledMeeting()
-        repo.createMeeting(meeting)
+        repo.saveMeeting(meeting)
 
         val outcome = MeetingOutcome.BlockerRaised(
             overrideId = "blocker-1",
@@ -306,8 +306,8 @@ class MeetingRepositoryTest {
             scheduledFor = now + 2.hours,
         )
 
-        repo.createMeeting(meeting1)
-        repo.createMeeting(meeting2)
+        repo.saveMeeting(meeting1)
+        repo.saveMeeting(meeting2)
 
         // Get meetings scheduled before 1 hour from now
         val result = repo.getScheduledMeetings(now + 1.hours).getOrNull()
@@ -333,8 +333,8 @@ class MeetingRepositoryTest {
             ),
         )
 
-        repo.createMeeting(meeting1)
-        repo.createMeeting(meeting2)
+        repo.saveMeeting(meeting1)
+        repo.saveMeeting(meeting2)
 
         val alphaMeetings = repo.getMeetingsForParticipant("agent-alpha").getOrNull()
         assertNotNull(alphaMeetings)
@@ -348,7 +348,7 @@ class MeetingRepositoryTest {
     @Test
     fun `delete meeting removes all related records`() { runBlocking {
         val meeting = createCompletedMeeting()
-        repo.createMeeting(meeting)
+        repo.saveMeeting(meeting)
 
         // Verify meeting exists
         assertNotNull(repo.getMeeting(meeting.id).getOrNull())
@@ -386,7 +386,7 @@ class MeetingRepositoryTest {
                 requestedReviewer = AssignedTo.Agent("agent-reviewer"),
             ),
             status = MeetingStatus.Scheduled(
-                scheduledFor = Clock.System.now() + 1.hours,
+                scheduledForOverride = Clock.System.now() + 1.hours,
             ),
             invitation = MeetingInvitation(
                 title = "Code Review: Feature X",
@@ -400,7 +400,7 @@ class MeetingRepositoryTest {
             ),
         )
 
-        repo.createMeeting(codeReviewMeeting)
+        repo.saveMeeting(codeReviewMeeting)
 
         val loaded = repo.getMeeting(codeReviewMeeting.id).getOrNull()
         assertNotNull(loaded)
@@ -418,7 +418,7 @@ class MeetingRepositoryTest {
         val meeting = Meeting(
             id = "meeting-with-status",
             type = MeetingType.AdHoc(reason = "Quick sync"),
-            status = MeetingStatus.Scheduled(scheduledFor = Clock.System.now() + 1.hours),
+            status = MeetingStatus.Scheduled(scheduledForOverride = Clock.System.now() + 1.hours),
             invitation = MeetingInvitation(
                 title = "Quick Sync",
                 agenda = listOf(
@@ -445,7 +445,7 @@ class MeetingRepositoryTest {
             ),
         )
 
-        repo.createMeeting(meeting)
+        repo.saveMeeting(meeting)
 
         val loaded = repo.getMeeting(meeting.id).getOrNull()
         assertNotNull(loaded)
@@ -486,7 +486,7 @@ class MeetingRepositoryTest {
             outcomes = outcomes,
         )
 
-        repo.createMeeting(meeting)
+        repo.saveMeeting(meeting)
 
         val loaded = repo.getMeeting(meeting.id).getOrNull()
         assertNotNull(loaded)

@@ -1,4 +1,4 @@
-package link.socket.kore.agents.meetings
+package link.socket.kore.agents.events.meetings
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import kotlin.test.AfterTest
@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.core.AssignedTo
@@ -25,17 +26,8 @@ import link.socket.kore.agents.events.Database
 import link.socket.kore.agents.events.Event
 import link.socket.kore.agents.events.EventBus
 import link.socket.kore.agents.events.EventSource
-import link.socket.kore.agents.events.MeetingEvent
+import link.socket.kore.agents.events.MeetingEvents
 import link.socket.kore.agents.events.messages.AgentMessageApi
-import link.socket.kore.agents.events.meetings.AgendaItem
-import link.socket.kore.agents.events.meetings.Meeting
-import link.socket.kore.agents.events.meetings.MeetingInvitation
-import link.socket.kore.agents.events.meetings.MeetingMessagingDetails
-import link.socket.kore.agents.events.meetings.MeetingOrchestrator
-import link.socket.kore.agents.events.meetings.MeetingParticipationHandler
-import link.socket.kore.agents.events.meetings.MeetingStatus
-import link.socket.kore.agents.events.meetings.MeetingType
-import link.socket.kore.agents.events.meetings.Task
 import link.socket.kore.data.MeetingRepository
 import link.socket.kore.data.MessageRepository
 import link.socket.kore.util.randomUUID
@@ -59,9 +51,12 @@ class MeetingParticipationHandlerTest {
         ignoreUnknownKeys = true
     }
 
+
+    private val stubScheduledBy = EventSource.Agent("scheduler-agent")
+
     private val orchestratorAgentId: AgentId = "orchestrator-agent"
     private val publishedEvents = mutableListOf<Event>()
-    private val receivedEventsByAgent = mutableMapOf<AgentId, MutableList<MeetingEvent>>()
+    private val receivedEventsByAgent = mutableMapOf<AgentId, MutableList<MeetingEvents>>()
 
     @BeforeTest
     fun setUp() {
@@ -103,7 +98,7 @@ class MeetingParticipationHandlerTest {
     private fun createTestMeeting(
         id: String = randomUUID(),
         title: String = "Test Meeting",
-        scheduledFor: kotlinx.datetime.Instant = Clock.System.now() + 1.hours,
+        scheduledFor: Instant = Clock.System.now() + 1.hours,
         agendaItems: List<AgendaItem> = listOf(
             AgendaItem(
                 id = randomUUID(),
@@ -125,7 +120,7 @@ class MeetingParticipationHandlerTest {
     ): Meeting = Meeting(
         id = id,
         type = MeetingType.AdHoc("Test reason"),
-        status = MeetingStatus.Scheduled(scheduledFor = scheduledFor),
+        status = MeetingStatus.Scheduled(scheduledForOverride = scheduledFor),
         invitation = MeetingInvitation(
             title = title,
             agenda = agendaItems,
@@ -190,8 +185,8 @@ class MeetingParticipationHandlerTest {
     fun `registered agents receive MeetingStarted event when they are participants`() {
         runBlocking {
             val meeting = createTestMeeting()
-            val alphaEvents = mutableListOf<MeetingEvent>()
-            val betaEvents = mutableListOf<MeetingEvent>()
+            val alphaEvents = mutableListOf<MeetingEvents>()
+            val betaEvents = mutableListOf<MeetingEvents>()
 
             // Subscribe agents
             participationHandler.subscribeAgent("agent-alpha") { event ->
@@ -202,15 +197,15 @@ class MeetingParticipationHandlerTest {
             }
 
             // Schedule and start meeting
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
 
             // Wait for async event handling
             delay(200)
 
             // Verify both agents received the event
-            assertTrue(alphaEvents.any { it is MeetingEvent.MeetingStarted })
-            assertTrue(betaEvents.any { it is MeetingEvent.MeetingStarted })
+            assertTrue(alphaEvents.any { it is MeetingEvents.MeetingStarted })
+            assertTrue(betaEvents.any { it is MeetingEvents.MeetingStarted })
         }
     }
 
@@ -222,8 +217,8 @@ class MeetingParticipationHandlerTest {
                     AssignedTo.Agent("agent-alpha"),
                 )
             )
-            val alphaEvents = mutableListOf<MeetingEvent>()
-            val gammaEvents = mutableListOf<MeetingEvent>()
+            val alphaEvents = mutableListOf<MeetingEvents>()
+            val gammaEvents = mutableListOf<MeetingEvents>()
 
             // Subscribe both agents
             participationHandler.subscribeAgent("agent-alpha") { event ->
@@ -234,14 +229,14 @@ class MeetingParticipationHandlerTest {
             }
 
             // Schedule and start meeting
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
 
             // Wait for async event handling
             delay(200)
 
             // Verify only agent-alpha received the event
-            assertTrue(alphaEvents.any { it is MeetingEvent.MeetingStarted })
+            assertTrue(alphaEvents.any { it is MeetingEvents.MeetingStarted })
             assertTrue(gammaEvents.isEmpty(), "Non-participant should not receive events")
         }
     }
@@ -250,7 +245,7 @@ class MeetingParticipationHandlerTest {
     fun `unregistered agents do not receive events even if participants`() {
         runBlocking {
             val meeting = createTestMeeting()
-            val alphaEvents = mutableListOf<MeetingEvent>()
+            val alphaEvents = mutableListOf<MeetingEvents>()
 
             // Only subscribe agent-alpha, not agent-beta
             participationHandler.subscribeAgent("agent-alpha") { event ->
@@ -258,14 +253,14 @@ class MeetingParticipationHandlerTest {
             }
 
             // Schedule and start meeting
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
 
             // Wait for async event handling
             delay(200)
 
             // Verify agent-alpha received the event
-            assertTrue(alphaEvents.any { it is MeetingEvent.MeetingStarted })
+            assertTrue(alphaEvents.any { it is MeetingEvents.MeetingStarted })
             // agent-beta was not subscribed, so it wouldn't receive events
         }
     }
@@ -276,14 +271,14 @@ class MeetingParticipationHandlerTest {
     fun `registered agents receive AgendaItemStarted event`() {
         runBlocking {
             val meeting = createTestMeeting()
-            val alphaEvents = mutableListOf<MeetingEvent>()
+            val alphaEvents = mutableListOf<MeetingEvents>()
 
             participationHandler.subscribeAgent("agent-alpha") { event ->
                 alphaEvents.add(event)
             }
 
             // Schedule, start, and advance agenda
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
             orchestrator.advanceAgenda(meeting.id)
 
@@ -291,7 +286,7 @@ class MeetingParticipationHandlerTest {
             delay(200)
 
             // Verify agent received AgendaItemStarted event
-            assertTrue(alphaEvents.any { it is MeetingEvent.AgendaItemStarted })
+            assertTrue(alphaEvents.any { it is MeetingEvents.AgendaItemStarted })
         }
     }
 
@@ -307,8 +302,8 @@ class MeetingParticipationHandlerTest {
                 ),
             )
             val meeting = createTestMeeting(agendaItems = agendaItems)
-            val alphaEvents = mutableListOf<MeetingEvent>()
-            val betaEvents = mutableListOf<MeetingEvent>()
+            val alphaEvents = mutableListOf<MeetingEvents>()
+            val betaEvents = mutableListOf<MeetingEvents>()
 
             participationHandler.subscribeAgent("agent-alpha") { event ->
                 alphaEvents.add(event)
@@ -318,7 +313,7 @@ class MeetingParticipationHandlerTest {
             }
 
             // Schedule, start, and advance agenda
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
             orchestrator.advanceAgenda(meeting.id)
 
@@ -326,8 +321,8 @@ class MeetingParticipationHandlerTest {
             delay(200)
 
             // Both participants should receive the AgendaItemStarted event
-            val alphaAgendaEvents = alphaEvents.filterIsInstance<MeetingEvent.AgendaItemStarted>()
-            val betaAgendaEvents = betaEvents.filterIsInstance<MeetingEvent.AgendaItemStarted>()
+            val alphaAgendaEvents = alphaEvents.filterIsInstance<MeetingEvents.AgendaItemStarted>()
+            val betaAgendaEvents = betaEvents.filterIsInstance<MeetingEvents.AgendaItemStarted>()
 
             assertTrue(alphaAgendaEvents.isNotEmpty())
             assertTrue(betaAgendaEvents.isNotEmpty())
@@ -343,14 +338,14 @@ class MeetingParticipationHandlerTest {
     fun `registered agents receive MeetingCompleted event`() {
         runBlocking {
             val meeting = createTestMeeting()
-            val alphaEvents = mutableListOf<MeetingEvent>()
+            val alphaEvents = mutableListOf<MeetingEvents>()
 
             participationHandler.subscribeAgent("agent-alpha") { event ->
                 alphaEvents.add(event)
             }
 
             // Full meeting lifecycle
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
             orchestrator.completeMeeting(meeting.id, emptyList())
 
@@ -358,7 +353,7 @@ class MeetingParticipationHandlerTest {
             delay(200)
 
             // Verify agent received MeetingCompleted event
-            assertTrue(alphaEvents.any { it is MeetingEvent.MeetingCompleted })
+            assertTrue(alphaEvents.any { it is MeetingEvents.MeetingCompleted })
         }
     }
 
@@ -368,7 +363,7 @@ class MeetingParticipationHandlerTest {
     fun `isAgentParticipant returns true for participant`() {
         runBlocking {
             val meeting = createTestMeeting()
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
 
             val isParticipant = participationHandler.isAgentParticipant(meeting.id, "agent-alpha")
 
@@ -380,7 +375,7 @@ class MeetingParticipationHandlerTest {
     fun `isAgentParticipant returns false for non-participant`() {
         runBlocking {
             val meeting = createTestMeeting()
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
 
             val isParticipant = participationHandler.isAgentParticipant(meeting.id, "agent-gamma")
 
@@ -406,7 +401,7 @@ class MeetingParticipationHandlerTest {
             val agent = TestAgent("agent-alpha")
 
             // Schedule and start meeting to get thread ID
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
 
             // Get the meeting started event
@@ -415,7 +410,7 @@ class MeetingParticipationHandlerTest {
             val inProgressStatus = retrievedMeeting.status as MeetingStatus.InProgress
             val threadId = inProgressStatus.messagingDetails.messageThreadId
 
-            val event = MeetingEvent.MeetingStarted(
+            val event = MeetingEvents.MeetingStarted(
                 eventId = randomUUID(),
                 meetingId = meeting.id,
                 threadId = threadId,
@@ -448,14 +443,14 @@ class MeetingParticipationHandlerTest {
             val agent = TestAgent("agent-alpha")
 
             // Schedule and start meeting
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
 
             delay(100)
             val retrievedMeeting = meetingRepository.getMeeting(meeting.id).getOrNull()!!
             val inProgressStatus = retrievedMeeting.status as MeetingStatus.InProgress
 
-            val event = MeetingEvent.AgendaItemStarted(
+            val event = MeetingEvents.AgendaItemStarted(
                 eventId = randomUUID(),
                 meetingId = meeting.id,
                 agendaItem = agendaItems.first(),
@@ -486,14 +481,14 @@ class MeetingParticipationHandlerTest {
             val agent = TestAgent("agent-beta") // Not assigned to this topic
 
             // Schedule and start meeting
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
 
             delay(100)
             val retrievedMeeting = meetingRepository.getMeeting(meeting.id).getOrNull()!!
             val inProgressStatus = retrievedMeeting.status as MeetingStatus.InProgress
 
-            val event = MeetingEvent.AgendaItemStarted(
+            val event = MeetingEvents.AgendaItemStarted(
                 eventId = randomUUID(),
                 meetingId = meeting.id,
                 agendaItem = agendaItems.first(),
@@ -517,7 +512,7 @@ class MeetingParticipationHandlerTest {
             val meeting = Meeting(
                 id = randomUUID(),
                 type = MeetingType.AdHoc("Test"),
-                status = MeetingStatus.Scheduled(scheduledFor = Clock.System.now() + 1.hours),
+                status = MeetingStatus.Scheduled(scheduledForOverride = Clock.System.now() + 1.hours),
                 invitation = MeetingInvitation(
                     title = "Test Meeting",
                     agenda = listOf(
@@ -533,8 +528,8 @@ class MeetingParticipationHandlerTest {
                 ),
             )
 
-            val alphaEvents = mutableListOf<MeetingEvent>()
-            val betaEvents = mutableListOf<MeetingEvent>()
+            val alphaEvents = mutableListOf<MeetingEvents>()
+            val betaEvents = mutableListOf<MeetingEvents>()
 
             participationHandler.subscribeAgent("agent-alpha") { event ->
                 alphaEvents.add(event)
@@ -544,15 +539,15 @@ class MeetingParticipationHandlerTest {
             }
 
             // Schedule and start meeting
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
 
             // Wait for async event handling
             delay(200)
 
             // Both required and optional participants should receive events
-            assertTrue(alphaEvents.any { it is MeetingEvent.MeetingStarted })
-            assertTrue(betaEvents.any { it is MeetingEvent.MeetingStarted })
+            assertTrue(alphaEvents.any { it is MeetingEvents.MeetingStarted })
+            assertTrue(betaEvents.any { it is MeetingEvents.MeetingStarted })
         }
     }
 
@@ -562,14 +557,14 @@ class MeetingParticipationHandlerTest {
     fun `full meeting lifecycle routes all events to participants`() {
         runBlocking {
             val meeting = createTestMeeting()
-            val alphaEvents = mutableListOf<MeetingEvent>()
+            val alphaEvents = mutableListOf<MeetingEvents>()
 
             participationHandler.subscribeAgent("agent-alpha") { event ->
                 alphaEvents.add(event)
             }
 
             // Full lifecycle
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
             orchestrator.advanceAgenda(meeting.id)
             orchestrator.completeMeeting(meeting.id, emptyList())
@@ -578,9 +573,9 @@ class MeetingParticipationHandlerTest {
             delay(300)
 
             // Verify agent received all event types
-            assertTrue(alphaEvents.any { it is MeetingEvent.MeetingStarted }, "Should receive MeetingStarted")
-            assertTrue(alphaEvents.any { it is MeetingEvent.AgendaItemStarted }, "Should receive AgendaItemStarted")
-            assertTrue(alphaEvents.any { it is MeetingEvent.MeetingCompleted }, "Should receive MeetingCompleted")
+            assertTrue(alphaEvents.any { it is MeetingEvents.MeetingStarted }, "Should receive MeetingStarted")
+            assertTrue(alphaEvents.any { it is MeetingEvents.AgendaItemStarted }, "Should receive AgendaItemStarted")
+            assertTrue(alphaEvents.any { it is MeetingEvents.MeetingCompleted }, "Should receive MeetingCompleted")
         }
     }
 }

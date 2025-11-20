@@ -1,16 +1,15 @@
 package link.socket.kore.agents.events.meetings
 
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import link.socket.kore.agents.core.AgentId
+import link.socket.kore.agents.core.AssignedTo
 import link.socket.kore.agents.events.ConsoleEventLogger
 import link.socket.kore.agents.events.EventBus
 import link.socket.kore.agents.events.EventLogger
 import link.socket.kore.agents.events.EventSource
-import link.socket.kore.agents.events.MeetingEvent
+import link.socket.kore.agents.events.MeetingEvents
+import link.socket.kore.agents.events.generateEventId
 import link.socket.kore.agents.events.messages.AgentMessageApi
 import link.socket.kore.agents.events.messages.MessageChannel
-import link.socket.kore.agents.events.messages.MessageSenderId
 import link.socket.kore.data.MeetingRepository
 import link.socket.kore.util.randomUUID
 
@@ -35,15 +34,16 @@ class MeetingOrchestrator(
      */
     suspend fun scheduleMeeting(
         meeting: Meeting,
-        scheduledBy: AgentId,
+        scheduledBy: EventSource,
     ): Result<Meeting> {
         // Validate meeting data
-        val scheduledTime = when (val status = meeting.status) {
-            is MeetingStatus.Scheduled -> status.scheduledFor
-            else -> return Result.failure(
+        if (meeting.status !is MeetingStatus.Scheduled) {
+            return Result.failure(
                 IllegalArgumentException("Meeting must have Scheduled status to be scheduled")
             )
         }
+
+        val scheduledTime = meeting.status.scheduledForOverride
 
         val now = Clock.System.now()
         if (scheduledTime <= now) {
@@ -59,19 +59,19 @@ class MeetingOrchestrator(
         }
 
         // Create participants set from meeting invitation
-        val participants = buildSet<MessageSenderId> {
+        val participants = buildSet {
             meeting.invitation.requiredParticipants.forEach { participant ->
                 when (participant) {
-                    is link.socket.kore.agents.core.AssignedTo.Agent -> add(participant.agentId)
-                    is link.socket.kore.agents.core.AssignedTo.Human -> { /* humans don't have message sender IDs */ }
-                    is link.socket.kore.agents.core.AssignedTo.Team -> { /* teams are expanded to individual agents */ }
+                    is AssignedTo.Agent -> add(participant.agentId)
+                    is AssignedTo.Human -> { /* humans don't have message sender IDs */ }
+                    is AssignedTo.Team -> { /* teams are expanded to individual agents */ }
                 }
             }
             meeting.invitation.optionalParticipants?.forEach { participant ->
                 when (participant) {
-                    is link.socket.kore.agents.core.AssignedTo.Agent -> add(participant.agentId)
-                    is link.socket.kore.agents.core.AssignedTo.Human -> { /* humans don't have message sender IDs */ }
-                    is link.socket.kore.agents.core.AssignedTo.Team -> { /* teams are expanded to individual agents */ }
+                    is AssignedTo.Agent -> add(participant.agentId)
+                    is AssignedTo.Human -> { /* humans don't have message sender IDs */ }
+                    is AssignedTo.Team -> { /* teams are expanded to individual agents */ }
                 }
             }
         }
@@ -83,38 +83,41 @@ class MeetingOrchestrator(
             initialMessageContent = buildScheduledMessage(meeting),
         )
 
-        // Update meeting with thread information
+        // Update meeting with thread information and scheduling
         val updatedMeeting = meeting.copy(
+            messagingDetails = MeetingMessagingDetails(
+                messageChannelId = thread.channel.getIdentifier(),
+                messageThreadId = thread.id,
+            ),
             status = MeetingStatus.Scheduled(
-                scheduledFor = scheduledTime,
+                scheduledForOverride = scheduledTime,
             ),
         )
 
-        // We need to create a meeting with the thread info in the InProgress status,
-        // but for scheduling we store it without messaging details (they get added on start)
-        val meetingToStore = updatedMeeting
-
         // Persist meeting via repository
-        val createResult = repository.createMeeting(meetingToStore)
-        if (createResult.isFailure) {
-            logger.logError(
-                message = "Failed to persist meeting ${meeting.id}",
-                throwable = createResult.exceptionOrNull(),
-            )
-            return Result.failure(createResult.exceptionOrNull() ?: Exception("Failed to create meeting"))
-        }
+        val createdMeetingResult = repository
+            .saveMeeting(updatedMeeting)
+            .onFailure { throwable ->
+                logger.logError(
+                    message = "Failed to persist meeting ${meeting.id}",
+                    throwable = throwable,
+                )
+                return Result.failure(throwable)
+            }
+
+        val createdMeeting = createdMeetingResult.getOrNull()
+        requireNotNull(createdMeeting) { "Failed to persist meeting ${meeting.id}" }
 
         // Publish MeetingScheduled event
-        val eventSource = EventSource.Agent(scheduledBy)
         eventBus.publish(
-            MeetingEvent.MeetingScheduled(
-                eventId = randomUUID(),
-                meeting = meetingToStore,
-                scheduledBy = eventSource,
+            MeetingEvents.MeetingScheduled(
+                eventId = generateEventId(scheduledBy.getIdentifier()),
+                meeting = createdMeeting,
+                scheduledBy = scheduledBy,
             )
         )
 
-        return Result.success(meetingToStore)
+        return createdMeetingResult
     }
 
     /**
@@ -145,12 +148,12 @@ class MeetingOrchestrator(
 
         // Create a thread for the meeting if not already created during scheduling
         // We use the messageApi's agentId as the orchestrator
-        val participants = buildSet<MessageSenderId> {
+        val participants = buildSet {
             meeting.invitation.requiredParticipants.forEach { participant ->
                 when (participant) {
-                    is link.socket.kore.agents.core.AssignedTo.Agent -> add(participant.agentId)
-                    is link.socket.kore.agents.core.AssignedTo.Human -> { /* humans don't have message sender IDs */ }
-                    is link.socket.kore.agents.core.AssignedTo.Team -> { /* teams are expanded to individual agents */ }
+                    is AssignedTo.Agent -> add(participant.agentId)
+                    is AssignedTo.Human -> { /* humans don't have message sender IDs */ }
+                    is AssignedTo.Team -> { /* teams are expanded to individual agents */ }
                 }
             }
         }
@@ -177,7 +180,7 @@ class MeetingOrchestrator(
 
         // Publish MeetingStarted event
         eventBus.publish(
-            MeetingEvent.MeetingStarted(
+            MeetingEvents.MeetingStarted(
                 eventId = randomUUID(),
                 meetingId = meetingId,
                 threadId = thread.id,
@@ -238,7 +241,7 @@ class MeetingOrchestrator(
 
         // Publish AgendaItemStarted event
         eventBus.publish(
-            MeetingEvent.AgendaItemStarted(
+            MeetingEvents.AgendaItemStarted(
                 eventId = randomUUID(),
                 meetingId = meetingId,
                 agendaItem = updatedItem,
@@ -310,7 +313,7 @@ class MeetingOrchestrator(
 
         // Publish MeetingCompleted event
         eventBus.publish(
-            MeetingEvent.MeetingCompleted(
+            MeetingEvents.MeetingCompleted(
                 eventId = randomUUID(),
                 meetingId = meetingId,
                 outcomes = outcomes,
@@ -351,9 +354,9 @@ class MeetingOrchestrator(
             append("Participants: ")
             append(meeting.invitation.requiredParticipants.joinToString(", ") {
                 when (it) {
-                    is link.socket.kore.agents.core.AssignedTo.Agent -> it.agentId
-                    is link.socket.kore.agents.core.AssignedTo.Human -> "human"
-                    is link.socket.kore.agents.core.AssignedTo.Team -> it.teamId
+                    is AssignedTo.Agent -> it.agentId
+                    is AssignedTo.Human -> "human"
+                    is AssignedTo.Team -> it.teamId
                 }
             })
             append("\n\nAgenda:\n")

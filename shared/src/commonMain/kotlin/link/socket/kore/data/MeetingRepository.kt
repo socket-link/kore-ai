@@ -16,7 +16,6 @@ import link.socket.kore.agents.events.meetings.AgendaItemId
 import link.socket.kore.agents.events.meetings.Meeting
 import link.socket.kore.agents.events.meetings.MeetingId
 import link.socket.kore.agents.events.meetings.MeetingInvitation
-import link.socket.kore.agents.events.meetings.MeetingMessagingDetails
 import link.socket.kore.agents.events.meetings.MeetingOutcome
 import link.socket.kore.agents.events.meetings.MeetingStatus
 import link.socket.kore.agents.events.meetings.MeetingType
@@ -43,7 +42,7 @@ class MeetingRepository(
     /**
      * Create a new meeting with all its related data (participants, agenda items).
      */
-    suspend fun createMeeting(meeting: Meeting): Result<Unit> =
+    suspend fun saveMeeting(meeting: Meeting): Result<Meeting> =
         withContext(Dispatchers.IO) {
             runCatching {
                 val now = Clock.System.now().toEpochMilliseconds()
@@ -123,7 +122,7 @@ class MeetingRepository(
                     }
                     else -> { /* No attendees for other statuses */ }
                 }
-            }.map { }
+            }.map { meeting }
         }
 
     /**

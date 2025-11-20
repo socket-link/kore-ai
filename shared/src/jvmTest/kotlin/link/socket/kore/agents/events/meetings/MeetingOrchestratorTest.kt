@@ -1,4 +1,4 @@
-package link.socket.kore.agents.meetings
+package link.socket.kore.agents.events.meetings
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import kotlin.test.AfterTest
@@ -11,8 +11,10 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.core.AssignedTo
@@ -21,17 +23,8 @@ import link.socket.kore.agents.events.Event
 import link.socket.kore.agents.events.EventBus
 import link.socket.kore.agents.events.EventHandler
 import link.socket.kore.agents.events.EventSource
-import link.socket.kore.agents.events.MeetingEvent
+import link.socket.kore.agents.events.MeetingEvents
 import link.socket.kore.agents.events.messages.AgentMessageApi
-import link.socket.kore.agents.events.messages.MessageChannel
-import link.socket.kore.agents.events.meetings.AgendaItem
-import link.socket.kore.agents.events.meetings.Meeting
-import link.socket.kore.agents.events.meetings.MeetingInvitation
-import link.socket.kore.agents.events.meetings.MeetingOrchestrator
-import link.socket.kore.agents.events.meetings.MeetingOutcome
-import link.socket.kore.agents.events.meetings.MeetingStatus
-import link.socket.kore.agents.events.meetings.MeetingType
-import link.socket.kore.agents.events.meetings.Task
 import link.socket.kore.data.MeetingRepository
 import link.socket.kore.data.MessageRepository
 import link.socket.kore.util.randomUUID
@@ -54,6 +47,8 @@ class MeetingOrchestratorTest {
         ignoreUnknownKeys = true
     }
 
+    private val stubScheduledBy = EventSource.Agent("scheduler-agent")
+
     private val orchestratorAgentId: AgentId = "orchestrator-agent"
     private val publishedEvents = mutableListOf<Event>()
 
@@ -71,28 +66,28 @@ class MeetingOrchestratorTest {
         // Subscribe to capture published events
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvent.MeetingScheduled.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvents.MeetingScheduled.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
         )
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvent.MeetingStarted.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvents.MeetingStarted.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
         )
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvent.AgendaItemStarted.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvents.AgendaItemStarted.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
         )
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvent.MeetingCompleted.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvents.MeetingCompleted.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
@@ -117,7 +112,7 @@ class MeetingOrchestratorTest {
     private fun createTestMeeting(
         id: String = randomUUID(),
         title: String = "Test Meeting",
-        scheduledFor: kotlinx.datetime.Instant = Clock.System.now() + 1.hours,
+        scheduledFor: Instant = Clock.System.now() + 1.hours,
         agendaItems: List<AgendaItem> = listOf(
             AgendaItem(
                 id = randomUUID(),
@@ -139,7 +134,7 @@ class MeetingOrchestratorTest {
     ): Meeting = Meeting(
         id = id,
         type = MeetingType.AdHoc("Test reason"),
-        status = MeetingStatus.Scheduled(scheduledFor = scheduledFor),
+        status = MeetingStatus.Scheduled(scheduledForOverride = scheduledFor),
         invitation = MeetingInvitation(
             title = title,
             agenda = agendaItems,
@@ -153,9 +148,8 @@ class MeetingOrchestratorTest {
     fun `scheduleMeeting creates meeting and publishes event`() {
         runBlocking {
             val meeting = createTestMeeting()
-            val scheduledBy = "scheduler-agent"
 
-            val result = orchestrator.scheduleMeeting(meeting, scheduledBy)
+            val result = orchestrator.scheduleMeeting(meeting, stubScheduledBy)
 
             assertTrue(result.isSuccess)
             val scheduledMeeting = result.getOrNull()
@@ -168,10 +162,10 @@ class MeetingOrchestratorTest {
             assertEquals(meeting.invitation.title, retrieved.invitation.title)
 
             // Wait a bit for async event publishing
-            kotlinx.coroutines.delay(100)
+            delay(100)
 
             // Verify MeetingScheduled event was published
-            val scheduledEvent = publishedEvents.filterIsInstance<MeetingEvent.MeetingScheduled>()
+            val scheduledEvent = publishedEvents.filterIsInstance<MeetingEvents.MeetingScheduled>()
             assertTrue(scheduledEvent.isNotEmpty(), "MeetingScheduled event should be published")
             assertEquals(meeting.id, scheduledEvent.first().meeting.id)
         }
@@ -183,7 +177,7 @@ class MeetingOrchestratorTest {
             val pastTime = Clock.System.now() - 1.hours
             val meeting = createTestMeeting(scheduledFor = pastTime)
 
-            val result = orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            val result = orchestrator.scheduleMeeting(meeting, stubScheduledBy)
 
             assertTrue(result.isFailure)
             val error = result.exceptionOrNull()
@@ -197,7 +191,7 @@ class MeetingOrchestratorTest {
         runBlocking {
             val meeting = createTestMeeting(requiredParticipants = emptyList())
 
-            val result = orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            val result = orchestrator.scheduleMeeting(meeting, stubScheduledBy)
 
             assertTrue(result.isFailure)
             val error = result.exceptionOrNull()
@@ -220,7 +214,7 @@ class MeetingOrchestratorTest {
                 ),
             )
 
-            val result = orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            val result = orchestrator.scheduleMeeting(meeting, stubScheduledBy)
 
             assertTrue(result.isFailure)
         }
@@ -233,7 +227,7 @@ class MeetingOrchestratorTest {
         runBlocking {
             // First schedule a meeting
             val meeting = createTestMeeting()
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             publishedEvents.clear()
 
             // Now start it
@@ -247,10 +241,10 @@ class MeetingOrchestratorTest {
             assertTrue(retrieved.status is MeetingStatus.InProgress)
 
             // Wait for async event publishing
-            kotlinx.coroutines.delay(100)
+            delay(100)
 
             // Verify MeetingStarted event was published
-            val startedEvents = publishedEvents.filterIsInstance<MeetingEvent.MeetingStarted>()
+            val startedEvents = publishedEvents.filterIsInstance<MeetingEvents.MeetingStarted>()
             assertTrue(startedEvents.isNotEmpty(), "MeetingStarted event should be published")
             assertEquals(meeting.id, startedEvents.first().meetingId)
         }
@@ -273,7 +267,7 @@ class MeetingOrchestratorTest {
         runBlocking {
             // Create and start a meeting
             val meeting = createTestMeeting()
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
 
             // Try to start again
@@ -307,7 +301,7 @@ class MeetingOrchestratorTest {
                 ),
             )
             val meeting = createTestMeeting(agendaItems = agendaItems)
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
             publishedEvents.clear()
 
@@ -321,10 +315,10 @@ class MeetingOrchestratorTest {
             assertTrue(item.status is Task.Status.InProgress)
 
             // Wait for async event publishing
-            kotlinx.coroutines.delay(100)
+            delay(100)
 
             // Verify AgendaItemStarted event was published
-            val agendaEvents = publishedEvents.filterIsInstance<MeetingEvent.AgendaItemStarted>()
+            val agendaEvents = publishedEvents.filterIsInstance<MeetingEvents.AgendaItemStarted>()
             assertTrue(agendaEvents.isNotEmpty(), "AgendaItemStarted event should be published")
         }
     }
@@ -334,7 +328,7 @@ class MeetingOrchestratorTest {
         runBlocking {
             // Create meeting with no agenda items
             val meeting = createTestMeeting(agendaItems = emptyList())
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
 
             val result = orchestrator.advanceAgenda(meeting.id)
@@ -348,7 +342,7 @@ class MeetingOrchestratorTest {
     fun `advanceAgenda fails for meeting not in progress`() {
         runBlocking {
             val meeting = createTestMeeting()
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             // Don't start the meeting
 
             val result = orchestrator.advanceAgenda(meeting.id)
@@ -367,7 +361,7 @@ class MeetingOrchestratorTest {
         runBlocking {
             // Schedule and start meeting
             val meeting = createTestMeeting()
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
             publishedEvents.clear()
 
@@ -398,10 +392,10 @@ class MeetingOrchestratorTest {
             assertEquals(2, completedStatus.outcomes?.size ?: 0)
 
             // Wait for async event publishing
-            kotlinx.coroutines.delay(100)
+            delay(100)
 
             // Verify MeetingCompleted event was published
-            val completedEvents = publishedEvents.filterIsInstance<MeetingEvent.MeetingCompleted>()
+            val completedEvents = publishedEvents.filterIsInstance<MeetingEvents.MeetingCompleted>()
             assertTrue(completedEvents.isNotEmpty(), "MeetingCompleted event should be published")
             assertEquals(meeting.id, completedEvents.first().meetingId)
             assertEquals(2, completedEvents.first().outcomes.size)
@@ -412,7 +406,7 @@ class MeetingOrchestratorTest {
     fun `completeMeeting works with empty outcomes`() {
         runBlocking {
             val meeting = createTestMeeting()
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             orchestrator.startMeeting(meeting.id)
 
             val result = orchestrator.completeMeeting(meeting.id, emptyList())
@@ -429,7 +423,7 @@ class MeetingOrchestratorTest {
     fun `completeMeeting fails for meeting not in progress`() {
         runBlocking {
             val meeting = createTestMeeting()
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             // Don't start the meeting
 
             val result = orchestrator.completeMeeting(meeting.id, emptyList())
@@ -477,7 +471,7 @@ class MeetingOrchestratorTest {
             )
 
             // Schedule
-            val scheduleResult = orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            val scheduleResult = orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             assertTrue(scheduleResult.isSuccess)
 
             // Verify scheduled status
@@ -527,7 +521,7 @@ class MeetingOrchestratorTest {
     fun `state transitions are validated correctly`() {
         runBlocking {
             val meeting = createTestMeeting()
-            orchestrator.scheduleMeeting(meeting, "scheduler-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
 
             // Can't complete from scheduled
             val completeFromScheduled = orchestrator.completeMeeting(meeting.id, emptyList())

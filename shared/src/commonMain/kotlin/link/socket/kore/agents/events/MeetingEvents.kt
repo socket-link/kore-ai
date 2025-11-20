@@ -11,7 +11,7 @@ import link.socket.kore.agents.events.meetings.MeetingOutcome
  * Meeting lifecycle events flowing through the EventBus.
  */
 @Serializable
-sealed class MeetingEvent(
+sealed class MeetingEvents(
     private val source: EventSource,
 ) : Event {
 
@@ -23,7 +23,7 @@ sealed class MeetingEvent(
         override val eventId: EventId,
         val meeting: Meeting,
         val scheduledBy: EventSource,
-    ) : MeetingEvent(source = scheduledBy) {
+    ) : MeetingEvents(source = scheduledBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE
@@ -32,7 +32,7 @@ sealed class MeetingEvent(
         @Transient
         override val timestamp: Instant = meeting.lastUpdatedAt() ?: Instant.DISTANT_PAST
 
-        companion object {
+        companion object Companion {
             private const val EVENT_TYPE = "MeetingScheduled"
             val EVENT_CLASS_TYPE: EventClassType = MeetingScheduled::class to EVENT_TYPE
         }
@@ -47,14 +47,14 @@ sealed class MeetingEvent(
         val startedAt: Instant,
         val startedBy: EventSource,
         override val urgency: Urgency = Urgency.MEDIUM,
-    ) : MeetingEvent(source = startedBy) {
+    ) : MeetingEvents(source = startedBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE
         @Transient
         override val timestamp: Instant = startedAt
 
-        companion object {
+        companion object Companion {
             private const val EVENT_TYPE = "MeetingStarted"
             val EVENT_CLASS_TYPE: EventClassType = MeetingStarted::class to EVENT_TYPE
         }
@@ -69,12 +69,12 @@ sealed class MeetingEvent(
         val startedBy: EventSource,
         override val timestamp: Instant,
         override val urgency: Urgency = Urgency.MEDIUM,
-    ) : MeetingEvent(source = startedBy) {
+    ) : MeetingEvents(source = startedBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE
 
-        companion object {
+        companion object Companion {
             private const val EVENT_TYPE = "AgendaItemStarted"
             val EVENT_CLASS_TYPE: EventClassType = AgendaItemStarted::class to EVENT_TYPE
         }
@@ -89,14 +89,14 @@ sealed class MeetingEvent(
         val completedAt: Instant,
         val completedBy: EventSource,
         override val urgency: Urgency = Urgency.MEDIUM,
-    ) : MeetingEvent(source = completedBy) {
+    ) : MeetingEvents(source = completedBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE
         @Transient
         override val timestamp: Instant = completedAt
 
-        companion object {
+        companion object Companion {
             private const val EVENT_TYPE = "AgendaItemCompleted"
             val EVENT_CLASS_TYPE: EventClassType = AgendaItemCompleted::class to EVENT_TYPE
         }
@@ -111,20 +111,20 @@ sealed class MeetingEvent(
         val completedAt: Instant,
         val completedBy: EventSource,
         override val urgency: Urgency = Urgency.LOW,
-    ) : MeetingEvent(source = completedBy) {
+    ) : MeetingEvents(source = completedBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE
         @Transient
         override val timestamp: Instant = completedAt
 
-        companion object {
+        companion object Companion {
             private const val EVENT_TYPE = "MeetingCompleted"
             val EVENT_CLASS_TYPE: EventClassType = MeetingCompleted::class to EVENT_TYPE
         }
     }
 
-    /** Emitted when a meeting is cancelled. */
+    /** Emitted when a meeting is canceled. */
     @Serializable
     data class MeetingCanceled(
         override val eventId: EventId,
@@ -133,14 +133,14 @@ sealed class MeetingEvent(
         val canceledAt: Instant,
         val canceledBy: EventSource,
         override val urgency: Urgency = Urgency.MEDIUM,
-    ) : MeetingEvent(source = canceledBy) {
+    ) : MeetingEvents(source = canceledBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE
         @Transient
         override val timestamp: Instant = canceledAt
 
-        companion object {
+        companion object Companion {
             private const val EVENT_TYPE = "MeetingCanceled"
             val EVENT_CLASS_TYPE: EventClassType = MeetingCanceled::class to EVENT_TYPE
         }

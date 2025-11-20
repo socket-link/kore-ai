@@ -11,6 +11,7 @@ data class Meeting(
     val type: MeetingType,
     val status: MeetingStatus,
     val invitation: MeetingInvitation,
+    val messagingDetails: MeetingMessagingDetails? = null,
     val creationTriggeredBy: Event? = null,
 ) {
     fun lastUpdatedAt(): Instant? = when (status) {
@@ -19,15 +20,6 @@ data class Meeting(
         is MeetingStatus.InProgress -> status.startedAt
         is MeetingStatus.Completed -> status.completedAt
         is MeetingStatus.Canceled -> status.canceledAt
-    }
-
-    val messagingDetails: MeetingMessagingDetails? = when (status) {
-        is MeetingStatus.Scheduled,
-        is MeetingStatus.Delayed,
-        -> null
-        is MeetingStatus.InProgress -> status.messagingDetails
-        is MeetingStatus.Completed -> status.messagingDetails
-        is MeetingStatus.Canceled -> status.messagingDetails
     }
 
     val outcomes: List<MeetingOutcome>

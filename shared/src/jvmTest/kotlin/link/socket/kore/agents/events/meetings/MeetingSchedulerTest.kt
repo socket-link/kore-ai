@@ -1,4 +1,4 @@
-package link.socket.kore.agents.meetings
+package link.socket.kore.agents.events.meetings
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import kotlin.test.AfterTest
@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.core.AssignedTo
@@ -24,16 +25,9 @@ import link.socket.kore.agents.events.Database
 import link.socket.kore.agents.events.Event
 import link.socket.kore.agents.events.EventBus
 import link.socket.kore.agents.events.EventHandler
-import link.socket.kore.agents.events.MeetingEvent
+import link.socket.kore.agents.events.EventSource
+import link.socket.kore.agents.events.MeetingEvents
 import link.socket.kore.agents.events.messages.AgentMessageApi
-import link.socket.kore.agents.events.meetings.AgendaItem
-import link.socket.kore.agents.events.meetings.Meeting
-import link.socket.kore.agents.events.meetings.MeetingInvitation
-import link.socket.kore.agents.events.meetings.MeetingOrchestrator
-import link.socket.kore.agents.events.meetings.MeetingScheduler
-import link.socket.kore.agents.events.meetings.MeetingStatus
-import link.socket.kore.agents.events.meetings.MeetingType
-import link.socket.kore.agents.events.meetings.Task
 import link.socket.kore.data.MeetingRepository
 import link.socket.kore.data.MessageRepository
 import link.socket.kore.util.randomUUID
@@ -57,6 +51,8 @@ class MeetingSchedulerTest {
         ignoreUnknownKeys = true
     }
 
+    private val stubScheduledBy = EventSource.Agent("scheduler-agent")
+
     private val orchestratorAgentId: AgentId = "scheduler-test-agent"
     private val publishedEvents = mutableListOf<Event>()
 
@@ -74,14 +70,14 @@ class MeetingSchedulerTest {
         // Subscribe to capture published events
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvent.MeetingScheduled.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvents.MeetingScheduled.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
         )
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvent.MeetingStarted.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvents.MeetingStarted.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
@@ -115,7 +111,7 @@ class MeetingSchedulerTest {
     private fun createTestMeeting(
         id: String = randomUUID(),
         title: String = "Test Meeting",
-        scheduledFor: kotlinx.datetime.Instant = Clock.System.now() + 1.hours,
+        scheduledFor: Instant = Clock.System.now() + 1.hours,
         agendaItems: List<AgendaItem> = listOf(
             AgendaItem(
                 id = randomUUID(),
@@ -130,7 +126,7 @@ class MeetingSchedulerTest {
     ): Meeting = Meeting(
         id = id,
         type = MeetingType.AdHoc("Test reason"),
-        status = MeetingStatus.Scheduled(scheduledFor = scheduledFor),
+        status = MeetingStatus.Scheduled(scheduledForOverride = scheduledFor),
         invitation = MeetingInvitation(
             title = title,
             agenda = agendaItems,
@@ -143,7 +139,7 @@ class MeetingSchedulerTest {
      * This allows us to create meetings scheduled in the past for testing.
      */
     private suspend fun insertMeetingDirectly(meeting: Meeting) {
-        meetingRepository.createMeeting(meeting)
+        meetingRepository.saveMeeting(meeting)
     }
 
     // ==================== Scheduler Lifecycle Tests ====================
@@ -231,7 +227,7 @@ class MeetingSchedulerTest {
             delay(100)
 
             // Verify MeetingStarted event was published
-            val startedEvents = publishedEvents.filterIsInstance<MeetingEvent.MeetingStarted>()
+            val startedEvents = publishedEvents.filterIsInstance<MeetingEvents.MeetingStarted>()
             assertTrue(startedEvents.any { it.meetingId == meeting.id })
         }
     }
@@ -269,7 +265,7 @@ class MeetingSchedulerTest {
             )
 
             // Use orchestrator to schedule (will pass validation)
-            orchestrator.scheduleMeeting(meeting, "test-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
             publishedEvents.clear()
 
             val startedCount = scheduler.checkAndStartMeetings()
@@ -500,7 +496,7 @@ class MeetingSchedulerTest {
             )
 
             // Use orchestrator to schedule
-            orchestrator.scheduleMeeting(meeting, "test-agent")
+            orchestrator.scheduleMeeting(meeting, stubScheduledBy)
 
             val startedCount = scheduler.checkAndStartMeetings()
 
@@ -554,7 +550,7 @@ class MeetingSchedulerTest {
             )
 
             insertMeetingDirectly(pastMeeting)
-            orchestrator.scheduleMeeting(futureMeeting, "test-agent")
+            orchestrator.scheduleMeeting(futureMeeting, stubScheduledBy)
 
             val startedCount = scheduler.checkAndStartMeetings()
 
