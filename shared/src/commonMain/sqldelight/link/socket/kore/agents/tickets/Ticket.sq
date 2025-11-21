@@ -47,16 +47,34 @@ SELECT * FROM TicketStore WHERE id = ?;
 getTicketsByStatus:
 SELECT * FROM TicketStore
 WHERE status = ?
-ORDER BY priority DESC, created_at ASC;
+ORDER BY CASE priority
+    WHEN 'CRITICAL' THEN 4
+    WHEN 'HIGH' THEN 3
+    WHEN 'MEDIUM' THEN 2
+    WHEN 'LOW' THEN 1
+    ELSE 0
+END DESC, created_at ASC;
 
 getTicketsByAssignedAgent:
 SELECT * FROM TicketStore
 WHERE assigned_agent_id = ?
-ORDER BY priority DESC, created_at ASC;
+ORDER BY CASE priority
+    WHEN 'CRITICAL' THEN 4
+    WHEN 'HIGH' THEN 3
+    WHEN 'MEDIUM' THEN 2
+    WHEN 'LOW' THEN 1
+    ELSE 0
+END DESC, created_at ASC;
 
 getAllTickets:
 SELECT * FROM TicketStore
-ORDER BY priority DESC, created_at ASC;
+ORDER BY CASE priority
+    WHEN 'CRITICAL' THEN 4
+    WHEN 'HIGH' THEN 3
+    WHEN 'MEDIUM' THEN 2
+    WHEN 'LOW' THEN 1
+    ELSE 0
+END DESC, created_at ASC;
 
 getTicketsByPriority:
 SELECT * FROM TicketStore
@@ -66,7 +84,13 @@ ORDER BY created_at ASC;
 getTicketsByType:
 SELECT * FROM TicketStore
 WHERE ticket_type = ?
-ORDER BY priority DESC, created_at ASC;
+ORDER BY CASE priority
+    WHEN 'CRITICAL' THEN 4
+    WHEN 'HIGH' THEN 3
+    WHEN 'MEDIUM' THEN 2
+    WHEN 'LOW' THEN 1
+    ELSE 0
+END DESC, created_at ASC;
 
 getTicketsByCreator:
 SELECT * FROM TicketStore
