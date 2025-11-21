@@ -1,9 +1,9 @@
 package link.socket.kore.agents.events.messages
 
 import link.socket.kore.agents.core.AgentId
-import link.socket.kore.agents.events.EventBus
+import link.socket.kore.agents.events.bus.EventBus
 import link.socket.kore.agents.events.EventClassType
-import link.socket.kore.agents.events.MessageSubscription
+import link.socket.kore.agents.events.subscription.MessageSubscription
 import link.socket.kore.agents.events.NotificationEvent
 import link.socket.kore.agents.events.messages.escalation.EscalationEventHandler
 

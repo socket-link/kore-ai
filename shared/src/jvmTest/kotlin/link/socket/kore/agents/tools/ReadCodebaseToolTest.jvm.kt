@@ -5,10 +5,15 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
+import link.socket.kore.agents.core.Outcome
+import link.socket.kore.agents.events.tasks.CodeChange
 
 actual class ReadCodebaseToolTest {
+
+    private val stubSourceTask = CodeChange("source", "")
 
     @Test
     actual fun `validateParameters requires path string`() {
@@ -28,10 +33,10 @@ actual class ReadCodebaseToolTest {
             file.writeText(content)
 
             val tool = ReadCodebaseTool(tempDir.absolutePathString())
-            val outcome = tool.execute(mapOf("path" to "Example.txt"))
+            val outcome = tool.execute(stubSourceTask, mapOf("path" to "Example.txt"))
 
-            assertEquals(true, outcome.success)
-            assertEquals(content, (outcome.result as String).trim())
+            assertIs<Outcome.Success.Full>(outcome)
+            assertEquals(content, outcome.value.trim())
         } finally {
             tempDir.toFile().deleteRecursively()
         }
@@ -46,10 +51,10 @@ actual class ReadCodebaseToolTest {
             File(base, "b.txt").writeText("b")
 
             val tool = ReadCodebaseTool(tempDir.absolutePathString())
-            val outcome = tool.execute(mapOf("path" to "."))
+            val outcome = tool.execute(stubSourceTask, mapOf("path" to "."))
 
-            assertEquals(true, outcome.success)
-            val listing = outcome.result as String
+            assertIs<Outcome.Success.Full>(outcome)
+            val listing = outcome.value
             assertNotNull(listing)
             assertEquals(true, listing.contains("a.txt"))
             assertEquals(true, listing.contains("b.txt"))
@@ -63,10 +68,10 @@ actual class ReadCodebaseToolTest {
         val tempDir = createTempDirectory(prefix = "kore-read-missing-")
         try {
             val tool = ReadCodebaseTool(tempDir.absolutePathString())
-            val outcome = tool.execute(mapOf("path" to "missing.txt"))
-            assertEquals(false, outcome.success)
-            assertEquals(null, outcome.result)
-            assertEquals(true, (outcome.errorMessage ?: "").contains("does not exist"))
+            val outcome = tool.execute(stubSourceTask, mapOf("path" to "missing.txt"))
+
+            assertIs<Outcome.Failure>(outcome)
+            assertEquals(true, outcome.errorMessage.contains("does not exist"))
         } finally {
             tempDir.toFile().deleteRecursively()
         }
@@ -77,10 +82,9 @@ actual class ReadCodebaseToolTest {
         val tempDir = createTempDirectory(prefix = "kore-read-sandbox-")
         try {
             val tool = ReadCodebaseTool(tempDir.absolutePathString())
-            val outcome = tool.execute(mapOf("path" to "../outside.txt"))
-            assertEquals(false, outcome.success)
-            assertEquals(null, outcome.result)
-            assertEquals(true, (outcome.errorMessage ?: "").contains("outside root"))
+            val outcome = tool.execute(stubSourceTask, mapOf("path" to "../outside.txt"))
+            assertIs<Outcome.Failure>(outcome)
+            assertEquals(true, outcome.errorMessage.contains("outside root"))
         } finally {
             tempDir.toFile().deleteRecursively()
         }

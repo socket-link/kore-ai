@@ -1,5 +1,8 @@
 package link.socket.kore.domain.limits
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class RateLimits(
     val tierFree: Tier.FreeTier? = null,
     val tier1: Tier.Tier1? = null,

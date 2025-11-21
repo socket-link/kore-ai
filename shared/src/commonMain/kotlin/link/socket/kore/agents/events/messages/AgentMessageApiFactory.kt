@@ -1,8 +1,8 @@
 package link.socket.kore.agents.events.messages
 
 import link.socket.kore.agents.core.AgentId
-import link.socket.kore.agents.events.EventBus
-import link.socket.kore.data.MessageRepository
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.messages.MessageRepository
 
 class AgentMessageApiFactory(
     private val messageRepository: MessageRepository,

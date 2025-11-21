@@ -2,16 +2,15 @@ package link.socket.kore.agents.events.messages
 
 import kotlinx.datetime.Clock
 import link.socket.kore.agents.core.AgentId
-import link.socket.kore.agents.events.ConsoleEventLogger
-import link.socket.kore.agents.events.EventBus
-import link.socket.kore.agents.events.EventFilter
-import link.socket.kore.agents.events.EventHandler
-import link.socket.kore.agents.events.EventLogger
+import link.socket.kore.agents.events.utils.ConsoleEventLogger
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.api.EventFilter
+import link.socket.kore.agents.events.api.EventHandler
+import link.socket.kore.agents.events.utils.EventLogger
 import link.socket.kore.agents.events.EventSource
 import link.socket.kore.agents.events.EventStatus
 import link.socket.kore.agents.events.MessageEvent
-import link.socket.kore.agents.events.Subscription
-import link.socket.kore.data.MessageRepository
+import link.socket.kore.agents.events.subscription.Subscription
 import link.socket.kore.util.randomUUID
 
 /**
@@ -240,6 +239,51 @@ class AgentMessageApi(
                         eventId = randomUUID(),
                         timestamp = Clock.System.now(),
                         eventSource = EventSource.Agent(agentId),
+                        threadId = threadId,
+                        oldStatus = oldStatus,
+                        newStatus = newStatus,
+                    ),
+                )
+            }
+            .onFailure { throwable ->
+                logger.logError(
+                    message = "Failed to update thread status to $newStatus for thread with id $threadId",
+                    throwable = throwable,
+                )
+            }
+    }
+
+    /** Reopen a thread that was waiting for human intervention, allowing agents to resume activity. */
+    suspend fun reopenThread(
+        threadId: MessageThreadId,
+    ) {
+        val thread = messageRepository
+            .findThreadById(threadId)
+            .onFailure { throwable ->
+                logger.logError(
+                    message = "Failed to find thread with id $threadId",
+                    throwable = throwable,
+                )
+                throw IllegalArgumentException("Thread not found: $threadId")
+            }
+            .getOrNull()
+
+        requireNotNull(thread)
+        require(thread.status == EventStatus.WAITING_FOR_HUMAN) {
+            "Can only reopen threads that are waiting for human intervention. Current status: ${thread.status}"
+        }
+
+        val oldStatus: EventStatus = thread.status
+        val newStatus = EventStatus.OPEN
+
+        messageRepository
+            .updateStatus(threadId, newStatus)
+            .onSuccess {
+                eventBus.publish(
+                    MessageEvent.ThreadStatusChanged(
+                        eventId = randomUUID(),
+                        timestamp = Clock.System.now(),
+                        eventSource = EventSource.Human,
                         threadId = threadId,
                         oldStatus = oldStatus,
                         newStatus = newStatus,

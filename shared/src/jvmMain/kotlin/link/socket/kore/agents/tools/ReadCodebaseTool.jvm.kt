@@ -3,6 +3,7 @@ package link.socket.kore.agents.tools
 import java.io.File
 import link.socket.kore.agents.core.AutonomyLevel
 import link.socket.kore.agents.core.Outcome
+import link.socket.kore.agents.events.tasks.Task
 
 /**
  * Tool that reads file contents or lists a directory within a sandboxed root directory.
@@ -11,13 +12,15 @@ import link.socket.kore.agents.core.Outcome
 actual class ReadCodebaseTool actual constructor(
     private val rootDirectory: String
 ) : Tool {
-    actual override val name: String = "read_codebase"
+    actual override val id: ToolId = "read_codebase"
+    actual override val name: String = "View Code"
     actual override val description: String = "Reads file content or directory structure"
     actual override val requiredAutonomyLevel: AutonomyLevel = AutonomyLevel.FULLY_AUTONOMOUS
 
     private fun resolveSafe(path: String): File {
         val base = File(rootDirectory).canonicalFile
         val target = File(base, path).canonicalFile
+
         // Ensure target is within base directory
         if (!target.path.startsWith(base.path + File.separator) && target != base) {
             throw SecurityException("Access outside root directory is not allowed: $path")
@@ -25,14 +28,17 @@ actual class ReadCodebaseTool actual constructor(
         return target
     }
 
-    actual override suspend fun execute(parameters: Map<String, Any>): Outcome {
+    actual override suspend fun execute(
+        sourceTask: Task,
+        parameters: Map<String, Any?>,
+    ): Outcome {
         val path = parameters["path"] as? String
-            ?: return Outcome(false, null, "Missing 'path' parameter")
+            ?: return Outcome.Failure(sourceTask, "Missing 'path' parameter")
 
         return try {
             val file = resolveSafe(path)
             if (!file.exists()) {
-                return Outcome(false, null, "Path does not exist: $path")
+                return Outcome.Failure(sourceTask, "Path does not exist: $path")
             }
 
             val result: Any = if (file.isDirectory) {
@@ -40,11 +46,11 @@ actual class ReadCodebaseTool actual constructor(
             } else {
                 file.readText()
             }
-            Outcome(true, result)
+            Outcome.Success.Full(sourceTask, result.toString())
         } catch (e: SecurityException) {
-            Outcome(false, null, e.message)
+            Outcome.Failure(sourceTask, e.message ?: "Access outside root directory is not allowed: $path")
         } catch (e: Exception) {
-            Outcome(false, null, "Failed to read: ${e.message}")
+            Outcome.Failure(sourceTask, "Failed to read: ${e.message}")
         }
     }
 

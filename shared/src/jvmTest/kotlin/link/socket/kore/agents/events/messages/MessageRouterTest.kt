@@ -11,20 +11,20 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import link.socket.kore.agents.core.AgentId
-import link.socket.kore.agents.events.AgentEventApiFactory
+import link.socket.kore.agents.events.api.AgentEventApiFactory
 import link.socket.kore.agents.events.Database
-import link.socket.kore.agents.events.EventBus
-import link.socket.kore.agents.events.EventBusFactory
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.bus.EventBusFactory
 import link.socket.kore.agents.events.EventSource
 import link.socket.kore.agents.events.MessageEvent
 import link.socket.kore.agents.events.NotificationEvent
-import link.socket.kore.agents.events.Subscription
+import link.socket.kore.agents.events.subscription.Subscription
 import link.socket.kore.agents.events.messages.escalation.EscalationEventHandler
 import link.socket.kore.agents.events.messages.escalation.Notifier
-import link.socket.kore.agents.events.subscribe
+import link.socket.kore.agents.events.bus.subscribe
 import link.socket.kore.data.DEFAULT_JSON
-import link.socket.kore.data.EventRepository
-import link.socket.kore.data.MessageRepository
+import link.socket.kore.agents.events.EventRepository
+import link.socket.kore.agents.events.messages.MessageRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MessageRouterTest {
@@ -51,8 +51,7 @@ class MessageRouterTest {
         }
     }
 
-    private val escalationEventHandler =
-        EscalationEventHandler(fakeHumanNotifier)
+    private lateinit var escalationEventHandler: EscalationEventHandler
 
     @BeforeTest
     fun setup() {
@@ -64,6 +63,7 @@ class MessageRouterTest {
         eventBus = eventBusFactory.create()
         agentMessageApiFactory = AgentMessageApiFactory(messageRepository, eventBus)
         agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBus)
+        escalationEventHandler = EscalationEventHandler(scope, fakeHumanNotifier, eventBus)
     }
 
     @AfterTest

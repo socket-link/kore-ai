@@ -2,6 +2,9 @@
 
 package link.socket.kore.domain.limits
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class TokenCount(val label: String) {
     _4k("4k"),
     _5k("5k"),

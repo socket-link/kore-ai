@@ -21,8 +21,12 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.withTimeout
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import link.socket.kore.agents.events.api.AgentEventApiFactory
+import link.socket.kore.agents.events.bus.EventBusFactory
+import link.socket.kore.agents.events.bus.subscribe
+import link.socket.kore.agents.events.subscription.EventSubscription
 import link.socket.kore.data.DEFAULT_JSON
-import link.socket.kore.data.EventRepository
+import link.socket.kore.agents.events.EventRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class EventBusIntegrationTest {

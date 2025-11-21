@@ -14,7 +14,7 @@ actual class WriteCodeFileTool actual constructor(
     actual override val description: String = "Generates a single code file with specified content"
     actual override val requiredAutonomyLevel: AutonomyLevel = AutonomyLevel.ACT_WITH_NOTIFICATION
 
-    actual override suspend fun execute(parameters: Map<String, Any>): Outcome {
+    actual override suspend fun execute(parameters: Map<String, Any?>): Outcome {
         val filePath = parameters["filePath"]
             as? String
             ?: return Outcome(

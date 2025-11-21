@@ -4,9 +4,14 @@ import java.io.File
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlinx.coroutines.runBlocking
+import link.socket.kore.agents.core.Outcome
+import link.socket.kore.agents.events.tasks.CodeChange
 
 actual class RunTestsToolTest {
+
+    private val stubSourceTask = CodeChange("source", "")
 
     private fun makeFakeGradleProject(exitCode: Int = 0, captureArgs: Boolean = false): File {
         val dir = createTempDirectory(prefix = "kore-run-tests-").toFile()
@@ -43,12 +48,13 @@ actual class RunTestsToolTest {
         val project = makeFakeGradleProject(exitCode = 0)
         try {
             val tool = RunTestsTool(project.absolutePath)
-            val outcome = tool.execute(emptyMap())
-            assertEquals(true, outcome.success)
-            val out = outcome.result as String
+            val outcome = tool.execute(stubSourceTask, emptyMap())
+
+            assertIs<Outcome.Success.Full>(outcome)
+            val out = outcome.value
+
             assertEquals(true, out.contains("[STDOUT]"))
             assertEquals(true, out.contains("[STDERR]"))
-            assertEquals(null, outcome.errorMessage)
         } finally {
             project.deleteRecursively()
         }
@@ -59,9 +65,9 @@ actual class RunTestsToolTest {
         val project = makeFakeGradleProject(exitCode = 0, captureArgs = true)
         try {
             val tool = RunTestsTool(project.absolutePath)
-            val outcome = tool.execute(mapOf("testPath" to "com.example.MyTest"))
-            assertEquals(true, outcome.success)
-            val out = outcome.result as String
+            val outcome = tool.execute(stubSourceTask, mapOf("testPath" to "com.example.MyTest"))
+            assertIs<Outcome.Success.Full>(outcome)
+            val out = outcome.value
             // Expect gradle args to include: test --tests com.example.MyTest
             assertEquals(true, out.contains("[ARGS] test --tests com.example.MyTest"))
         } finally {
@@ -74,9 +80,8 @@ actual class RunTestsToolTest {
         val project = makeFakeGradleProject(exitCode = 1)
         try {
             val tool = RunTestsTool(project.absolutePath)
-            val outcome = tool.execute(emptyMap())
-            assertEquals(false, outcome.success)
-            assertEquals(true, (outcome.result as String).contains("Gradle wrapper invoked"))
+            val outcome = tool.execute(stubSourceTask, emptyMap())
+            assertIs<Outcome.Failure>(outcome)
             assertEquals("Tests failed", outcome.errorMessage)
         } finally {
             project.deleteRecursively()

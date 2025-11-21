@@ -20,7 +20,7 @@ import link.socket.kore.agents.events.Event
 import link.socket.kore.agents.events.EventSource
 import link.socket.kore.agents.events.Urgency
 import link.socket.kore.data.DEFAULT_JSON
-import link.socket.kore.data.EventRepository
+import link.socket.kore.agents.events.EventRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class EventRepositoryTest {

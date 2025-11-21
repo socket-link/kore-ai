@@ -9,6 +9,10 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import link.socket.kore.agents.events.api.AgentEventApiFactory
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.bus.EventBusFactory
+import link.socket.kore.agents.events.subscription.EventSubscription
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class EventSubscriptionTest {
@@ -19,14 +23,14 @@ class EventSubscriptionTest {
 
     private lateinit var driver: JdbcSqliteDriver
     private lateinit var eventBus: EventBus
-    private lateinit var eventRepository: link.socket.kore.data.EventRepository
+    private lateinit var eventRepository: EventRepository
 
     @BeforeTest
     fun setup() {
         driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         Database.Schema.create(driver)
         val database = Database(driver)
-        eventRepository = link.socket.kore.data.EventRepository(link.socket.kore.data.DEFAULT_JSON, scope, database)
+        eventRepository = EventRepository(link.socket.kore.data.DEFAULT_JSON, scope, database)
         eventBus = eventBusFactory.create()
     }
 

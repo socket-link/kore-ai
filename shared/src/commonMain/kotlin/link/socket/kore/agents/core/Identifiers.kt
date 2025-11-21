@@ -17,4 +17,10 @@ sealed interface AssignedTo {
 
     @Serializable
     data object Human : AssignedTo
+
+    fun getIdentifier(): String = when (this) {
+        is Agent -> agentId
+        is Human -> "human"
+        is Team -> teamId
+    }
 }

@@ -4,6 +4,8 @@ import app.cash.sqldelight.db.SqlDriver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.json.Json
 import link.socket.kore.agents.events.Database
+import link.socket.kore.agents.events.EventRepository
+import link.socket.kore.agents.events.messages.MessageRepository
 
 val DEFAULT_JSON = Json {
     prettyPrint = false

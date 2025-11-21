@@ -24,7 +24,7 @@ import link.socket.kore.agents.events.messages.MessageSenderId
 import link.socket.kore.agents.events.messages.MessageThread
 import link.socket.kore.agents.events.messages.MessageThreadId
 import link.socket.kore.data.DEFAULT_JSON
-import link.socket.kore.data.MessageRepository
+import link.socket.kore.agents.events.messages.MessageRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MessageRepositoryTest {

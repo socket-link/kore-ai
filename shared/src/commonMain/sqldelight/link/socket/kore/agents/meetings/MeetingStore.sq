@@ -1,0 +1,226 @@
+-- Meeting aggregate table
+-- Stores the core meeting data with complex types serialized as JSON
+CREATE TABLE MeetingStore (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    typeJson TEXT NOT NULL,
+    statusType TEXT NOT NULL,
+    statusJson TEXT NOT NULL,
+    scheduledTime INTEGER,
+    channelId TEXT,
+    threadId TEXT,
+    invitationJson TEXT NOT NULL,
+    triggeringEventId TEXT,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+);
+
+CREATE INDEX idx_meeting_status ON MeetingStore(statusType);
+CREATE INDEX idx_meeting_scheduled_time ON MeetingStore(scheduledTime);
+CREATE INDEX idx_meeting_thread ON MeetingStore(threadId);
+
+-- Meeting participants (required and optional)
+CREATE TABLE MeetingParticipantStore (
+    meetingId TEXT NOT NULL,
+    participantId TEXT NOT NULL,
+    participantType TEXT NOT NULL,
+    isRequired INTEGER NOT NULL,
+    PRIMARY KEY (meetingId, participantId),
+    FOREIGN KEY (meetingId) REFERENCES MeetingStore(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_participant_meeting ON MeetingParticipantStore(meetingId);
+CREATE INDEX idx_participant_agent ON MeetingParticipantStore(participantId);
+
+-- Agenda items for each meeting
+CREATE TABLE AgendaItemStore (
+    id TEXT PRIMARY KEY NOT NULL,
+    meetingId TEXT NOT NULL,
+    topic TEXT NOT NULL,
+    assignedTo TEXT,
+    assignedToType TEXT,
+    status TEXT NOT NULL,
+    statusPayload TEXT,
+    orderIndex INTEGER NOT NULL,
+    FOREIGN KEY (meetingId) REFERENCES MeetingStore(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_agenda_meeting ON AgendaItemStore(meetingId);
+CREATE INDEX idx_agenda_status ON AgendaItemStore(status);
+
+-- Meeting outcomes (decisions, action items, blockers, goals)
+CREATE TABLE MeetingOutcomeStore (
+    id TEXT PRIMARY KEY NOT NULL,
+    meetingId TEXT NOT NULL,
+    outcomeType TEXT NOT NULL,
+    description TEXT NOT NULL,
+    outcomeJson TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    FOREIGN KEY (meetingId) REFERENCES MeetingStore(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_outcome_meeting ON MeetingOutcomeStore(meetingId);
+CREATE INDEX idx_outcome_type ON MeetingOutcomeStore(outcomeType);
+
+-- Meeting attendees (actual attendees for completed meetings)
+CREATE TABLE MeetingAttendeeStore (
+    meetingId TEXT NOT NULL,
+    attendeeId TEXT NOT NULL,
+    attendeeType TEXT NOT NULL,
+    PRIMARY KEY (meetingId, attendeeId),
+    FOREIGN KEY (meetingId) REFERENCES MeetingStore(id) ON DELETE CASCADE
+);
+
+-- =============================================================================
+-- MEETING QUERIES
+-- =============================================================================
+
+insertMeeting:
+INSERT INTO MeetingStore(
+    id, title, typeJson, statusType, statusJson, scheduledTime,
+    channelId, threadId, invitationJson, triggeringEventId, createdAt, updatedAt
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+getMeetingById:
+SELECT * FROM MeetingStore WHERE id = ?;
+
+getAllMeetings:
+SELECT * FROM MeetingStore ORDER BY updatedAt DESC;
+
+getMeetingsByStatus:
+SELECT * FROM MeetingStore WHERE statusType = ? ORDER BY scheduledTime ASC;
+
+getScheduledMeetings:
+SELECT * FROM MeetingStore
+WHERE statusType = 'SCHEDULED'
+ORDER BY scheduledTime ASC;
+
+getMeetingsBeforeTime:
+SELECT * FROM MeetingStore
+WHERE scheduledTime IS NOT NULL AND scheduledTime <= ?
+ORDER BY scheduledTime ASC;
+
+getMeetingByThreadId:
+SELECT * FROM MeetingStore WHERE threadId = ?;
+
+updateMeetingStatus:
+UPDATE MeetingStore
+SET statusType = ?, statusJson = ?, channelId = ?, threadId = ?, updatedAt = ?
+WHERE id = ?;
+
+updateMeetingScheduledTime:
+UPDATE MeetingStore
+SET scheduledTime = ?, statusJson = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteMeeting:
+DELETE FROM MeetingStore WHERE id = ?;
+
+-- =============================================================================
+-- PARTICIPANT QUERIES
+-- =============================================================================
+
+insertParticipant:
+INSERT INTO MeetingParticipantStore(meetingId, participantId, participantType, isRequired)
+VALUES (?, ?, ?, ?);
+
+getParticipantsByMeetingId:
+SELECT participantId, participantType, isRequired
+FROM MeetingParticipantStore
+WHERE meetingId = ?;
+
+getRequiredParticipants:
+SELECT participantId, participantType
+FROM MeetingParticipantStore
+WHERE meetingId = ? AND isRequired = 1;
+
+getOptionalParticipants:
+SELECT participantId, participantType
+FROM MeetingParticipantStore
+WHERE meetingId = ? AND isRequired = 0;
+
+getMeetingsForParticipant:
+SELECT m.*
+FROM MeetingStore m
+INNER JOIN MeetingParticipantStore p ON m.id = p.meetingId
+WHERE p.participantId = ?
+ORDER BY m.scheduledTime ASC;
+
+deleteParticipantsForMeeting:
+DELETE FROM MeetingParticipantStore WHERE meetingId = ?;
+
+-- =============================================================================
+-- AGENDA ITEM QUERIES
+-- =============================================================================
+
+insertAgendaItem:
+INSERT INTO AgendaItemStore(
+    id, meetingId, topic, assignedTo, assignedToType, status, statusPayload, orderIndex
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+getAgendaItemById:
+SELECT * FROM AgendaItemStore WHERE id = ?;
+
+getAgendaItemsForMeeting:
+SELECT * FROM AgendaItemStore
+WHERE meetingId = ?
+ORDER BY orderIndex ASC;
+
+updateAgendaItemStatus:
+UPDATE AgendaItemStore
+SET status = ?, statusPayload = ?
+WHERE id = ?;
+
+deleteAgendaItemsForMeeting:
+DELETE FROM AgendaItemStore WHERE meetingId = ?;
+
+-- =============================================================================
+-- OUTCOME QUERIES
+-- =============================================================================
+
+insertOutcome:
+INSERT INTO MeetingOutcomeStore(
+    id, meetingId, outcomeType, description, outcomeJson, createdAt
+)
+VALUES (?, ?, ?, ?, ?, ?);
+
+getOutcomeById:
+SELECT * FROM MeetingOutcomeStore WHERE id = ?;
+
+getOutcomesForMeeting:
+SELECT * FROM MeetingOutcomeStore
+WHERE meetingId = ?
+ORDER BY createdAt ASC;
+
+getOutcomesByType:
+SELECT * FROM MeetingOutcomeStore
+WHERE outcomeType = ?
+ORDER BY createdAt DESC;
+
+getActionItemsForAgent:
+SELECT o.*
+FROM MeetingOutcomeStore o
+WHERE o.outcomeType = 'ACTION_ITEM'
+AND o.outcomeJson LIKE '%' || ? || '%'
+ORDER BY o.createdAt ASC;
+
+deleteOutcomesForMeeting:
+DELETE FROM MeetingOutcomeStore WHERE meetingId = ?;
+
+-- =============================================================================
+-- ATTENDEE QUERIES
+-- =============================================================================
+
+insertAttendee:
+INSERT INTO MeetingAttendeeStore(meetingId, attendeeId, attendeeType)
+VALUES (?, ?, ?);
+
+getAttendeesForMeeting:
+SELECT attendeeId, attendeeType
+FROM MeetingAttendeeStore
+WHERE meetingId = ?;
+
+deleteAttendeesForMeeting:
+DELETE FROM MeetingAttendeeStore WHERE meetingId = ?;

@@ -12,8 +12,13 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.datetime.Clock
+import link.socket.kore.agents.events.api.AgentEventApiFactory
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.bus.subscribe
+import link.socket.kore.agents.events.subscription.EventSubscription
+import link.socket.kore.agents.events.subscription.Subscription
+import link.socket.kore.agents.events.utils.EventLogger
 import link.socket.kore.data.DEFAULT_JSON
-import link.socket.kore.data.EventRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class EventBusLoggingAndErrorsTest {

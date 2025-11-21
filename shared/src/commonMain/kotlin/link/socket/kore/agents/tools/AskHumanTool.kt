@@ -2,6 +2,7 @@ package link.socket.kore.agents.tools
 
 import link.socket.kore.agents.core.AutonomyLevel
 import link.socket.kore.agents.core.Outcome
+import link.socket.kore.agents.events.tasks.Task
 
 /**
  * A safety-valve tool that escalates uncertainty to a human operator.
@@ -11,19 +12,23 @@ import link.socket.kore.agents.core.Outcome
 class AskHumanTool(
     private val humanInterface: (String) -> String
 ) : Tool {
-    override val name: String = "ask_human"
+    override val id: ToolId = "ask_human"
+    override val name: String = "Ask a Human"
     override val description: String = "Escalates uncertainty to human for guidance"
     override val requiredAutonomyLevel: AutonomyLevel = AutonomyLevel.ASK_BEFORE_ACTION
 
-    override suspend fun execute(parameters: Map<String, Any>): Outcome {
+    override suspend fun execute(
+        sourceTask: Task,
+        parameters: Map<String, Any?>,
+    ): Outcome {
         val question = parameters["question"] as? String
-            ?: return Outcome(false, null, "Missing 'question' parameter")
+            ?: return Outcome.Failure(sourceTask, "Missing 'question' parameter")
 
         return try {
             val response = humanInterface(question)
-            Outcome(true, response)
+            Outcome.Success.Full(sourceTask, response)
         } catch (e: Exception) {
-            Outcome(false, null, "Failed to get human response: ${e.message}")
+            Outcome.Failure(sourceTask, "Failed to get human response: ${e.message}")
         }
     }
 
