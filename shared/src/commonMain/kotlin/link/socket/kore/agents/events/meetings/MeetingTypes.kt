@@ -7,43 +7,12 @@ import link.socket.kore.agents.core.PRId
 import link.socket.kore.agents.core.SprintId
 import link.socket.kore.agents.core.TeamId
 import link.socket.kore.agents.events.EventSource
-import link.socket.kore.agents.events.meetings.Task.Status
 import link.socket.kore.agents.events.messages.MessageChannelId
 import link.socket.kore.agents.events.messages.MessageThreadId
+import link.socket.kore.agents.events.tasks.AgendaItem
 
 typealias MeetingId = String
-typealias AgendaItemId = String
 typealias MeetingOutcomeId = String
-
-@Serializable
-sealed interface Task {
-
-    @Serializable
-    sealed class Status {
-
-        @Serializable
-        data class Pending(
-            val reason: String? = null,
-        ) : Status()
-
-        @Serializable
-        data object InProgress : Status()
-
-        @Serializable
-        data class Blocked(
-            val reason: String? = null,
-        ) : Status()
-
-        @Serializable
-        data class Completed(
-            val completedAt: Instant? = null,
-            val completedBy: EventSource? = null,
-        ) : Status()
-
-        @Serializable
-        data object Deferred : Status()
-    }
-}
 
 @Serializable
 data class MeetingInvitation(
@@ -59,15 +28,6 @@ data class MeetingMessagingDetails(
     val messageChannelId: MessageChannelId,
     val messageThreadId: MessageThreadId,
 )
-
-/** A discrete topic or activity to discuss within a meeting agenda. */
-@Serializable
-data class AgendaItem(
-    val id: AgendaItemId,
-    val topic: String,
-    val status: Status = Status.Pending(),
-    val assignedTo: AssignedTo.Agent? = null,
-) : Task
 
 @Serializable
 sealed interface Property<T : Any>

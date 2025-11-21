@@ -13,12 +13,12 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import link.socket.kore.agents.events.Database
-import link.socket.kore.agents.tickets.Ticket
-import link.socket.kore.agents.tickets.TicketError
-import link.socket.kore.agents.tickets.TicketPriority
-import link.socket.kore.agents.tickets.TicketRepository
-import link.socket.kore.agents.tickets.TicketStatus
-import link.socket.kore.agents.tickets.TicketType
+import link.socket.kore.agents.events.tickets.Ticket
+import link.socket.kore.agents.events.tickets.TicketError
+import link.socket.kore.agents.events.tickets.TicketPriority
+import link.socket.kore.agents.events.tickets.TicketRepository
+import link.socket.kore.agents.events.tickets.TicketStatus
+import link.socket.kore.agents.events.tickets.TicketType
 
 class TicketRepositoryTest {
 

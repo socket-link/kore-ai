@@ -3,6 +3,7 @@ package link.socket.kore.agents.events
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import link.socket.kore.agents.core.AgentId
+import link.socket.kore.agents.events.subscription.Subscription
 
 @Serializable
 sealed class NotificationEvent <S : Subscription>(

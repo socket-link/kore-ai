@@ -11,12 +11,11 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.datetime.Clock
 import link.socket.kore.agents.core.AssignedTo
 import link.socket.kore.agents.events.Database
-import link.socket.kore.agents.events.EventBus
-import link.socket.kore.agents.events.EventBusFactory
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.bus.EventBusFactory
 import link.socket.kore.agents.events.messages.AgentMessageApi
 import link.socket.kore.data.DEFAULT_JSON
-import link.socket.kore.data.MeetingRepository
-import link.socket.kore.data.MessageRepository
+import link.socket.kore.agents.events.messages.MessageRepository
 
 class AgentMeetingsApiTest {
 

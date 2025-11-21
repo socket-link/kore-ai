@@ -3,6 +3,7 @@ package link.socket.kore.agents.tools
 import java.io.File
 import link.socket.kore.agents.core.AutonomyLevel
 import link.socket.kore.agents.core.Outcome
+import link.socket.kore.agents.events.tasks.Task
 
 /**
  * Tool that writes a single code file to a base directory with provided content.
@@ -13,26 +14,22 @@ import link.socket.kore.agents.core.Outcome
 actual class WriteCodeFileTool actual constructor(
     private val baseDirectory: String
 ) : Tool {
-    actual override val name: String = "write_code_file"
+    actual override val id: ToolId = "write_code_file"
+    actual override val name: String = "Create Code"
     actual override val description: String = "Generates a single code file with specified content"
     actual override val requiredAutonomyLevel: AutonomyLevel = AutonomyLevel.ACT_WITH_NOTIFICATION
 
-    actual override suspend fun execute(parameters: Map<String, Any>): Outcome {
+    actual override suspend fun execute(
+        sourceTask: Task,
+        parameters: Map<String, Any?>,
+    ): Outcome {
         val filePath = parameters["filePath"]
             as? String
-            ?: return Outcome(
-                success = false,
-                result = null,
-                errorMessage = "Missing 'filePath' parameter",
-            )
+            ?: return Outcome.Failure(sourceTask, "Missing 'filePath' parameter")
 
         val content = parameters["content"]
             as? String
-            ?: return Outcome(
-                success = false,
-                result = null,
-                errorMessage = "Missing 'content' parameter",
-            )
+            ?: return Outcome.Failure(sourceTask, "Missing 'content' parameter")
 
         return try {
             val file = File(baseDirectory, filePath)
@@ -44,17 +41,9 @@ actual class WriteCodeFileTool actual constructor(
             }
             file.writeText(content)
 
-            Outcome(
-                success = true,
-                result = $$"File written: ${file.absolutePath}",
-            )
+            Outcome.Success.Full(sourceTask, "File written: ${file.absolutePath}")
         } catch (e: Exception) {
-            // TODO: Log exception
-            Outcome(
-                success = false,
-                result = null,
-                errorMessage = $$"Failed to write file: ${e.message}",
-            )
+            Outcome.Failure(sourceTask, "Failed to write file: ${e.message}")
         }
     }
 

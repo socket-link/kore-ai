@@ -1,13 +1,19 @@
 package link.socket.kore.agents.implementations
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import link.socket.kore.agents.core.AgentConfiguration
 import link.socket.kore.agents.core.AgentId
-import link.socket.kore.agents.core.Context
-import link.socket.kore.agents.core.Message
-import link.socket.kore.agents.core.MessageSeverity
+import link.socket.kore.agents.core.Idea
 import link.socket.kore.agents.core.MinimalAutonomousAgent
 import link.socket.kore.agents.core.Outcome
+import link.socket.kore.agents.core.Perception
 import link.socket.kore.agents.core.Plan
+import link.socket.kore.agents.events.tasks.Task
 import link.socket.kore.agents.tools.Tool
+import link.socket.kore.agents.tools.WriteCodeFileTool
+import link.socket.kore.domain.agent.bundled.WriteCodeAgent
+import link.socket.kore.domain.ai.configuration.AIConfiguration
 
 /**
  * First concrete agent that can read tickets, generate code, and validate results (scaffold).
@@ -17,90 +23,39 @@ import link.socket.kore.agents.tools.Tool
  * it only relies on commonMain types and contracts.
  */
 class CodeWriterAgent(
-    private val tools: Map<String, Tool>
-) : MinimalAutonomousAgent {
-
-    private var currentTask: String? = null
-    private var currentPlan: Plan? = null
-    private var executionHistory: MutableList<String> = mutableListOf()
+    private val coroutineScope: CoroutineScope,
+    private val writeCodeFileTool: WriteCodeFileTool,
+    runLLMToPerceive: (perception: Perception) -> Idea,
+    runLLMToPlan: (ideas: List<Idea>) -> Plan,
+    runLLMToExecuteTask: (task: Task) -> Outcome,
+    runLLMToExecuteTool: (tool: Tool, parameters: Map<String, Any?>) -> Outcome,
+    runLLMToEvaluate: (outcomes: List<Outcome>) -> Idea,
+    aiConfiguration: AIConfiguration,
+) : MinimalAutonomousAgent(
+    runLLMToPerceive,
+    runLLMToPlan,
+    runLLMToExecuteTask,
+    runLLMToExecuteTool,
+    runLLMToEvaluate,
+    AgentConfiguration(
+        agentDefinition = WriteCodeAgent,
+        aiConfiguration = aiConfiguration,
+    ),
+) {
 
     override val id: AgentId = "CodeWriterAgent"
 
-    fun setTask(task: String) {
-        currentTask = task
-        currentPlan = null
-        executionHistory.clear()
-    }
+    override val requiredTools: Set<Tool> =
+        setOf(writeCodeFileTool)
 
-    override fun perceive(): Context {
-        return Context(
-            currentState = mapOf(
-                "task" to (currentTask ?: "none"),
-                "planExists" to (currentPlan != null),
-                "executionHistory" to executionHistory.toList()
-            )
-        )
-    }
-
-    override fun reason(): Plan {
-        val task = currentTask ?: return Plan(
-            steps = emptyList(),
-            estimatedComplexity = 0,
-            requiresHumanApproval = true
-        )
-
-        return if (task.contains("Add a new tool called")) {
-            Plan(
-                steps = listOf(
-                    "Read existing tool implementations",
-                    "Generate new tool code",
-                    "Write tool to file",
-                    "Ask human for validation"
-                ),
-                estimatedComplexity = 2,
-                requiresHumanApproval = true
-            )
-        } else {
-            Plan(
-                steps = listOf("Ask human for clarification"),
-                estimatedComplexity = 1,
-                requiresHumanApproval = true
-            )
+    private fun writeCodeFile(
+        sourceTask: Task,
+        parameters: Map<String, Any?> = emptyMap(),
+        onCodeSubmittedOutcome: (Outcome) -> Unit,
+    ) {
+        coroutineScope.launch {
+            val outcome = writeCodeFileTool.execute(sourceTask, parameters)
+            onCodeSubmittedOutcome(outcome)
         }
-    }
-
-    override fun plan(): Plan {
-        currentPlan = reason()
-        return currentPlan!!
-    }
-
-    override fun act(): Outcome {
-        val plan = currentPlan ?: return Outcome(
-            success = false,
-            result = null,
-            errorMessage = "No plan exists"
-        )
-
-        val nextStep = plan.steps.getOrNull(executionHistory.size)
-            ?: return Outcome(success = true, result = "Plan completed")
-
-        executionHistory.add(nextStep)
-
-        // Placeholder for actual execution logic. Future versions may select
-        // and invoke concrete tools from [tools] based on the step.
-        return Outcome(
-            success = true,
-            result = "Executed: $nextStep"
-        )
-    }
-
-    override fun signal(): Message? {
-        return if (currentPlan?.requiresHumanApproval == true) {
-            Message(
-                content = "Plan requires approval: ${currentPlan?.steps}",
-                severity = MessageSeverity.QUESTION,
-                requiresResponse = true
-            )
-        } else null
     }
 }

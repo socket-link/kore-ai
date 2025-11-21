@@ -20,16 +20,16 @@ import kotlinx.datetime.Instant
 import link.socket.kore.agents.core.AssignedTo
 import link.socket.kore.agents.events.Database
 import link.socket.kore.agents.events.EventSource
-import link.socket.kore.agents.events.meetings.AgendaItem
 import link.socket.kore.agents.events.meetings.Meeting
 import link.socket.kore.agents.events.meetings.MeetingInvitation
 import link.socket.kore.agents.events.meetings.MeetingMessagingDetails
 import link.socket.kore.agents.events.meetings.MeetingOutcome
+import link.socket.kore.agents.events.meetings.MeetingRepository
 import link.socket.kore.agents.events.meetings.MeetingStatus
 import link.socket.kore.agents.events.meetings.MeetingType
-import link.socket.kore.agents.events.meetings.Task
+import link.socket.kore.agents.events.tasks.AgendaItem
+import link.socket.kore.agents.events.tasks.Task
 import link.socket.kore.data.DEFAULT_JSON
-import link.socket.kore.data.MeetingRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MeetingRepositoryTest {
@@ -169,8 +169,8 @@ class MeetingRepositoryTest {
 
         assertEquals(2, loaded.invitation.requiredParticipants.size)
         assertNotNull(loaded.invitation.optionalParticipants)
-        assertEquals(1, loaded.invitation.optionalParticipants!!.size)
-        assertIs<AssignedTo.Human>(loaded.invitation.optionalParticipants!![0])
+        assertEquals(1, loaded.invitation.optionalParticipants.size)
+        assertIs<AssignedTo.Human>(loaded.invitation.optionalParticipants[0])
     }}
 
     @Test
@@ -183,11 +183,11 @@ class MeetingRepositoryTest {
 
         val firstItem = loaded.invitation.agenda[0]
         assertNotNull(firstItem.assignedTo)
-        assertEquals("agent-alpha", firstItem.assignedTo!!.agentId)
+        assertEquals("agent-alpha", firstItem.assignedTo.getIdentifier())
 
         val secondItem = loaded.invitation.agenda[1]
         assertNotNull(secondItem.assignedTo)
-        assertEquals("agent-beta", secondItem.assignedTo!!.agentId)
+        assertEquals("agent-beta", secondItem.assignedTo.getIdentifier())
     }}
 
     @Test
@@ -199,7 +199,7 @@ class MeetingRepositoryTest {
         assertNotNull(loaded)
 
         assertIs<MeetingStatus.Completed>(loaded.status)
-        val completedStatus = loaded.status as MeetingStatus.Completed
+        val completedStatus = loaded.status
 
         assertEquals(2, completedStatus.attendedBy.size)
         assertNotNull(completedStatus.outcomes)
@@ -227,7 +227,7 @@ class MeetingRepositoryTest {
         assertNotNull(loaded)
         assertIs<MeetingStatus.InProgress>(loaded.status)
 
-        val inProgressStatus = loaded.status as MeetingStatus.InProgress
+        val inProgressStatus = loaded.status
         assertEquals("channel-1", inProgressStatus.messagingDetails.messageChannelId)
     }}
 

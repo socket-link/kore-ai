@@ -2,15 +2,16 @@ package link.socket.kore.agents.events.meetings
 
 import kotlinx.datetime.Clock
 import link.socket.kore.agents.core.AssignedTo
-import link.socket.kore.agents.events.ConsoleEventLogger
-import link.socket.kore.agents.events.EventBus
-import link.socket.kore.agents.events.EventLogger
 import link.socket.kore.agents.events.EventSource
-import link.socket.kore.agents.events.MeetingEvents
-import link.socket.kore.agents.events.generateEventId
+import link.socket.kore.agents.events.MeetingEvent
+import link.socket.kore.agents.events.bus.EventBus
 import link.socket.kore.agents.events.messages.AgentMessageApi
 import link.socket.kore.agents.events.messages.MessageChannel
-import link.socket.kore.data.MeetingRepository
+import link.socket.kore.agents.events.tasks.AgendaItem
+import link.socket.kore.agents.events.tasks.Task
+import link.socket.kore.agents.events.utils.ConsoleEventLogger
+import link.socket.kore.agents.events.utils.EventLogger
+import link.socket.kore.agents.events.utils.generateUUID
 import link.socket.kore.util.randomUUID
 
 /**
@@ -110,8 +111,8 @@ class MeetingOrchestrator(
 
         // Publish MeetingScheduled event
         eventBus.publish(
-            MeetingEvents.MeetingScheduled(
-                eventId = generateEventId(scheduledBy.getIdentifier()),
+            MeetingEvent.MeetingScheduled(
+                eventId = generateUUID(createdMeeting.id),
                 meeting = createdMeeting,
                 scheduledBy = scheduledBy,
             )
@@ -180,7 +181,7 @@ class MeetingOrchestrator(
 
         // Publish MeetingStarted event
         eventBus.publish(
-            MeetingEvents.MeetingStarted(
+            MeetingEvent.MeetingStarted(
                 eventId = randomUUID(),
                 meetingId = meetingId,
                 threadId = thread.id,
@@ -241,7 +242,7 @@ class MeetingOrchestrator(
 
         // Publish AgendaItemStarted event
         eventBus.publish(
-            MeetingEvents.AgendaItemStarted(
+            MeetingEvent.AgendaItemStarted(
                 eventId = randomUUID(),
                 meetingId = meetingId,
                 agendaItem = updatedItem,
@@ -253,7 +254,7 @@ class MeetingOrchestrator(
         // Post a message to the meeting thread about the agenda item
         messageApi.postMessage(
             threadId = meeting.status.messagingDetails.messageThreadId,
-            content = "Now discussing: ${nextItem.topic}${nextItem.assignedTo?.let { " (assigned to ${it.agentId})" } ?: ""}",
+            content = "Now discussing: ${nextItem.topic}${nextItem.assignedTo?.let { " (assigned to ${it.getIdentifier()})" } ?: ""}",
         )
 
         return Result.success(updatedItem)
@@ -312,7 +313,7 @@ class MeetingOrchestrator(
 
         // Publish MeetingCompleted event
         eventBus.publish(
-            MeetingEvents.MeetingCompleted(
+            MeetingEvent.MeetingCompleted(
                 eventId = randomUUID(),
                 meetingId = meetingId,
                 outcomes = outcomes,
@@ -341,7 +342,7 @@ class MeetingOrchestrator(
             append("Agenda:\n")
             meeting.invitation.agenda.forEachIndexed { index, item ->
                 append("${index + 1}. ${item.topic}")
-                item.assignedTo?.let { append(" (${it.agentId})") }
+                item.assignedTo?.let { append(" (${it.getIdentifier()})") }
                 append("\n")
             }
         }

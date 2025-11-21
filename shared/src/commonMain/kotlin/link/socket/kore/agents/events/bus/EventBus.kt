@@ -1,4 +1,4 @@
-package link.socket.kore.agents.events
+package link.socket.kore.agents.events.bus
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -6,6 +6,13 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import link.socket.kore.agents.core.AgentId
+import link.socket.kore.agents.events.utils.ConsoleEventLogger
+import link.socket.kore.agents.events.Event
+import link.socket.kore.agents.events.EventClassType
+import link.socket.kore.agents.events.api.EventHandler
+import link.socket.kore.agents.events.utils.EventLogger
+import link.socket.kore.agents.events.subscription.EventSubscription
+import link.socket.kore.agents.events.subscription.Subscription
 
 typealias HandlerMap = MutableMap<EventClassType, List<EventHandler<Event, Subscription>>>
 typealias SubscriptionMap = MutableMap<EventClassType, Subscription>

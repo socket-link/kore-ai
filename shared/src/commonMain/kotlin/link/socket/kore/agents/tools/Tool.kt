@@ -2,6 +2,9 @@ package link.socket.kore.agents.tools
 
 import link.socket.kore.agents.core.AutonomyLevel
 import link.socket.kore.agents.core.Outcome
+import link.socket.kore.agents.events.tasks.Task
+
+typealias ToolId = String
 
 /**
  * Base contract for executable tools used by autonomous agents.
@@ -11,8 +14,12 @@ import link.socket.kore.agents.core.Outcome
  * [requiredAutonomyLevel] an agent should have to use them safely.
  */
 interface Tool {
+
+    /** Unique identifier for this tool instance. */
+    val id: ToolId
+
     /**
-     * Unique identifier for this tool.
+     * Unique title for this tool.
      * Should be stable across versions to allow referencing and auditing.
      */
     val name: String
@@ -41,7 +48,10 @@ interface Tool {
      * @param parameters Arbitrary key-value pairs required for execution.
      * @return [Outcome] describing success/failure and any resulting payload.
      */
-    suspend fun execute(parameters: Map<String, Any>): Outcome
+    suspend fun execute(
+        sourceTask: Task,
+        parameters: Map<String, Any?>,
+    ): Outcome
 
     /**
      * Validate input parameters prior to execution.

@@ -1,4 +1,4 @@
-package link.socket.kore.data
+package link.socket.kore.agents.events.meetings
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,16 +11,11 @@ import kotlinx.serialization.json.Json
 import link.socket.kore.agents.core.AssignedTo
 import link.socket.kore.agents.events.Database
 import link.socket.kore.agents.events.EventSource
-import link.socket.kore.agents.events.meetings.AgendaItem
-import link.socket.kore.agents.events.meetings.AgendaItemId
-import link.socket.kore.agents.events.meetings.Meeting
-import link.socket.kore.agents.events.meetings.MeetingId
-import link.socket.kore.agents.events.meetings.MeetingInvitation
-import link.socket.kore.agents.events.meetings.MeetingOutcome
-import link.socket.kore.agents.events.meetings.MeetingStatus
-import link.socket.kore.agents.events.meetings.MeetingType
-import link.socket.kore.agents.events.meetings.Task
+import link.socket.kore.agents.events.tasks.AgendaItem
+import link.socket.kore.agents.events.tasks.AgendaItemId
+import link.socket.kore.agents.events.tasks.Task
 import link.socket.kore.agents.meetings.MeetingStoreQueries
+import link.socket.kore.data.Repository
 
 /**
  * Repository responsible for persisting and querying Meetings using SQLDelight.
@@ -89,7 +84,7 @@ class MeetingRepository(
                         id = agendaItem.id,
                         meetingId = meeting.id,
                         topic = agendaItem.topic,
-                        assignedTo = agendaItem.assignedTo?.agentId,
+                        assignedTo = agendaItem.assignedTo?.getIdentifier(),
                         assignedToType = if (agendaItem.assignedTo != null) "AGENT" else null,
                         status = getTaskStatusName(agendaItem.status),
                         statusPayload = encodeTaskStatus(agendaItem.status),

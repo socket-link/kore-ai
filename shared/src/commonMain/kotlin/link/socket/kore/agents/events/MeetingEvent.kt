@@ -3,15 +3,15 @@ package link.socket.kore.agents.events
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import link.socket.kore.agents.events.meetings.AgendaItem
 import link.socket.kore.agents.events.meetings.Meeting
 import link.socket.kore.agents.events.meetings.MeetingOutcome
+import link.socket.kore.agents.events.tasks.AgendaItem
 
 /**
  * Meeting lifecycle events flowing through the EventBus.
  */
 @Serializable
-sealed class MeetingEvents(
+sealed class MeetingEvent(
     private val source: EventSource,
 ) : Event {
 
@@ -23,12 +23,11 @@ sealed class MeetingEvents(
         override val eventId: EventId,
         val meeting: Meeting,
         val scheduledBy: EventSource,
-    ) : MeetingEvents(source = scheduledBy) {
+        override val urgency: Urgency = Urgency.MEDIUM
+    ) : MeetingEvent(source = scheduledBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE
-        @Transient
-        override val urgency: Urgency = Urgency.MEDIUM
         @Transient
         override val timestamp: Instant = meeting.lastUpdatedAt() ?: Instant.DISTANT_PAST
 
@@ -47,7 +46,7 @@ sealed class MeetingEvents(
         val startedAt: Instant,
         val startedBy: EventSource,
         override val urgency: Urgency = Urgency.MEDIUM,
-    ) : MeetingEvents(source = startedBy) {
+    ) : MeetingEvent(source = startedBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE
@@ -69,7 +68,7 @@ sealed class MeetingEvents(
         val startedBy: EventSource,
         override val timestamp: Instant,
         override val urgency: Urgency = Urgency.MEDIUM,
-    ) : MeetingEvents(source = startedBy) {
+    ) : MeetingEvent(source = startedBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE
@@ -89,7 +88,7 @@ sealed class MeetingEvents(
         val completedAt: Instant,
         val completedBy: EventSource,
         override val urgency: Urgency = Urgency.MEDIUM,
-    ) : MeetingEvents(source = completedBy) {
+    ) : MeetingEvent(source = completedBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE
@@ -111,7 +110,7 @@ sealed class MeetingEvents(
         val completedAt: Instant,
         val completedBy: EventSource,
         override val urgency: Urgency = Urgency.LOW,
-    ) : MeetingEvents(source = completedBy) {
+    ) : MeetingEvent(source = completedBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE
@@ -133,7 +132,7 @@ sealed class MeetingEvents(
         val canceledAt: Instant,
         val canceledBy: EventSource,
         override val urgency: Urgency = Urgency.MEDIUM,
-    ) : MeetingEvents(source = canceledBy) {
+    ) : MeetingEvent(source = canceledBy) {
 
         @Transient
         override val eventClassType: EventClassType = EVENT_CLASS_TYPE

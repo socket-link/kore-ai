@@ -1,9 +1,20 @@
-package link.socket.kore.agents.events
+package link.socket.kore.agents.events.api
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import link.socket.kore.agents.core.AgentId
-import link.socket.kore.data.EventRepository
+import link.socket.kore.agents.events.Event
+import link.socket.kore.agents.events.EventClassType
+import link.socket.kore.agents.events.EventRepository
+import link.socket.kore.agents.events.EventSource
+import link.socket.kore.agents.events.Urgency
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.bus.subscribe
+import link.socket.kore.agents.events.subscription.EventSubscription
+import link.socket.kore.agents.events.subscription.Subscription
+import link.socket.kore.agents.events.utils.ConsoleEventLogger
+import link.socket.kore.agents.events.utils.EventLogger
+import link.socket.kore.agents.events.utils.generateUUID
 
 open class EventHandler<E : Event, S : Subscription>(
     private val executeOverride: (suspend (E, S?) -> Unit)? = null,
@@ -23,11 +34,6 @@ class EventFilter<E : Event>(
             )
     }
 }
-
-/**
- * Expect declaration for generating globally-unique event IDs per platform.
- */
-expect fun generateEventId(agentId: AgentId): EventId
 
 /**
  * High-level, agent-friendly API for interacting with the EventBus.
@@ -64,7 +70,7 @@ class AgentEventApi(
         assignedTo: AgentId? = null,
     ) {
         val event = Event.TaskCreated(
-            eventId = generateEventId(agentId),
+            eventId = generateUUID(taskId, agentId),
             urgency = urgency,
             timestamp = Clock.System.now(),
             eventSource = EventSource.Agent(agentId),
@@ -83,7 +89,7 @@ class AgentEventApi(
         context: String,
     ) {
         val event = Event.QuestionRaised(
-            eventId = generateEventId(agentId),
+            eventId = generateUUID(agentId),
             urgency = urgency,
             timestamp = Clock.System.now(),
             eventSource = EventSource.Agent(agentId),
@@ -103,7 +109,7 @@ class AgentEventApi(
         assignedTo: AgentId? = null,
     ) {
         val event = Event.CodeSubmitted(
-            eventId = generateEventId(agentId),
+            eventId = generateUUID(agentId),
             urgency = urgency,
             timestamp = Clock.System.now(),
             eventSource = EventSource.Agent(agentId),

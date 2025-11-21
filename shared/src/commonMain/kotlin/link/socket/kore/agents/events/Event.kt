@@ -2,12 +2,11 @@ package link.socket.kore.agents.events
 
 import kotlin.reflect.KClass
 import kotlinx.datetime.Instant
-import kotlinx.serialization.Transient
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import link.socket.kore.agents.core.AgentId
 
 typealias EventId = String
-
 typealias EventClassType = Pair<KClass<out Event>, String>
 
 /** Urgency levels for questions raised by agents. */

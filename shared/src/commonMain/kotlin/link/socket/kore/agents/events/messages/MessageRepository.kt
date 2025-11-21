@@ -1,4 +1,4 @@
-package link.socket.kore.data
+package link.socket.kore.agents.events.messages
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -9,13 +9,8 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import link.socket.kore.agents.events.Database
 import link.socket.kore.agents.events.EventStatus
-import link.socket.kore.agents.events.messages.Message
-import link.socket.kore.agents.events.messages.MessageChannel
-import link.socket.kore.agents.events.messages.MessageId
-import link.socket.kore.agents.events.messages.MessageSender
 import link.socket.kore.agents.messages.MessageStoreQueries
-import link.socket.kore.agents.events.messages.MessageThread
-import link.socket.kore.agents.events.messages.MessageThreadId
+import link.socket.kore.data.Repository
 
 /**
  * Repository responsible for persisting and querying Messages using SQLDelight.
@@ -92,7 +87,7 @@ class MessageRepository(
                             threadId = message.threadId,
                             sender = MessageSender.fromSenderId(message.senderId),
                             content = message.content,
-                            timestamp = Instant.fromEpochMilliseconds(message.timestamp),
+                            timestamp = Instant.Companion.fromEpochMilliseconds(message.timestamp),
                             metadata = message.metadata?.let { metadata ->
                                 json.decodeFromString<Map<String, String>>(metadata)
                             },
@@ -108,8 +103,8 @@ class MessageRepository(
                     }.toSet(),
                     messages = messages,
                     status = EventStatus.valueOf(messageThread.status),
-                    createdAt = Instant.fromEpochMilliseconds(messageThread.createdAt),
-                    updatedAt = Instant.fromEpochMilliseconds(messageThread.updatedAt),
+                    createdAt = Instant.Companion.fromEpochMilliseconds(messageThread.createdAt),
+                    updatedAt = Instant.Companion.fromEpochMilliseconds(messageThread.updatedAt),
                 )
             }
         }
@@ -134,7 +129,7 @@ class MessageRepository(
                                     threadId = message.threadId,
                                     sender = MessageSender.fromSenderId(message.senderId),
                                     content = message.content,
-                                    timestamp = Instant.fromEpochMilliseconds(message.timestamp),
+                                    timestamp = Instant.Companion.fromEpochMilliseconds(message.timestamp),
                                     metadata = message.metadata?.let { metadata ->
                                         json.decodeFromString<Map<String, String>>(metadata)
                                     },
@@ -150,8 +145,8 @@ class MessageRepository(
                             }.toSet(),
                             messages = messages,
                             status = EventStatus.valueOf(messageThread.status),
-                            createdAt = Instant.fromEpochMilliseconds(messageThread.createdAt),
-                            updatedAt = Instant.fromEpochMilliseconds(messageThread.updatedAt),
+                            createdAt = Instant.Companion.fromEpochMilliseconds(messageThread.createdAt),
+                            updatedAt = Instant.Companion.fromEpochMilliseconds(messageThread.updatedAt),
                         )
                     }
             }
@@ -184,7 +179,7 @@ class MessageRepository(
                     status = EventStatus.OPEN.name, // keep status unless external change; OPEN ensures active
                     updatedAt = message.timestamp.toEpochMilliseconds(),
                 )
-            }.map {  }
+            }.map { }
         }
 
     suspend fun updateStatus(threadId: MessageThreadId, newStatus: EventStatus): Result<Unit> =
@@ -195,13 +190,13 @@ class MessageRepository(
                     status = newStatus.name,
                     updatedAt = Clock.System.now().toEpochMilliseconds(),
                 )
-            }.map {  }
+            }.map { }
         }
 
     suspend fun delete(threadId: MessageThreadId): Result<Unit> =
         withContext(Dispatchers.IO) {
             runCatching {
                 queries.deleteMessageThread(threadId)
-            }.map {  }
+            }.map { }
         }
 }

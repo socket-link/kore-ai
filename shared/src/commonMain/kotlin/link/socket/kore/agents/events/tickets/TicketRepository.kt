@@ -1,4 +1,4 @@
-package link.socket.kore.agents.tickets
+package link.socket.kore.agents.events.tickets
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -7,6 +7,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.events.Database
+import link.socket.kore.agents.tickets.TicketStore
 
 /**
  * Sealed class representing errors that can occur during ticket operations.

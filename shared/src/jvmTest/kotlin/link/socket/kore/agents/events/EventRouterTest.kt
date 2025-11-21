@@ -11,7 +11,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import link.socket.kore.agents.events.subscribe
+import link.socket.kore.agents.events.api.AgentEventApiFactory
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.bus.EventBusFactory
+import link.socket.kore.agents.events.bus.subscribe
+import link.socket.kore.agents.events.subscription.Subscription
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class EventRouterTest {
@@ -21,7 +25,7 @@ class EventRouterTest {
 
     private lateinit var driver: JdbcSqliteDriver
     private lateinit var eventBus: EventBus
-    private lateinit var eventRepository: link.socket.kore.data.EventRepository
+    private lateinit var eventRepository: EventRepository
     private lateinit var agentEventApiFactory: AgentEventApiFactory
 
     @BeforeTest
@@ -29,7 +33,7 @@ class EventRouterTest {
         driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         Database.Schema.create(driver)
         val database = Database(driver)
-        eventRepository = link.socket.kore.data.EventRepository(link.socket.kore.data.DEFAULT_JSON, scope, database)
+        eventRepository = EventRepository(link.socket.kore.data.DEFAULT_JSON, scope, database)
         eventBus = eventBusFactory.create()
         agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBus)
     }

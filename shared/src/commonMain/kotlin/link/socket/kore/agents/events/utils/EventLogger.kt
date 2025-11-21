@@ -1,4 +1,8 @@
-package link.socket.kore.agents.events
+package link.socket.kore.agents.events.utils
+
+import link.socket.kore.agents.events.Event
+import link.socket.kore.agents.events.EventClassType
+import link.socket.kore.agents.events.subscription.Subscription
 
 /**
  * Lightweight logger interface for EventBus diagnostics.

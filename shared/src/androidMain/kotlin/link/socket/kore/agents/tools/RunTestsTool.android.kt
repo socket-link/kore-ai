@@ -14,7 +14,7 @@ actual class RunTestsTool actual constructor(
     actual override val description: String = "Executes tests and returns results"
     actual override val requiredAutonomyLevel: AutonomyLevel = AutonomyLevel.FULLY_AUTONOMOUS
 
-    actual override suspend fun execute(parameters: Map<String, Any>): Outcome {
+    actual override suspend fun execute(parameters: Map<String, Any?>): Outcome {
         val testPath = parameters["testPath"] as? String
 
         return try {

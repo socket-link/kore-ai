@@ -27,9 +27,9 @@ data class RateLimitsFactory(
         tierFree = tierFreeRequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tierFreeTPM)
             Tier.FreeTier(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Combined(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Combined(
                     tokensPerMinute = tierFreeTPM,
                 ),
             )
@@ -37,9 +37,9 @@ data class RateLimitsFactory(
         tier1 = tier1RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier1TPM)
             Tier.Tier1(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Combined(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Combined(
                     tokensPerMinute = tier1TPM,
                 ),
             )
@@ -47,9 +47,9 @@ data class RateLimitsFactory(
         tier2 = tier2RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier2TPM)
             Tier.Tier2(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Combined(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Combined(
                     tokensPerMinute = tier2TPM,
                 ),
             )
@@ -57,9 +57,9 @@ data class RateLimitsFactory(
         tier3 = tier1RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier3TPM)
             Tier.Tier3(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Combined(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Combined(
                     tokensPerMinute = tier3TPM,
                 ),
             )
@@ -67,9 +67,9 @@ data class RateLimitsFactory(
         tier4 = tier4RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier4TPM)
             Tier.Tier4(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Combined(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Combined(
                     tokensPerMinute = tier4TPM,
                 ),
             )
@@ -77,9 +77,9 @@ data class RateLimitsFactory(
         tier5 = tier5RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier5TPM)
             Tier.Tier5(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Combined(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Combined(
                     tokensPerMinute = tier5TPM,
                 ),
             )
@@ -104,9 +104,9 @@ data class RateLimitsFactory(
         tierFree = tierFreeRequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tierFreeTPMs)
             Tier.FreeTier(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Separated(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Separated(
                     inputTokensPerMinute = tierFreeTPMs.first,
                     outputTokensPerMinute = tierFreeTPMs.second,
                 ),
@@ -115,9 +115,9 @@ data class RateLimitsFactory(
         tier1 = tier1RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier1TPMs)
             Tier.Tier1(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Separated(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Separated(
                     inputTokensPerMinute = tier1TPMs.first,
                     outputTokensPerMinute = tier1TPMs.second,
                 ),
@@ -126,9 +126,9 @@ data class RateLimitsFactory(
         tier2 = tier2RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier2TPMs)
             Tier.Tier2(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Separated(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Separated(
                     inputTokensPerMinute = tier2TPMs.first,
                     outputTokensPerMinute = tier2TPMs.second,
                 ),
@@ -137,9 +137,9 @@ data class RateLimitsFactory(
         tier3 = tier3RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier3TPMs)
             Tier.Tier3(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Separated(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Separated(
                     inputTokensPerMinute = tier3TPMs.first,
                     outputTokensPerMinute = tier3TPMs.second,
                 ),
@@ -148,9 +148,9 @@ data class RateLimitsFactory(
         tier4 = tier4RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier4TPMs)
             Tier.Tier4(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Separated(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Separated(
                     inputTokensPerMinute = tier4TPMs.first,
                     outputTokensPerMinute = tier4TPMs.second,
                 ),
@@ -159,9 +159,9 @@ data class RateLimitsFactory(
         tier5 = tier5RequestLimits?.let { (rpm, rpd) ->
             requireNotNull(tier5TPMs)
             Tier.Tier5(
-                requestsPerMinute = rpm,
-                requestsPerDay = rpd,
-                tokenRate = TokenRate.Separated(
+                _requestsPerMinute = rpm,
+                _requestsPerDay = rpd,
+                _tokenRate = TokenRate.Separated(
                     inputTokensPerMinute = tier5TPMs.first,
                     outputTokensPerMinute = tier5TPMs.second,
                 ),

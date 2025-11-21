@@ -13,8 +13,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import link.socket.kore.agents.events.Database
-import link.socket.kore.agents.events.EventBus
-import link.socket.kore.agents.events.EventBusFactory
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.bus.EventBusFactory
 import link.socket.kore.agents.events.MessageEvent
 import link.socket.kore.agents.events.messages.AgentMessageApi
 import link.socket.kore.agents.events.messages.AgentMessageApiFactory
@@ -23,8 +23,8 @@ import link.socket.kore.agents.events.messages.MessageRouter
 import link.socket.kore.agents.events.messages.MessageThread
 import link.socket.kore.agents.events.messages.MessageThreadId
 import link.socket.kore.data.DEFAULT_JSON
-import link.socket.kore.data.EventRepository
-import link.socket.kore.data.MessageRepository
+import link.socket.kore.agents.events.EventRepository
+import link.socket.kore.agents.events.messages.MessageRepository
 import link.socket.kore.util.randomUUID
 
 @OptIn(ExperimentalCoroutinesApi::class)

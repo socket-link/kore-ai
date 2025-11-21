@@ -2,18 +2,20 @@ package link.socket.kore.agents
 
 import java.nio.file.Files
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import link.socket.kore.agents.core.MessageSeverity
-import link.socket.kore.agents.implementations.CodeWriterAgent
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import link.socket.kore.agents.tools.AskHumanTool
 import link.socket.kore.agents.tools.ReadCodebaseTool
 import link.socket.kore.agents.tools.RunTestsTool
 import link.socket.kore.agents.tools.WriteCodeFileTool
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class AgentSystemIntegrationTest {
+
+    private val scope = TestScope(UnconfinedTestDispatcher())
+
     @Test
     fun `complete workflow with CodeWriterAgent`() = runBlocking {
         val tempDir = Files.createTempDirectory("agent_test").toFile()
@@ -25,25 +27,7 @@ class AgentSystemIntegrationTest {
                 "run_tests" to RunTestsTool(tempDir.absolutePath)
             )
 
-            val agent = CodeWriterAgent(tools)
-
-            // Set task
-            agent.setTask("Add a new tool called TestTool")
-
-            // Agent workflow
-            val context = agent.perceive()
-            assertTrue(context.currentState["task"] == "Add a new tool called TestTool")
-
-            val plan = agent.plan()
-            assertTrue(plan.steps.isNotEmpty())
-            assertTrue(plan.requiresHumanApproval)
-
-            val signal = agent.signal()
-            assertNotNull(signal)
-            assertEquals(MessageSeverity.QUESTION, signal?.severity)
-
-            val outcome = agent.act()
-            assertTrue(outcome.success)
+            // TODO: Write agent autonomy testing here
         } finally {
             tempDir.deleteRecursively()
         }

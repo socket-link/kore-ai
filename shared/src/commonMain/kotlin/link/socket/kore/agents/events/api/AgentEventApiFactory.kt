@@ -1,7 +1,10 @@
-package link.socket.kore.agents.events
+package link.socket.kore.agents.events.api
 
 import link.socket.kore.agents.core.AgentId
-import link.socket.kore.data.EventRepository
+import link.socket.kore.agents.events.EventRepository
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.utils.ConsoleEventLogger
+import link.socket.kore.agents.events.utils.EventLogger
 
 /** Factory to create [AgentEventApi] instances wired to a persistent EventBus. */
 class AgentEventApiFactory(

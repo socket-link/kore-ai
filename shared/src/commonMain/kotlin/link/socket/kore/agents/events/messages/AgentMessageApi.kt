@@ -2,16 +2,15 @@ package link.socket.kore.agents.events.messages
 
 import kotlinx.datetime.Clock
 import link.socket.kore.agents.core.AgentId
-import link.socket.kore.agents.events.ConsoleEventLogger
-import link.socket.kore.agents.events.EventBus
-import link.socket.kore.agents.events.EventFilter
-import link.socket.kore.agents.events.EventHandler
-import link.socket.kore.agents.events.EventLogger
+import link.socket.kore.agents.events.utils.ConsoleEventLogger
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.api.EventFilter
+import link.socket.kore.agents.events.api.EventHandler
+import link.socket.kore.agents.events.utils.EventLogger
 import link.socket.kore.agents.events.EventSource
 import link.socket.kore.agents.events.EventStatus
 import link.socket.kore.agents.events.MessageEvent
-import link.socket.kore.agents.events.Subscription
-import link.socket.kore.data.MessageRepository
+import link.socket.kore.agents.events.subscription.Subscription
 import link.socket.kore.util.randomUUID
 
 /**

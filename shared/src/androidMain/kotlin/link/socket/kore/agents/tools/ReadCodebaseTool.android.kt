@@ -23,7 +23,7 @@ actual class ReadCodebaseTool actual constructor(
         return target
     }
 
-    actual override suspend fun execute(parameters: Map<String, Any>): Outcome {
+    actual override suspend fun execute(parameters: Map<String, Any?>): Outcome {
         val path = parameters["path"] as? String
             ?: return Outcome(false, null, "Missing 'path' parameter")
 

@@ -4,7 +4,9 @@ import kotlinx.datetime.Instant
 import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.core.AssignedTo
 import link.socket.kore.agents.events.Event
-import link.socket.kore.agents.events.generateEventId
+import link.socket.kore.agents.events.tasks.AgendaItem
+import link.socket.kore.agents.events.tasks.Task
+import link.socket.kore.agents.events.utils.generateUUID
 
 class MeetingBuilder(
     private val agentId: AgentId,
@@ -34,7 +36,7 @@ class MeetingBuilder(
     ): MeetingBuilder {
         agendaItems.add(
             AgendaItem(
-                id = generateEventId(assignedTo?.agentId ?: ""),
+                id = generateUUID(agentId, assignedTo?.agentId ?: ""),
                 topic = topic,
                 status = Task.Status.Pending(),
                 assignedTo = assignedTo,
@@ -74,7 +76,7 @@ class MeetingBuilder(
             require(participants.isNotEmpty())
 
             Meeting(
-                id = generateEventId(agentId),
+                id = generateUUID(agentId, meetingTriggeredByEvent?.eventId ?: ""),
                 type = type!!,
                 status = MeetingStatus.Scheduled(scheduledFor!!),
                 invitation = MeetingInvitation(

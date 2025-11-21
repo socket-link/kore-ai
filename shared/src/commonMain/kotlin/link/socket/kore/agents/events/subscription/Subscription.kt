@@ -1,4 +1,4 @@
-package link.socket.kore.agents.events
+package link.socket.kore.agents.events.subscription
 
 import kotlinx.serialization.Serializable
 

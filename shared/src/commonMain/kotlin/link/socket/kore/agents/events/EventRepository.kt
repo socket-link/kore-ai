@@ -1,4 +1,4 @@
-package link.socket.kore.data
+package link.socket.kore.agents.events
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -7,18 +7,14 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
-import link.socket.kore.agents.events.Database
-import link.socket.kore.agents.events.Event
-import link.socket.kore.agents.events.EventClassType
-import link.socket.kore.agents.events.EventId
-import link.socket.kore.agents.events.EventSerializationException
-import link.socket.kore.agents.events.EventStoreQueries
+import link.socket.kore.agents.events.utils.EventSerializationException
+import link.socket.kore.data.Repository
 
 /**
  * Repository responsible for persisting and querying Events using SQLDelight.
  *
  * This lives in common code and works across KMP targets. Callers are responsible for
- * providing a platform-specific SQLDelight [SqlDriver] to construct the generated [link.socket.kore.agents.events.Database]
+ * providing a platform-specific SQLDelight [SqlDriver] to construct the generated [Database]
  * instance and then pass it into this repository.
  */
 // TODO: Remove duplication

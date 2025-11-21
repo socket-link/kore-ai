@@ -6,6 +6,10 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlinx.datetime.Clock
+import link.socket.kore.agents.events.tickets.Ticket
+import link.socket.kore.agents.events.tickets.TicketPriority
+import link.socket.kore.agents.events.tickets.TicketStatus
+import link.socket.kore.agents.events.tickets.TicketType
 
 class TicketTest {
 

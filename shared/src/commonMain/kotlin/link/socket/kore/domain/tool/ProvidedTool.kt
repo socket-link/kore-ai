@@ -2,6 +2,9 @@
 
 package link.socket.kore.domain.tool
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 sealed class ProvidedTool <T : AITool> (open val definition: T) {
     data class Bash <T : AITool> (override val definition: T) : ProvidedTool<T>(definition)
     data class CodeExecution <T : AITool> (override val definition: T) : ProvidedTool<T>(definition)

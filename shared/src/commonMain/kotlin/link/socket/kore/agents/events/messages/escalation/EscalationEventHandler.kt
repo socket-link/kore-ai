@@ -3,10 +3,10 @@ package link.socket.kore.agents.events.messages.escalation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import link.socket.kore.agents.core.AgentId
-import link.socket.kore.agents.events.EventBus
-import link.socket.kore.agents.events.EventHandler
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.api.EventHandler
 import link.socket.kore.agents.events.MessageEvent
-import link.socket.kore.agents.events.Subscription
+import link.socket.kore.agents.events.subscription.Subscription
 
 /**
  * Listens for `MessageEvent.EscalationRequested` and notifies a human.

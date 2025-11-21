@@ -8,9 +8,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import link.socket.kore.agents.events.ConsoleEventLogger
-import link.socket.kore.agents.events.EventLogger
-import link.socket.kore.data.MeetingRepository
+import link.socket.kore.agents.events.utils.ConsoleEventLogger
+import link.socket.kore.agents.events.utils.EventLogger
 
 /**
  * Service that periodically checks for scheduled meetings that should start

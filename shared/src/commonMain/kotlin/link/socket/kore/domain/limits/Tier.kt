@@ -1,74 +1,83 @@
 package link.socket.kore.domain.limits
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 sealed class Tier(
-    open val type: TierType,
-    open val tokenRate: TokenRate,
-    open val requestsPerMinute: Int,
-    open val requestsPerDay: Int?,
+    val type: TierType,
+    val tokenRate: TokenRate,
+    val requestsPerMinute: Int,
+    val requestsPerDay: Int?,
 ) {
+    @Serializable
     data class FreeTier(
-        override val tokenRate: TokenRate,
-        override val requestsPerMinute: Int,
-        override val requestsPerDay: Int? = null,
+        private val _tokenRate: TokenRate,
+        private val _requestsPerMinute: Int,
+        private val _requestsPerDay: Int? = null,
     ) : Tier(
         type = TierType.FREE,
-        tokenRate = tokenRate,
-        requestsPerMinute = requestsPerMinute,
-        requestsPerDay = requestsPerMinute,
+        tokenRate = _tokenRate,
+        requestsPerMinute = _requestsPerMinute,
+        requestsPerDay = _requestsPerMinute,
     )
 
+    @Serializable
     data class Tier1(
-        override val tokenRate: TokenRate,
-        override val requestsPerMinute: Int,
-        override val requestsPerDay: Int? = null,
+        private val _tokenRate: TokenRate,
+        private val _requestsPerMinute: Int,
+        private val _requestsPerDay: Int? = null,
     ) : Tier(
         type = TierType.TIER_1,
-        tokenRate = tokenRate,
-        requestsPerMinute = requestsPerMinute,
-        requestsPerDay = requestsPerDay,
+        tokenRate = _tokenRate,
+        requestsPerMinute = _requestsPerMinute,
+        requestsPerDay = _requestsPerDay,
     )
 
+    @Serializable
     data class Tier2(
-        override val tokenRate: TokenRate,
-        override val requestsPerMinute: Int,
-        override val requestsPerDay: Int? = null,
+        private val _tokenRate: TokenRate,
+        private val _requestsPerMinute: Int,
+        private val _requestsPerDay: Int? = null,
     ) : Tier(
         type = TierType.TIER_2,
-        tokenRate = tokenRate,
-        requestsPerMinute = requestsPerMinute,
-        requestsPerDay = requestsPerDay,
+        tokenRate = _tokenRate,
+        requestsPerMinute = _requestsPerMinute,
+        requestsPerDay = _requestsPerDay,
     )
 
+    @Serializable
     data class Tier3(
-        override val tokenRate: TokenRate,
-        override val requestsPerMinute: Int,
-        override val requestsPerDay: Int? = null,
+        private val _tokenRate: TokenRate,
+        private val _requestsPerMinute: Int,
+        private val _requestsPerDay: Int? = null,
     ) : Tier(
         type = TierType.TIER_3,
-        tokenRate = tokenRate,
-        requestsPerMinute = requestsPerMinute,
-        requestsPerDay = requestsPerDay,
+        tokenRate = _tokenRate,
+        requestsPerMinute = _requestsPerMinute,
+        requestsPerDay = _requestsPerDay,
     )
 
+    @Serializable
     data class Tier4(
-        override val tokenRate: TokenRate,
-        override val requestsPerMinute: Int,
-        override val requestsPerDay: Int? = null,
+        private val _tokenRate: TokenRate,
+        private val _requestsPerMinute: Int,
+        private val _requestsPerDay: Int? = null,
     ) : Tier(
         type = TierType.TIER_4,
-        tokenRate = tokenRate,
-        requestsPerMinute = requestsPerMinute,
-        requestsPerDay = requestsPerDay,
+        tokenRate = _tokenRate,
+        requestsPerMinute = _requestsPerMinute,
+        requestsPerDay = _requestsPerDay,
     )
 
+    @Serializable
     data class Tier5(
-        override val tokenRate: TokenRate,
-        override val requestsPerMinute: Int,
-        override val requestsPerDay: Int? = null,
+        private val _tokenRate: TokenRate,
+        private val _requestsPerMinute: Int,
+        private val _requestsPerDay: Int? = null,
     ) : Tier(
         type = TierType.TIER_5,
-        tokenRate = tokenRate,
-        requestsPerMinute = requestsPerMinute,
-        requestsPerDay = requestsPerDay,
+        tokenRate = _tokenRate,
+        requestsPerMinute = _requestsPerMinute,
+        requestsPerDay = _requestsPerDay,
     )
 }

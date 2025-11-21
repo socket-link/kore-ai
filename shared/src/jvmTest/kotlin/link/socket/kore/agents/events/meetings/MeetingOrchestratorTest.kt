@@ -20,13 +20,14 @@ import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.core.AssignedTo
 import link.socket.kore.agents.events.Database
 import link.socket.kore.agents.events.Event
-import link.socket.kore.agents.events.EventBus
-import link.socket.kore.agents.events.EventHandler
 import link.socket.kore.agents.events.EventSource
-import link.socket.kore.agents.events.MeetingEvents
+import link.socket.kore.agents.events.MeetingEvent
+import link.socket.kore.agents.events.api.EventHandler
+import link.socket.kore.agents.events.bus.EventBus
 import link.socket.kore.agents.events.messages.AgentMessageApi
-import link.socket.kore.data.MeetingRepository
-import link.socket.kore.data.MessageRepository
+import link.socket.kore.agents.events.messages.MessageRepository
+import link.socket.kore.agents.events.tasks.AgendaItem
+import link.socket.kore.agents.events.tasks.Task
 import link.socket.kore.util.randomUUID
 
 class MeetingOrchestratorTest {
@@ -66,28 +67,28 @@ class MeetingOrchestratorTest {
         // Subscribe to capture published events
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvents.MeetingScheduled.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvent.MeetingScheduled.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
         )
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvents.MeetingStarted.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvent.MeetingStarted.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
         )
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvents.AgendaItemStarted.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvent.AgendaItemStarted.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
         )
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvents.MeetingCompleted.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvent.MeetingCompleted.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
@@ -165,7 +166,7 @@ class MeetingOrchestratorTest {
             delay(100)
 
             // Verify MeetingScheduled event was published
-            val scheduledEvent = publishedEvents.filterIsInstance<MeetingEvents.MeetingScheduled>()
+            val scheduledEvent = publishedEvents.filterIsInstance<MeetingEvent.MeetingScheduled>()
             assertTrue(scheduledEvent.isNotEmpty(), "MeetingScheduled event should be published")
             assertEquals(meeting.id, scheduledEvent.first().meeting.id)
         }
@@ -244,7 +245,7 @@ class MeetingOrchestratorTest {
             delay(100)
 
             // Verify MeetingStarted event was published
-            val startedEvents = publishedEvents.filterIsInstance<MeetingEvents.MeetingStarted>()
+            val startedEvents = publishedEvents.filterIsInstance<MeetingEvent.MeetingStarted>()
             assertTrue(startedEvents.isNotEmpty(), "MeetingStarted event should be published")
             assertEquals(meeting.id, startedEvents.first().meetingId)
         }
@@ -318,7 +319,7 @@ class MeetingOrchestratorTest {
             delay(100)
 
             // Verify AgendaItemStarted event was published
-            val agendaEvents = publishedEvents.filterIsInstance<MeetingEvents.AgendaItemStarted>()
+            val agendaEvents = publishedEvents.filterIsInstance<MeetingEvent.AgendaItemStarted>()
             assertTrue(agendaEvents.isNotEmpty(), "AgendaItemStarted event should be published")
         }
     }
@@ -395,7 +396,7 @@ class MeetingOrchestratorTest {
             delay(100)
 
             // Verify MeetingCompleted event was published
-            val completedEvents = publishedEvents.filterIsInstance<MeetingEvents.MeetingCompleted>()
+            val completedEvents = publishedEvents.filterIsInstance<MeetingEvent.MeetingCompleted>()
             assertTrue(completedEvents.isNotEmpty(), "MeetingCompleted event should be published")
             assertEquals(meeting.id, completedEvents.first().meetingId)
             assertEquals(2, completedEvents.first().outcomes.size)

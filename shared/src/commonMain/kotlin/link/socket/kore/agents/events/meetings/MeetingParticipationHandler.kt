@@ -5,10 +5,10 @@ import kotlinx.coroutines.sync.withLock
 import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.core.AssignedTo
 import link.socket.kore.agents.core.MinimalAutonomousAgent
-import link.socket.kore.agents.events.EventBus
-import link.socket.kore.agents.events.EventHandler
-import link.socket.kore.agents.events.MeetingEvents
-import link.socket.kore.data.MeetingRepository
+import link.socket.kore.agents.events.bus.EventBus
+import link.socket.kore.agents.events.api.EventHandler
+import link.socket.kore.agents.events.MeetingEvent
+import link.socket.kore.agents.events.tasks.Task
 
 /**
  * Enables agents to subscribe to meeting events and automatically participate when required.
@@ -21,7 +21,7 @@ class MeetingParticipationHandler(
     private val meetingRepository: MeetingRepository,
 ) {
     // Map of agentId to their event handler
-    private val agentHandlers: MutableMap<AgentId, suspend (MeetingEvents) -> Unit> = mutableMapOf()
+    private val agentHandlers: MutableMap<AgentId, suspend (MeetingEvent) -> Unit> = mutableMapOf()
     private val mutex = Mutex()
 
     /**
@@ -33,7 +33,7 @@ class MeetingParticipationHandler(
      */
     suspend fun subscribeAgent(
         agentId: AgentId,
-        handler: suspend (MeetingEvents) -> Unit,
+        handler: suspend (MeetingEvent) -> Unit,
     ) {
         mutex.withLock {
             agentHandlers[agentId] = handler
@@ -59,9 +59,9 @@ class MeetingParticipationHandler(
         // Subscribe to MeetingStarted events
         eventBus.subscribe(
             agentId = "meeting-participation-handler",
-            eventClassType = MeetingEvents.MeetingStarted.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvent.MeetingStarted.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
-                if (event is MeetingEvents.MeetingStarted) {
+                if (event is MeetingEvent.MeetingStarted) {
                     handleMeetingStartedEvent(event)
                 }
             }
@@ -70,9 +70,9 @@ class MeetingParticipationHandler(
         // Subscribe to AgendaItemStarted events
         eventBus.subscribe(
             agentId = "meeting-participation-handler",
-            eventClassType = MeetingEvents.AgendaItemStarted.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvent.AgendaItemStarted.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
-                if (event is MeetingEvents.AgendaItemStarted) {
+                if (event is MeetingEvent.AgendaItemStarted) {
                     handleAgendaItemStartedEvent(event)
                 }
             }
@@ -81,9 +81,9 @@ class MeetingParticipationHandler(
         // Subscribe to MeetingCompleted events
         eventBus.subscribe(
             agentId = "meeting-participation-handler",
-            eventClassType = MeetingEvents.MeetingCompleted.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvent.MeetingCompleted.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
-                if (event is MeetingEvents.MeetingCompleted) {
+                if (event is MeetingEvent.MeetingCompleted) {
                     handleMeetingCompletedEvent(event)
                 }
             }
@@ -93,7 +93,7 @@ class MeetingParticipationHandler(
     /**
      * Handles a MeetingStarted event by notifying all registered participant agents.
      */
-    private suspend fun handleMeetingStartedEvent(event: MeetingEvents.MeetingStarted) {
+    private suspend fun handleMeetingStartedEvent(event: MeetingEvent.MeetingStarted) {
         val meetingResult = meetingRepository.getMeeting(event.meetingId)
         if (meetingResult.isFailure) return
 
@@ -109,7 +109,7 @@ class MeetingParticipationHandler(
     /**
      * Handles an AgendaItemStarted event by notifying all registered participant agents.
      */
-    private suspend fun handleAgendaItemStartedEvent(event: MeetingEvents.AgendaItemStarted) {
+    private suspend fun handleAgendaItemStartedEvent(event: MeetingEvent.AgendaItemStarted) {
         val meetingResult = meetingRepository.getMeeting(event.meetingId)
         if (meetingResult.isFailure) return
 
@@ -125,7 +125,7 @@ class MeetingParticipationHandler(
     /**
      * Handles a MeetingCompleted event by notifying all registered participant agents.
      */
-    private suspend fun handleMeetingCompletedEvent(event: MeetingEvents.MeetingCompleted) {
+    private suspend fun handleMeetingCompletedEvent(event: MeetingEvent.MeetingCompleted) {
         val meetingResult = meetingRepository.getMeeting(event.meetingId)
         if (meetingResult.isFailure) return
 
@@ -144,7 +144,7 @@ class MeetingParticipationHandler(
      * @param agentId The ID of the agent to notify
      * @param event The meeting event to deliver
      */
-    private suspend fun notifyAgent(agentId: AgentId, event: MeetingEvents) {
+    private suspend fun notifyAgent(agentId: AgentId, event: MeetingEvent) {
         val handler = mutex.withLock {
             agentHandlers[agentId]
         }
@@ -160,7 +160,7 @@ class MeetingParticipationHandler(
      * @param agent The agent participating in the meeting
      */
     suspend fun handleMeetingStart(
-        event: MeetingEvents.MeetingStarted,
+        event: MeetingEvent.MeetingStarted,
         agent: MinimalAutonomousAgent,
     ) {
         // Post a message announcing agent's presence
@@ -201,7 +201,7 @@ class MeetingParticipationHandler(
      * @param agent The agent participating in the meeting
      */
     suspend fun handleAgendaItem(
-        event: MeetingEvents.AgendaItemStarted,
+        event: MeetingEvent.AgendaItemStarted,
         agent: MinimalAutonomousAgent,
     ) {
         // Get the meeting to find the thread ID

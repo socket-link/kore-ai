@@ -6,10 +6,14 @@ import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.assertIs
 import kotlinx.coroutines.runBlocking
+import link.socket.kore.agents.core.Outcome
+import link.socket.kore.agents.events.tasks.CodeChange
 
 actual class WriteCodeFileToolTest {
+
+    private val stubSourceTask = CodeChange("source", "")
 
     @Test
     actual fun `validateParameters enforces filePath and content strings`() {
@@ -28,15 +32,14 @@ actual class WriteCodeFileToolTest {
             val relativePath = "nested/dir/Example.kt"
             val content = "package example\n\nfun main() { println(\"Hi\") }\n"
 
-            val outcome = tool.execute(mapOf("filePath" to relativePath, "content" to content))
-            assertEquals(true, outcome.success)
+            val outcome = tool.execute(stubSourceTask, mapOf("filePath" to relativePath, "content" to content))
+            assertIs<Outcome.Success.Full>(outcome)
 
             val file = File(tempDir.toFile(), relativePath)
             assertEquals(true, file.exists())
             assertEquals(content, file.readText())
 
-            assertTrue(outcome.result is String)
-            assertEquals(true, outcome.result.contains("File written:"))
+            assertEquals(true, outcome.value.contains("File written:"))
         } finally {
             tempDir.toFile().deleteRecursively()
         }
@@ -48,10 +51,10 @@ actual class WriteCodeFileToolTest {
         val tempFile = createTempFile("kore-writer-invalid-").toFile()
         try {
             val tool = WriteCodeFileTool(tempFile.absolutePath)
-            val outcome = tool.execute(mapOf("filePath" to "sub/Bad.kt", "content" to "val x = 1"))
-            assertEquals(false, outcome.success)
-            assertEquals(null, outcome.result)
-            assertEquals(true, outcome.errorMessage?.contains("Failed to write file"))
+            val outcome = tool.execute(stubSourceTask, mapOf("filePath" to "sub/Bad.kt", "content" to "val x = 1"))
+            assertIs<Outcome.Failure>(outcome)
+
+            assertEquals(true, outcome.errorMessage.contains("Failed to write file"))
         } finally {
             tempFile.delete()
         }

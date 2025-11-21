@@ -1,12 +1,13 @@
-package link.socket.kore.agents.events
+package link.socket.kore.agents.events.subscription
 
 import kotlinx.serialization.Serializable
 import link.socket.kore.agents.core.AgentId
+import link.socket.kore.agents.events.EventClassType
 import link.socket.kore.agents.events.messages.MessageChannel
 import link.socket.kore.agents.events.messages.MessageThreadId
 
 /**
- * Subscription returned by [EventBus.subscribe] used to cancel a subscription via [EventBus.unsubscribe].
+ * Subscription returned by [link.socket.kore.agents.events.bus.EventBus.subscribe] used to cancel a subscription via [link.socket.kore.agents.events.bus.EventBus.unsubscribe].
  */
 @Serializable
 sealed class MessageSubscription(

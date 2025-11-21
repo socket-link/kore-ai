@@ -1,4 +1,4 @@
-package link.socket.kore.agents.tickets
+package link.socket.kore.agents.events.tickets
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
@@ -19,7 +19,7 @@ enum class TicketType {
     /** General task or chore. */
     TASK,
     /** Research or investigation task. */
-    SPIKE
+    SPIKE;
 }
 
 /**

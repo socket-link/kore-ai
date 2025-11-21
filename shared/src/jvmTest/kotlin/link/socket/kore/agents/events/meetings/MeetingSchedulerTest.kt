@@ -23,13 +23,14 @@ import link.socket.kore.agents.core.AgentId
 import link.socket.kore.agents.core.AssignedTo
 import link.socket.kore.agents.events.Database
 import link.socket.kore.agents.events.Event
-import link.socket.kore.agents.events.EventBus
-import link.socket.kore.agents.events.EventHandler
 import link.socket.kore.agents.events.EventSource
-import link.socket.kore.agents.events.MeetingEvents
+import link.socket.kore.agents.events.MeetingEvent
+import link.socket.kore.agents.events.api.EventHandler
+import link.socket.kore.agents.events.bus.EventBus
 import link.socket.kore.agents.events.messages.AgentMessageApi
-import link.socket.kore.data.MeetingRepository
-import link.socket.kore.data.MessageRepository
+import link.socket.kore.agents.events.messages.MessageRepository
+import link.socket.kore.agents.events.tasks.AgendaItem
+import link.socket.kore.agents.events.tasks.Task
 import link.socket.kore.util.randomUUID
 
 class MeetingSchedulerTest {
@@ -70,14 +71,14 @@ class MeetingSchedulerTest {
         // Subscribe to capture published events
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvents.MeetingScheduled.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvent.MeetingScheduled.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
         )
         eventBus.subscribe(
             agentId = "test-subscriber",
-            eventClassType = MeetingEvents.MeetingStarted.EVENT_CLASS_TYPE,
+            eventClassType = MeetingEvent.MeetingStarted.EVENT_CLASS_TYPE,
             handler = EventHandler { event, _ ->
                 publishedEvents.add(event)
             }
@@ -227,7 +228,7 @@ class MeetingSchedulerTest {
             delay(100)
 
             // Verify MeetingStarted event was published
-            val startedEvents = publishedEvents.filterIsInstance<MeetingEvents.MeetingStarted>()
+            val startedEvents = publishedEvents.filterIsInstance<MeetingEvent.MeetingStarted>()
             assertTrue(startedEvents.any { it.meetingId == meeting.id })
         }
     }
