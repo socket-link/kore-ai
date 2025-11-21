@@ -1,5 +1,9 @@
 package link.socket.kore.agents.events.messages.escalation
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import link.socket.kore.agents.core.AgentId
+import link.socket.kore.agents.events.EventBus
 import link.socket.kore.agents.events.EventHandler
 import link.socket.kore.agents.events.MessageEvent
 import link.socket.kore.agents.events.Subscription
@@ -7,10 +11,36 @@ import link.socket.kore.agents.events.Subscription
 /**
  * Listens for `MessageEvent.EscalationRequested` and notifies a human.
  * Uses AgentMessageApi to read the thread for any additional checks.
+ *
+ * Can be used in two ways:
+ * 1. Direct invocation via [invoke] (when wired through MessageRouter)
+ * 2. Self-subscription via [start] (standalone mode with EventBus)
  */
 class EscalationEventHandler(
+    private val coroutineScope: CoroutineScope,
     private val humanNotifier: Notifier.Human,
+    private val eventBus: EventBus,
+    private val agentId: AgentId = "escalation-handler",
 ) : EventHandler<MessageEvent.EscalationRequested, Subscription>() {
+
+    /**
+     * Start the escalation handler by subscribing to EscalationRequested events.
+     * This enables standalone mode where the handler self-subscribes to the EventBus.
+     *
+     * @throws IllegalStateException if eventBus or scope were not provided in constructor
+     */
+    fun start() {
+        coroutineScope.launch {
+            eventBus.subscribe(
+                agentId = agentId,
+                eventClassType = MessageEvent.EscalationRequested.EVENT_CLASS_TYPE,
+                handler = EventHandler { event, subscription ->
+                    val escalationEvent = event as MessageEvent.EscalationRequested
+                    invoke(escalationEvent, subscription)
+                }
+            )
+        }
+    }
 
     // Subscribe to EscalationRequested events and send them to Human
     override suspend fun invoke(

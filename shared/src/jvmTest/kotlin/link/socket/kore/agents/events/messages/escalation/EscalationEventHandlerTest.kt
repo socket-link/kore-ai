@@ -62,7 +62,7 @@ class EscalationEventHandlerTest {
     }
 
     private val humanNotifier = FakeHumanNotifier()
-    private val eventHandler = EscalationEventHandler(humanNotifier)
+    private lateinit var eventHandler: EscalationEventHandler
 
     private fun getMessageRouter(
         api: AgentMessageApi,
@@ -82,6 +82,7 @@ class EscalationEventHandlerTest {
         messageRepository = MessageRepository(DEFAULT_JSON, scope, database)
         eventBus = eventBusFactory.create()
         apiFactory = AgentMessageApiFactory(messageRepository, eventBus)
+        eventHandler = EscalationEventHandler(scope, humanNotifier, eventBus)
     }
 
     @AfterTest
@@ -156,6 +157,51 @@ class EscalationEventHandlerTest {
 
             // Since the thread lookup fails, the notifier should not be called
             assertNull(humanNotifier.lastCall)
+        }
+    }
+
+    @Test
+    fun `escalation handler with start method self-subscribes to events`() {
+        runBlocking {
+            val agentId = "standalone-agent"
+            val api: AgentMessageApi = apiFactory.create(agentId)
+
+            // Create handler with EventBus and scope for standalone mode
+            val standaloneHandler = EscalationEventHandler(
+                coroutineScope = scope,
+                humanNotifier = humanNotifier,
+                eventBus = eventBus,
+                agentId = agentId,
+            )
+
+            // Start the handler (self-subscribes to EventBus)
+            standaloneHandler.start()
+
+            // Create a thread
+            val thread: MessageThread = api.createThread(
+                participants = emptySet(),
+                channel = MessageChannel.Public.Engineering,
+                initialMessageContent = "Test",
+            )
+
+            val reason = "Standalone mode escalation"
+            val ctx = mapOf("mode" to "standalone")
+
+            api.escalateToHuman(
+                threadId = thread.id,
+                reason = reason,
+                context = ctx,
+            )
+
+            // let async handlers run
+            delay(200)
+
+            val call = humanNotifier.lastCall
+            assertNotNull(call)
+            assertEquals(thread.id, call.threadId)
+            assertEquals(agentId, call.agentId)
+            assertEquals(reason, call.reason)
+            assertEquals(ctx, call.context)
         }
     }
 }

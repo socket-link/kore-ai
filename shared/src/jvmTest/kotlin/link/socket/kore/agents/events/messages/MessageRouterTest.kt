@@ -51,8 +51,7 @@ class MessageRouterTest {
         }
     }
 
-    private val escalationEventHandler =
-        EscalationEventHandler(fakeHumanNotifier)
+    private lateinit var escalationEventHandler: EscalationEventHandler
 
     @BeforeTest
     fun setup() {
@@ -64,6 +63,7 @@ class MessageRouterTest {
         eventBus = eventBusFactory.create()
         agentMessageApiFactory = AgentMessageApiFactory(messageRepository, eventBus)
         agentEventApiFactory = AgentEventApiFactory(eventRepository, eventBus)
+        escalationEventHandler = EscalationEventHandler(scope, fakeHumanNotifier, eventBus)
     }
 
     @AfterTest

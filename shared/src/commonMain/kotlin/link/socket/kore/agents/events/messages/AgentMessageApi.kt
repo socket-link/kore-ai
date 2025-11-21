@@ -254,6 +254,51 @@ class AgentMessageApi(
             }
     }
 
+    /** Reopen a thread that was waiting for human intervention, allowing agents to resume activity. */
+    suspend fun reopenThread(
+        threadId: MessageThreadId,
+    ) {
+        val thread = messageRepository
+            .findThreadById(threadId)
+            .onFailure { throwable ->
+                logger.logError(
+                    message = "Failed to find thread with id $threadId",
+                    throwable = throwable,
+                )
+                throw IllegalArgumentException("Thread not found: $threadId")
+            }
+            .getOrNull()
+
+        requireNotNull(thread)
+        require(thread.status == EventStatus.WAITING_FOR_HUMAN) {
+            "Can only reopen threads that are waiting for human intervention. Current status: ${thread.status}"
+        }
+
+        val oldStatus: EventStatus = thread.status
+        val newStatus = EventStatus.OPEN
+
+        messageRepository
+            .updateStatus(threadId, newStatus)
+            .onSuccess {
+                eventBus.publish(
+                    MessageEvent.ThreadStatusChanged(
+                        eventId = randomUUID(),
+                        timestamp = Clock.System.now(),
+                        eventSource = EventSource.Human,
+                        threadId = threadId,
+                        oldStatus = oldStatus,
+                        newStatus = newStatus,
+                    ),
+                )
+            }
+            .onFailure { throwable ->
+                logger.logError(
+                    message = "Failed to update thread status to $newStatus for thread with id $threadId",
+                    throwable = throwable,
+                )
+            }
+    }
+
     /** Subscribe to thread creation events. */
     fun onThreadCreated(
         filter: EventFilter<MessageEvent.ThreadCreated> = EventFilter.noFilter(),
