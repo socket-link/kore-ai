@@ -251,9 +251,8 @@ class MeetingOrchestrator(
         )
 
         // Post a message to the meeting thread about the agenda item
-        val status = meeting.status as MeetingStatus.InProgress
         messageApi.postMessage(
-            threadId = status.messagingDetails.messageThreadId,
+            threadId = meeting.status.messagingDetails.messageThreadId,
             content = "Now discussing: ${nextItem.topic}${nextItem.assignedTo?.let { " (assigned to ${it.agentId})" } ?: ""}",
         )
 

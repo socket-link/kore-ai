@@ -1,0 +1,82 @@
+-- Ticket aggregate table
+-- Stores work items managed by Product Manager agents
+CREATE TABLE TicketStore (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    ticket_type TEXT NOT NULL CHECK (ticket_type IN ('FEATURE', 'BUG', 'TASK', 'SPIKE')),
+    priority TEXT NOT NULL CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+    status TEXT NOT NULL CHECK (status IN ('BACKLOG', 'READY', 'IN_PROGRESS', 'BLOCKED', 'IN_REVIEW', 'DONE')),
+    assigned_agent_id TEXT,
+    created_by_agent_id TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    due_date INTEGER
+);
+
+CREATE INDEX idx_ticket_status ON TicketStore(status);
+CREATE INDEX idx_ticket_priority ON TicketStore(priority);
+CREATE INDEX idx_ticket_assigned_agent ON TicketStore(assigned_agent_id);
+CREATE INDEX idx_ticket_created_by ON TicketStore(created_by_agent_id);
+CREATE INDEX idx_ticket_type ON TicketStore(ticket_type);
+
+-- =============================================================================
+-- TICKET QUERIES
+-- =============================================================================
+
+insertTicket:
+INSERT INTO TicketStore(
+    id, title, description, ticket_type, priority, status,
+    assigned_agent_id, created_by_agent_id, created_at, updated_at, due_date
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateTicketStatus:
+UPDATE TicketStore
+SET status = ?, updated_at = ?
+WHERE id = ?;
+
+updateTicketAssignment:
+UPDATE TicketStore
+SET assigned_agent_id = ?, updated_at = ?
+WHERE id = ?;
+
+getTicketById:
+SELECT * FROM TicketStore WHERE id = ?;
+
+getTicketsByStatus:
+SELECT * FROM TicketStore
+WHERE status = ?
+ORDER BY priority DESC, created_at ASC;
+
+getTicketsByAssignedAgent:
+SELECT * FROM TicketStore
+WHERE assigned_agent_id = ?
+ORDER BY priority DESC, created_at ASC;
+
+getAllTickets:
+SELECT * FROM TicketStore
+ORDER BY priority DESC, created_at ASC;
+
+getTicketsByPriority:
+SELECT * FROM TicketStore
+WHERE priority = ?
+ORDER BY created_at ASC;
+
+getTicketsByType:
+SELECT * FROM TicketStore
+WHERE ticket_type = ?
+ORDER BY priority DESC, created_at ASC;
+
+getTicketsByCreator:
+SELECT * FROM TicketStore
+WHERE created_by_agent_id = ?
+ORDER BY created_at DESC;
+
+updateTicketDetails:
+UPDATE TicketStore
+SET title = ?, description = ?, priority = ?, due_date = ?, updated_at = ?
+WHERE id = ?;
+
+deleteTicket:
+DELETE FROM TicketStore WHERE id = ?;
